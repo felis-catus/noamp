@@ -101,6 +101,9 @@ public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	
 	clientLives[victim] -= 1;
 	
+	new ragdoll = GetEntPropEnt(victim, Prop_Send, "m_hRagdoll");
+	SetEntProp(ragdoll, Prop_Send, "m_iDismemberment", 11);
+
 	EmitSoundToAll("noamp/playerdeath.mp3", SOUND_FROM_PLAYER, SNDCHAN_STREAM, SNDLEVEL_NORMAL);
 }
 
@@ -133,7 +136,7 @@ public OnParrotDeath(Handle:event, const String:name[], bool:dontBroadcast)
 		specialValue += 10;
 		SetEntData(attacker, h_iSpecial, specialValue, 4);
 		
-		AddScore(attackerId, 1);
+		AddScore(attackerId);
 		
 		attackerFrags += 1;
 		SetEntProp(attacker, Prop_Data, "m_iFrags", attackerFrags);
@@ -172,7 +175,7 @@ public OnChestCapture(Handle:event, const String:name[], bool:dontBroadcast)
 	*/
 }
 
-public AddScore(client, amount)
+public AddScore(client)
 {
 	// HACK: try adding score through event; thanks Spirrwell! :3
 	new Handle:event = CreateEvent("player_death", true);
@@ -190,10 +193,7 @@ public AddScore(client, amount)
 	SetEventBool(event, "suiassist", false);
 	SetEventBool(event, "headshot", false);
 	
-	for (new i = 0; i < amount; i++)
-	{
-		FireEvent(event, true);
-	}
+	FireEvent(event, true);
 	
 	return Plugin_Handled;
 }

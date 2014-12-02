@@ -34,7 +34,7 @@ public Action:CmdTestGiantSpawns(client, args)
 	}
 	else
 	{
-		PrintToChat(client, "{red}Debug mode required for this command.");
+		CPrintToChat(client, "{red}Debug mode required for this command.");
 	}
 	
 	return Plugin_Handled;
@@ -48,7 +48,7 @@ public Action:CmdGiveMoney(client, args)
 	}
 	else
 	{
-		PrintToChat(client, "{red}Debug mode required for this command.");
+		CPrintToChat(client, "{red}Debug mode required for this command.");
 	}
 	
 	return Plugin_Handled;
@@ -64,7 +64,7 @@ public Action:CmdGiveAllUpgrades(client, args)
 	}
 	else
 	{
-		PrintToChat(client, "{red}Debug mode required for this command.");
+		CPrintToChat(client, "{red}Debug mode required for this command.");
 	}
 	
 	return Plugin_Handled;
@@ -80,7 +80,7 @@ public Action:CmdStartGame(client, args)
 
 public Action:CmdResetGame(client, args)
 {
-	PrintToChatAll("{unusual}%s{lightgreen} The server admin is resetting the game!", CHAT_PREFIX);
+	CPrintToChatAll("{unusual}%s{lightgreen} The server admin is resetting the game!", CHAT_PREFIX);
 	ResetGame(false, true);
 	
 	return Plugin_Handled;
@@ -114,7 +114,7 @@ public Action:CmdJumpToWave(client, args)
 	}
 	else
 	{
-		PrintToChat(client, "{red}Debug mode required for this command.");
+		CPrintToChat(client, "{red}Debug mode required for this command.");
 	}
 	
 	return Plugin_Handled;

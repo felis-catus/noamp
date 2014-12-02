@@ -35,6 +35,7 @@
 new Handle:cvar_enabled;
 new Handle:cvar_debug;
 new Handle:cvar_difficulty;
+new Handle:cvar_scheme;
 new Handle:cvar_ignoreprefix;
 /*
 new Handle:cvar_lives;
@@ -51,6 +52,7 @@ new Handle:cvar_bossparrotsize;
 new String:KVPath[PLATFORM_MAX_PATH];
 
 new bool:IsMapLoaded = false;
+new bool:IsCustomScheme = false;
 new String:ParrotSpawns[1001][128];
 new String:GiantParrotSpawns[1001][128];
 new String:BossParrotSpawns[1001][128];
@@ -68,7 +70,7 @@ new bool:clientUpgradesMaxSpeed[MAXPLAYERS+1];
 
 new clientPowerUpFillSpecial[MAXPLAYERS+1];
 
-new String:schemeName[256];
+new String:schemeName[256] = "null";
 
 new waveParrotCount[NOAMP_MAXWAVES+1];
 new waveGiantParrotCount[NOAMP_MAXWAVES+1];
@@ -94,7 +96,6 @@ new waveCount;
 new specialOffset;
 new preparingSecs;
 new gameOverSecs;
-new hudSecs;
 new musicSecs;
 new deadplayers;
 
@@ -110,11 +111,6 @@ new bool:bossParrotSpawned;
 new parrotCurrentBossHP;
 new parrotSoundPitch;
 
-new Handle:hGiveNamedItem;
-new Handle:hWeapon_Equip;
-new Handle:hGiveAmmo;
-new Handle:hRemoveAllItems;
-
 new h_iSpecial;
 new h_iHealth;
 new h_ArmorValue;
@@ -124,6 +120,7 @@ new h_flMaxspeed;
 new h_flDefaultSpeed;
 new h_iPlayerClass;
 new h_flModelScale;
+new h_iDismemberment;
 
 /* if there ever is a use for these
 static const class_default_properties[9][3] = 

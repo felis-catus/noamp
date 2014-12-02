@@ -196,8 +196,8 @@ public SpawnGiantParrot()
 	
 	decl Float:vecParrotMins[3];
 	decl Float:vecParrotMaxs[3];
-	GetEntPropVector(parrot, Prop_Send, "m_vecMins", vecParrotMins);
-	GetEntPropVector(parrot, Prop_Send, "m_vecMaxs", vecParrotMaxs);
+	GetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMins);
+	GetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMaxs", vecParrotMaxs);
 	
 	ScaleVector(vecParrotMins, giantParrotSize);
 	ScaleVector(vecParrotMaxs, giantParrotSize);
@@ -245,8 +245,8 @@ public SpawnBossParrot()
 	
 	decl Float:vecParrotMins[3];
 	decl Float:vecParrotMaxs[3];
-	GetEntPropVector(parrot, Prop_Send, "m_vecMins", vecParrotMins);
-	GetEntPropVector(parrot, Prop_Send, "m_vecMaxs", vecParrotMaxs);
+	GetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMins);
+	GetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMaxs);
 	
 	ScaleVector(vecParrotMins, bossParrotSize);
 	ScaleVector(vecParrotMaxs, bossParrotSize);

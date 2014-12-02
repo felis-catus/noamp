@@ -148,13 +148,6 @@ public Action:HUD(Handle:timer)
 		}
 	}
 	
-	if (hudSecs >= 80)
-	{
-		hudSecs = 0;
-	}
-	else
-	hudSecs++;
-	
 	return Plugin_Continue;
 }
 
@@ -345,9 +338,6 @@ public Action:GameOver(Handle:timer)
 	{
 		ResetGame(true, true);
 		return Plugin_Stop;
-	}
-	if (gameOverSecs == 4)
-	{
 	}
 	
 	gameOverSecs++;
@@ -662,11 +652,6 @@ public BuyWeapon(client, const String:weapon[])
 	{
 		LogError("NOAMP ERROR: Attempted to buy unknown weapon %s. You need to define the weapon in BuyWeapon() first.", weapon);
 	}
-}
-
-public RemoveWeapons(client)
-{
-	SDKCall(hRemoveAllItems, client, false);
 }
 
 public FillSpecial(client)

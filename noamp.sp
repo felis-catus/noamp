@@ -5,6 +5,7 @@
 #include <sdktools>
 #include <sdkhooks>
 #include <smlib>
+#include <steamtools>
 #include <morecolors>
 
 #include "noamp\noamp_defs.sp"
@@ -36,28 +37,30 @@ public OnPluginStart()
 	AddFilesToDownloadTable();
 	
 	CreateDirectory("addons/sourcemod/data/noamp", 3);
-
+	
 	LoadTranslations("noamp.phrases");
 	AddServerTag(SERVER_TAG);
 	
-	AddNormalSoundHook( NormalSoundHook );
+	AddNormalSoundHook(NormalSoundHook);
 }
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
 {
-    MarkNativeAsOptional("GetUserMessageType");
-    return APLRes_Success;
+	MarkNativeAsOptional("GetUserMessageType");
+	return APLRes_Success;
 }
 
 RegisterCvars()
 {
 	cvar_enabled = CreateConVar("noamp_enabled", "1", "Enable NIGHT OF A MILLION PARROTS gamemode.");
 	cvar_debug = CreateConVar("noamp_debug", "0", "Enable debug mode for testing.");
-	cvar_difficulty = CreateConVar("noamp_difficulty", "normal", "Game difficulty, loads a script named [mapname]_[difficulty].txt eg. noamp_forest_normal.txt");
+	cvar_difficulty = CreateConVar("noamp_difficulty", "normal", "Game difficulty, loads a script named [mapname]_[difficulty].txt eg. noamp_forest_normal.txt. If you want to choose a scheme to load, use noamp_scheme.");
+	cvar_scheme = CreateConVar("noamp_scheme", "null", "If not \"null\", loads a chosen script from ../sourcemod/data/noamp. Difficulty settings will be used otherwise.");
 	cvar_ignoreprefix = CreateConVar("noamp_ignoreprefix", "0", "Ignores the noamp_ map prefix check in map start. Allows NOAMP in every other map.");
 	
 	HookConVarChange(cvar_enabled, cvHookEnabled);
 	HookConVarChange(cvar_difficulty, cvHookDifficulty);
+	HookConVarChange(cvar_scheme, cvHookScheme);
 	
 	/* replaced by keyvalues
 	cvar_lives = CreateConVar("noamp_playerlives", "10", "How many lives players have. 0 for infinite.");
@@ -116,6 +119,7 @@ FindPropInfo()
 	h_flDefaultSpeed = FindSendPropInfo("CPVK2Player", "m_flDefaultSpeed");
 	h_iPlayerClass = FindSendPropInfo("CPVK2Player", "m_iPlayerClass");
 	h_flModelScale = FindSendPropOffs("CBasePlayer", "m_flModelScale");
+	h_iDismemberment = FindSendPropInfo("CPVK2Ragdoll", "m_iDismemberment");
 }
 
 CommandListeners()
@@ -156,6 +160,9 @@ public ReadNOAMPScript()
 	
 	if (!KvGotoFirstSubKey(kv))
 	{
+		LogError("Error reading KeyValues, file might be missing. Loading default scheme.");
+		BuildPath(Path_SM, KVPath, sizeof(KVPath), "data/noamp/default.txt");
+		ReadNOAMPScript();
 		return;
 	}
 	
@@ -164,18 +171,18 @@ public ReadNOAMPScript()
 	
 	if (StrEqual(buffer, "general"))
 	{
-		new String:strschemename[256];
-		new String:strbossparrothp[32];
-		new String:strbossparrotsize[32];
-		new String:strchestaward[32];
-		new String:strgiantparrotsize[32];
-		new String:strplayerlives[32];
-		new String:strpreparationsecs[32];
-		new String:strmaxhpprice[32];
-		new String:strmaxarmorprice[32];
-		new String:strmaxspeedprice[32];
-		new String:strkegprice[32];
-		new String:strfillspecialprice[32];
+		decl String:strschemename[256];
+		decl String:strbossparrothp[32];
+		decl String:strbossparrotsize[32];
+		decl String:strchestaward[32];
+		decl String:strgiantparrotsize[32];
+		decl String:strplayerlives[32];
+		decl String:strpreparationsecs[32];
+		decl String:strmaxhpprice[32];
+		decl String:strmaxarmorprice[32];
+		decl String:strmaxspeedprice[32];
+		decl String:strkegprice[32];
+		decl String:strfillspecialprice[32];
 		
 		KvGetString(kv, "name", strschemename, 256);
 		KvGetString(kv, "bossparrothp", strbossparrothp, 32);
@@ -207,7 +214,7 @@ public ReadNOAMPScript()
 	}
 	
 	new ibuffer;
-	new String:stri[32];
+	decl String:stri[32];
 	waveCount = 0;
 	
 	for (new i = 1; i < NOAMP_MAXWAVES; i++)
@@ -218,10 +225,10 @@ public ReadNOAMPScript()
 		
 		if (StrEqual(buffer, stri))
 		{
-			new String:strparrotcount[32];
-			new String:strgiantparrotcount[32];
-			new String:strmaxparrots[32];
-			new String:strisboss[2];
+			decl String:strparrotcount[32];
+			decl String:strgiantparrotcount[32];
+			decl String:strmaxparrots[32];
+			decl String:strisboss[2];
 			
 			KvGetString(kv, "parrotcount", strparrotcount, 32);
 			KvGetString(kv, "giantparrotcount", strgiantparrotcount, 32);
@@ -274,12 +281,30 @@ public cvHookDifficulty(Handle:cvar, const String:oldVal[], const String:newVal[
 	if (StrEqual(difficulty, "null", false) || StrEqual(difficulty, "", false))
 	{
 		LogError("\"null\" difficulty, loading default scheme.");
-		BuildPath(Path_SM, KVPath, sizeof(KVPath), "data/noamp/default.txt", currentMap, difficulty);
+		BuildPath(Path_SM, KVPath, sizeof(KVPath), "data/noamp/default.txt");
 	}
 	BuildPath(Path_SM, KVPath, sizeof(KVPath), "data/noamp/%s_%s.txt", currentMap, difficulty);
 	PrintToServer("Loaded NOAMP scheme %s.", KVPath);
 	
 	ResetGame(false, true);
+	UpdateGameDesc();
+}
+
+public cvHookScheme(Handle:cvar, const String:oldVal[], const String:newVal[])
+{
+	decl String:scheme[128] = "null";
+	GetConVarString(cvar_scheme, scheme, 128);
+
+	if (StrEqual(scheme, "null", false) || StrEqual(scheme, "", false))
+	{
+		LogError("\"null\" scheme, loading default scheme.");
+		BuildPath(Path_SM, KVPath, sizeof(KVPath), "data/noamp/default.txt");
+	}
+	BuildPath(Path_SM, KVPath, sizeof(KVPath), "data/noamp/%s", scheme);
+	PrintToServer("Loaded NOAMP scheme %s.", KVPath);
+	
+	ResetGame(false, true);
+	UpdateGameDesc();
 }
 
 public Action:NormalSoundHook(iClients[64], &iNumClients, String:strSample[PLATFORM_MAX_PATH], &iEntity, &iChannel, &Float:flVolume, &iLevel, &iPitch, &iFlags)
@@ -308,20 +333,9 @@ public OnClientDisconnect(client)
 	EmitSoundToAll("noamp/playerdisconnect.wav", SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS);
 }
 
-public Action:OnGetGameDescription(String:gameDesc[64])
+public OnConfigsExecuted()
 {
-	if (!IsEnabled)
-		return Plugin_Continue;
-	
-	if (IsMapLoaded)
-	{	
-		new String:newInfo[64];
-		Format(newInfo, 64, "Night of a Million Parrots %s", PL_VERSION);
-		strcopy(gameDesc, sizeof(gameDesc), newInfo);
-		
-		return Plugin_Changed;
-	}
-	return Plugin_Continue;
+	UpdateGameDesc();
 }
 
 public OnMapStart()
@@ -347,17 +361,37 @@ public OnMapStart()
 		}
 	}
 	
-	decl String:difficulty[128] = "null";
-	GetConVarString(cvar_difficulty, difficulty, 128);
+	decl String:scheme[128] = "null";
+	GetConVarString(cvar_scheme, scheme, 128);
 	
-	if (StrEqual(difficulty, "null", false) || StrEqual(difficulty, "", false))
+	if (StrEqual(scheme, "null", false) || StrEqual(scheme, "", false))
 	{
-		LogError("\"null\" difficulty, loading default scheme.");
-		BuildPath(Path_SM, KVPath, sizeof(KVPath), "data/noamp/default.txt", currentMap, difficulty);
+		IsCustomScheme = false;
+	}
+	else
+	{
+		IsCustomScheme = true;
 	}
 	
-	BuildPath(Path_SM, KVPath, sizeof(KVPath), "data/noamp/%s_%s.txt", currentMap, difficulty);
-	PrintToServer("Loaded NOAMP scheme %s.", KVPath);
+	if (IsCustomScheme)
+	{
+		BuildPath(Path_SM, KVPath, sizeof(KVPath), "data/noamp/%s", scheme);
+		PrintToServer("Loaded NOAMP scheme %s.", KVPath);
+	}
+	else
+	{
+		decl String:difficulty[128] = "null";
+		GetConVarString(cvar_difficulty, difficulty, 128);
+		
+		if (StrEqual(difficulty, "null", false) || StrEqual(difficulty, "", false))
+		{
+			LogError("\"null\" difficulty, loading default scheme.");
+			BuildPath(Path_SM, KVPath, sizeof(KVPath), "data/noamp/default.txt");
+		}
+		
+		BuildPath(Path_SM, KVPath, sizeof(KVPath), "data/noamp/%s_%s.txt", currentMap, difficulty);
+		PrintToServer("Loaded NOAMP scheme %s.", KVPath);
+	}
 	
 	Precache();
 	ResetGame(false, false);
@@ -373,15 +407,24 @@ public OnMapStart()
 		IsLivesDisabled = true;
 	else
 	IsLivesDisabled = false;
-	
-	for (new i = 0; i < MaxClients; i++)
-	{
-		clientLives[i] = 0;
-	}
 }
 
 public OnMapEnd()
 {
 	IsMapLoaded = false;
 	ResetGame(false, false);
+}
+
+public UpdateGameDesc()
+{
+	decl String:gamedesc[256];
+	if (StrEqual(schemeName, "null", false))
+	{
+		Format(gamedesc, 256, "NOAMP %s", PL_VERSION);
+	}
+	else
+	{
+		Format(gamedesc, 256, "NOAMP %s: %s", PL_VERSION, schemeName);
+	}
+	Steam_SetGameDescription(gamedesc);
 }
