@@ -65,7 +65,6 @@ new clientOldHP[MAXPLAYERS+1];
 new bool:clientUpgradesMaxHP[MAXPLAYERS+1];
 new bool:clientUpgradesMaxArmor[MAXPLAYERS+1];
 new bool:clientUpgradesMaxSpeed[MAXPLAYERS+1];
-new bool:clientSpecialPerks[MAXPLAYERS+1];
 
 new clientPowerUpFillSpecial[MAXPLAYERS+1];
 

@@ -5,7 +5,6 @@
 #include <sdktools>
 #include <sdkhooks>
 #include <smlib>
-#include <steamtools>
 #include <morecolors>
 
 #include "noamp\noamp_defs.sp"
@@ -307,26 +306,6 @@ public OnClientDisconnect(client)
 {
 	ResetClient(client, false);
 	EmitSoundToAll("noamp/playerdisconnect.wav", SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS);
-}
-
-public RequestGroupStatus(client)
-{
-	if (clientSpecialPerks[client] == false)
-		Steam_RequestGroupStatus(client, STEAM_GROUP_ID);
-}
-
-public Steam_GroupStatusResult(client, groupAccountID, bool:groupMember, bool:groupOfficer)
-{
-	if (groupAccountID == STEAM_GROUP_ID)
-	{
-		if (GetConVarBool(cvar_debug))
-		{
-			new String:name[128];
-			GetClientName(client, name, 128);
-			PrintToServer("%s gets special perks for being in Cat's VIP group.", name);
-		}
-		clientSpecialPerks[client] = true;
-	}
 }
 
 public Action:OnGetGameDescription(String:gameDesc[64])
