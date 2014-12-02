@@ -1,0 +1,62 @@
+"NOAMP_Scheme"
+{
+	"general"
+	{
+		"name"				"Forest Normal"
+		"bossparrothp"		"2000"
+		"bossparrotsize" 	"12.0"
+		"chestaward" 		"200"
+		"giantparrotsize"	"4.0"
+		"playerlives"		"5"
+		"preparationsecs"	"30"
+		"maxhpprice"		"500"
+		"maxarmorprice"		"300"
+		"maxspeedprice"		"450"
+		"kegprice"			"100"
+		"fillspecialprice"	"50"
+	}
+	
+	// Waves
+	"1"
+	{
+		"parrotcount"		"30"
+		"giantparrotcount"	"0"
+		"maxparrots"		"15"
+		"boss"				"0"
+	}
+	"2"
+	{
+		"parrotcount"		"60"
+		"giantparrotcount"	"0"
+		"maxparrots"		"15"
+		"boss"				"0"
+	}
+	"3"
+	{
+		"parrotcount"		"90"
+		"giantparrotcount"	"1"
+		"maxparrots"		"15"
+		"boss"				"0"
+	}
+	"4"
+	{
+		"parrotcount"		"120"
+		"giantparrotcount"	"2"
+		"maxparrots"		"15"
+		"boss"				"0"
+	}
+	"5"
+	{
+		"parrotcount"		"150"
+		"giantparrotcount"	"3"
+		"maxparrots"		"15"
+		"boss"				"0"
+	}
+	"6"
+	{
+		"parrotcount"		"0"
+		"giantparrotcount"	"0"
+		"maxparrots"		"15"
+		"boss"				"1"
+	}
+}

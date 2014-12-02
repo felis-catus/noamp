@@ -1,0 +1,62 @@
+"NOAMP_Scheme"
+{
+	"general"
+	{
+		"name"				"Forest Easy"
+		"bossparrothp"		"1000"
+		"bossparrotsize" 	"12.0"
+		"chestaward" 		"300"
+		"giantparrotsize"	"4.0"
+		"playerlives"		"10"
+		"preparationsecs"	"30"
+		"maxhpprice"		"500"
+		"maxarmorprice"		"300"
+		"maxspeedprice"		"450"
+		"kegprice"			"100"
+		"fillspecialprice"	"50"
+	}
+	
+	// Waves
+	"1"
+	{
+		"parrotcount"		"25"
+		"giantparrotcount"	"0"
+		"maxparrots"		"15"
+		"boss"				"0"
+	}
+	"2"
+	{
+		"parrotcount"		"50"
+		"giantparrotcount"	"0"
+		"maxparrots"		"15"
+		"boss"				"0"
+	}
+	"3"
+	{
+		"parrotcount"		"75"
+		"giantparrotcount"	"1"
+		"maxparrots"		"15"
+		"boss"				"0"
+	}
+	"4"
+	{
+		"parrotcount"		"100"
+		"giantparrotcount"	"2"
+		"maxparrots"		"15"
+		"boss"				"0"
+	}
+	"5"
+	{
+		"parrotcount"		"125"
+		"giantparrotcount"	"3"
+		"maxparrots"		"15"
+		"boss"				"0"
+	}
+	"6"
+	{
+		"parrotcount"		"0"
+		"giantparrotcount"	"0"
+		"maxparrots"		"15"
+		"boss"				"1"
+	}
+}
