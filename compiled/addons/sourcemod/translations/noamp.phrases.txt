@@ -1,0 +1,32 @@
+"Phrases"
+{
+	"NOAMP Menu"
+	{
+		"en"	"NOAMP Menu"
+	}
+	
+	"Upgrades"
+	{
+		"en"	"Upgrades"
+	}
+	
+	"Powerups"
+	{
+		"en"	"Powerups"
+	}
+	
+	"Weapons"
+	{
+		"en"	"Weapons"
+	}
+	
+	"Miscellaneous"
+	{
+		"en"	"Miscellaneous"
+	}
+	
+	"Debug"
+	{
+		"en"	"Debug"
+	}
+}

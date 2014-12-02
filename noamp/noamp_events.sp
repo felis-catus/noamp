@@ -24,8 +24,6 @@ public OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 	new userid = GetEventInt(event, "userid");
 	new client = GetClientOfUserId(userid);
 	
-	RequestGroupStatus(client);
-	
 	if (clientLives[client] <= 0)
 	{
 		if (IsLivesDisabled)

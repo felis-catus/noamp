@@ -27,7 +27,7 @@ public MainMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 			GetMenuItem(menu, param2, info, sizeof(info));
 			if (StrEqual(info, CHOICE1))
 			{
-				new Handle:upgradesmenu = CreateMenu(UpgradesMenuHandler, MENU_ACTIONS_ALL);
+				new Handle:upgradesmenu = CreateMenu(UpgradesMenuHandler, MENU_ACTIONS_DEFAULT);
 				SetMenuTitle(upgradesmenu, "%T", "Upgrades", LANG_SERVER);
 				
 				new String:choice1[64];
@@ -43,11 +43,12 @@ public MainMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 				AddMenuItem(upgradesmenu, CHOICE3, choice3);
 				
 				SetMenuExitButton(upgradesmenu, true);
+				SetMenuExitBackButton(upgradesmenu, true); 
 				DisplayMenu(upgradesmenu, param1, 20);
 			}
 			else if (StrEqual(info, CHOICE2))
 			{
-				new Handle:powerupsmenu = CreateMenu(PowerupsMenuHandler, MENU_ACTIONS_ALL);
+				new Handle:powerupsmenu = CreateMenu(PowerupsMenuHandler, MENU_ACTIONS_DEFAULT);
 				SetMenuTitle(powerupsmenu, "%T", "Powerups", LANG_SERVER);
 				
 				new String:choice1[64];
@@ -61,11 +62,12 @@ public MainMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 				//AddMenuItem(powerupsmenu, CHOICE3, choice3);
 				
 				SetMenuExitButton(powerupsmenu, true);
+				SetMenuExitBackButton(powerupsmenu, true);
 				DisplayMenu(powerupsmenu, param1, 20);
 			}
 			else if (StrEqual(info, CHOICE3))
 			{
-				new Handle:weaponsmenu = CreateMenu(WeaponsMenuHandler, MENU_ACTIONS_ALL);
+				new Handle:weaponsmenu = CreateMenu(WeaponsMenuHandler, MENU_ACTIONS_DEFAULT);
 				SetMenuTitle(weaponsmenu, "%T", "Weapons", LANG_SERVER);
 				
 				new String:choice1[64];
@@ -75,11 +77,12 @@ public MainMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 				AddMenuItem(weaponsmenu, CHOICE1, choice1);
 				
 				SetMenuExitButton(weaponsmenu, true);
+				SetMenuExitBackButton(weaponsmenu, true);
 				DisplayMenu(weaponsmenu, param1, 20);
 			}
 			else if (StrEqual(info, CHOICE4))
 			{
-				new Handle:miscmenu = CreateMenu(MiscMenuHandler, MENU_ACTIONS_ALL);
+				new Handle:miscmenu = CreateMenu(MiscMenuHandler, MENU_ACTIONS_DEFAULT);
 				SetMenuTitle(miscmenu, "%T", "Miscellaneous", LANG_SERVER);
 				
 				new String:choice1[64];
@@ -95,11 +98,12 @@ public MainMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 				AddMenuItem(miscmenu, CHOICE2, choice2);
 				
 				SetMenuExitButton(miscmenu, true);
+				SetMenuExitBackButton(miscmenu, true);
 				DisplayMenu(miscmenu, param1, 20);
 			}
 			else if (StrEqual(info, CHOICE5))
 			{
-				new Handle:debugmenu = CreateMenu(DebugMenuHandler, MENU_ACTIONS_ALL);
+				new Handle:debugmenu = CreateMenu(DebugMenuHandler, MENU_ACTIONS_DEFAULT);
 				SetMenuTitle(debugmenu, "%T", "Debug", LANG_SERVER);
 				
 				new String:choice1[64];
@@ -121,6 +125,7 @@ public MainMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 				AddMenuItem(debugmenu, CHOICE5, choice5);
 				
 				SetMenuExitButton(debugmenu, true);
+				SetMenuExitBackButton(debugmenu, true);
 				DisplayMenu(debugmenu, param1, 20);
 			}
 		}
@@ -174,6 +179,17 @@ public UpgradesMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 			}
 		}
 		
+		case MenuAction_Cancel:
+		{
+			switch (param2)
+			{
+				case MenuCancel_ExitBack:
+				{
+					NOAMP_Menu(param1);
+				}
+			}
+		}
+		
 		case MenuAction_End:
 		{
 			CloseHandle(menu);
@@ -215,6 +231,17 @@ public PowerupsMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 			}
 		}
 		
+		case MenuAction_Cancel:
+		{
+			switch (param2)
+			{
+				case MenuCancel_ExitBack:
+				{
+					NOAMP_Menu(param1);
+				}
+			}
+		}
+		
 		case MenuAction_End:
 		{
 			CloseHandle(menu);
@@ -253,6 +280,17 @@ public WeaponsMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 			if (StrEqual(info, CHOICE1))
 			{
 				BuyWeapon(param1, "weapon_powderkeg");
+			}
+		}
+		
+		case MenuAction_Cancel:
+		{
+			switch (param2)
+			{
+				case MenuCancel_ExitBack:
+				{
+					NOAMP_Menu(param1);
+				}
 			}
 		}
 		
@@ -299,6 +337,17 @@ public MiscMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 			else if (StrEqual(info, CHOICE2))
 			{
 				FillSpecial(param1);
+			}
+		}
+		
+		case MenuAction_Cancel:
+		{
+			switch (param2)
+			{
+				case MenuCancel_ExitBack:
+				{
+					NOAMP_Menu(param1);
+				}
 			}
 		}
 		
@@ -356,6 +405,17 @@ public DebugMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 			else if (StrEqual(info, CHOICE5))
 			{
 				ClientCommand(param1, "debug_noamp_reloadscript");
+			}
+		}
+		
+		case MenuAction_Cancel:
+		{
+			switch (param2)
+			{
+				case MenuCancel_ExitBack:
+				{
+					NOAMP_Menu(param1);
+				}
 			}
 		}
 		

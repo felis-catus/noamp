@@ -114,7 +114,6 @@ public Action:HUD(Handle:timer)
 	{
 		SetHudTextParams(-1.0, -1.8, 0.3, 255, 255, 255, 255, 0, 0.0, 0.0, 0.0);
 	}
-	new lol = GetRandomInt(1, 10);
 	
 	if (!IsGameStarted)
 	{
@@ -367,7 +366,7 @@ public Action:PreparingTime(Handle:timer)
 		preparingSecs = 0;
 		if (waveIsBossWave[wave])
 		{
-			EmitSoundToAll("noamp/music/corruptor.mp3", SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL);
+			EmitSoundToAll(NOAMP_BOSSMUSIC, SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL);
 			CreateTimer(1.0, BossMusicLooper, _, TIMER_REPEAT);
 		}
 		return Plugin_Stop;
@@ -649,8 +648,15 @@ public BuyWeapon(client, const String:weapon[])
 {
 	if (StrEqual(weapon, "weapon_powderkeg", false))
 	{
-		Client_GiveWeaponAndAmmo(client, weapon, true, 1, -1, -1, -1);
-		clientMoney[client] -= kegPrice;
+		if (clientMoney[client] >= kegPrice)
+		{
+			Client_GiveWeaponAndAmmo(client, weapon, true, 1, -1, -1, -1);
+			clientMoney[client] -= kegPrice;
+		}
+		else
+		{
+			CPrintToChat(client, "{red}You don't have enough money! I want %d$.", kegPrice);
+		}
 	}
 	else
 	{
@@ -697,11 +703,6 @@ public GetPlayerMoney(client)
 public GetPlayerClass(client)
 {
 	return GetEntData(client, h_iPlayerClass, 4);
-}
-
-public KillParrot(ent)
-{
-	
 }
 
 public StopMusicAll()
