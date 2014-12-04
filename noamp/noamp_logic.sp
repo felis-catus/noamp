@@ -450,6 +450,34 @@ public Action:BossMusicLooper(Handle:timer)
 	return Plugin_Stop;
 }
 
+public Action:DissolveRagdoll(Handle:timer, any:client)
+{
+	if (!IsValidEntity(client))
+		return;
+	
+	new hRagdoll = GetEntPropEnt(client, Prop_Send, "m_hRagdoll");
+	
+	if (hRagdoll < 0)
+	{
+		ThrowError("Couldn't get the player's ragdoll.\n");
+		return;
+	}
+	
+	decl String:dName[32], String:dType[32];
+	Format(dName, sizeof(dName), "dis_%d", client);
+	Format(dType, sizeof(dType), "%d", 0);
+	
+	new ent = CreateEntityByName("env_entity_dissolver");
+	if (ent > 0)
+	{
+		DispatchKeyValue(hRagdoll, "targetname", dName);
+		DispatchKeyValue(ent, "dissolvetype", dType);
+		DispatchKeyValue(ent, "target", dName);
+		AcceptEntityInput(ent, "Dissolve");
+		AcceptEntityInput(ent, "kill");
+	}
+}
+
 public ParrotKiller()
 {
 	new parrot = INVALID_ENT_REFERENCE;

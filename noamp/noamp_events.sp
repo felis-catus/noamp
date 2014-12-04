@@ -103,6 +103,8 @@ public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	
 	new ragdoll = GetEntPropEnt(victim, Prop_Send, "m_hRagdoll");
 	SetEntProp(ragdoll, Prop_Send, "m_iDismemberment", 11);
+	
+	CreateTimer(3.0, DissolveRagdoll, victim);
 
 	EmitSoundToAll("noamp/playerdeath.mp3", SOUND_FROM_PLAYER, SNDCHAN_STREAM, SNDLEVEL_NORMAL);
 }
