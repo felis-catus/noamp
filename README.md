@@ -1,4 +1,4 @@
-noamp
+Night of a Million Parrots
 =====
 
 Night of a Million Parrots, custom SourceMod gamemode for Pirates, Vikings and Knights II
