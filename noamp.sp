@@ -1,3 +1,20 @@
+/************************************************************************
+*	This file is part of NOAMP.
+*
+*	NOAMP is free software: you can redistribute it and/or modify
+*	it under the terms of the GNU General Public License as published by
+*	the Free Software Foundation, either version 3 of the License, or
+*	(at your option) any later version.
+*
+*	NOAMP is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*	GNU General Public License for more details.
+*
+*	You should have received a copy of the GNU General Public License
+*	along with NOAMP.  If not, see <http://www.gnu.org/licenses/>.
+************************************************************************/
+
 // NIGHT OF A MILLION PARROTS
 // Main script
 
@@ -54,7 +71,7 @@ RegisterCvars()
 {
 	cvar_enabled = CreateConVar("noamp_enabled", "1", "Enable NIGHT OF A MILLION PARROTS gamemode.");
 	cvar_debug = CreateConVar("noamp_debug", "0", "Enable debug mode for testing.");
-	cvar_difficulty = CreateConVar("noamp_difficulty", "normal", "Game difficulty, loads a script named [mapname]_[difficulty].txt eg. noamp_forest_normal.txt. If you want to choose a scheme to load, use noamp_scheme.");
+	cvar_difficulty = CreateConVar("noamp_difficulty", "normal", "Game difficulty, loads a script named {mapname}_{difficulty}.txt eg. noamp_forest_normal.txt. If you want to choose a scheme to load, use noamp_scheme.");
 	cvar_scheme = CreateConVar("noamp_scheme", "null", "If not \"null\", loads a chosen script from ../sourcemod/data/noamp. Difficulty settings will be used otherwise.");
 	cvar_ignoreprefix = CreateConVar("noamp_ignoreprefix", "0", "Ignores the noamp_ map prefix check in map start. Allows NOAMP in every other map.");
 	
@@ -118,8 +135,6 @@ FindPropInfo()
 	h_flMaxspeed = FindSendPropInfo("CPVK2Player", "m_flMaxspeed");
 	h_flDefaultSpeed = FindSendPropInfo("CPVK2Player", "m_flDefaultSpeed");
 	h_iPlayerClass = FindSendPropInfo("CPVK2Player", "m_iPlayerClass");
-	h_flModelScale = FindSendPropOffs("CBasePlayer", "m_flModelScale");
-	h_iDismemberment = FindSendPropInfo("CPVK2Ragdoll", "m_iDismemberment");
 }
 
 CommandListeners()
@@ -136,21 +151,31 @@ AddFilesToDownloadTable()
 {
 	AddFileToDownloadsTable("sound/noamp/gameover.mp3");
 	AddFileToDownloadsTable("sound/noamp/music/corruptor.mp3");
+	AddFileToDownloadsTable("sound/noamp/corruptor/corruption.mp3");
+	AddFileToDownloadsTable("noamp/corruptor/glitch.mp3");
+	AddFileToDownloadsTable("noamp/corruptor/secret.mp3");
+	AddFileToDownloadsTable("noamp/corruptor/something.mp3");
 	AddFileToDownloadsTable("sound/noamp/kaching.mp3");
 	AddFileToDownloadsTable("sound/noamp/playerdeath.mp3");
 	AddFileToDownloadsTable("sound/noamp/playerdisconnect.mp3");
 	AddFileToDownloadsTable("sound/noamp/mystic.mp3");
+	AddFileToDownloadsTable("sound/noamp/timertick.wav");
 }
 
 public Precache()
 {
 	PrecacheSound("music/deadparrotachieved.mp3");
-	PrecacheSound("noamp/noamp_gameover.mp3");
+	PrecacheSound("noamp/gameover.mp3");
 	PrecacheSound("noamp/music/corruptor.mp3");
+	PrecacheSound("noamp/corruptor/corruption.mp3");
+	PrecacheSound("noamp/corruptor/glitch.mp3");
+	PrecacheSound("noamp/corruptor/secret.mp3");
+	PrecacheSound("noamp/corruptor/something.mp3");
 	PrecacheSound("noamp/kaching.mp3");
 	PrecacheSound("noamp/playerdeath.mp3");
 	PrecacheSound("noamp/playerdisconnect.mp3");
 	PrecacheSound("noamp/mystic.mp3");
+	PrecacheSound("noamp/timertick.wav");
 }
 
 public ReadNOAMPScript()
@@ -228,16 +253,32 @@ public ReadNOAMPScript()
 			decl String:strparrotcount[32];
 			decl String:strgiantparrotcount[32];
 			decl String:strmaxparrots[32];
+			decl String:strisfoggy[2];
 			decl String:strisboss[2];
+			decl String:striscorrupt[2];
 			
 			KvGetString(kv, "parrotcount", strparrotcount, 32);
 			KvGetString(kv, "giantparrotcount", strgiantparrotcount, 32);
 			KvGetString(kv, "maxparrots", strmaxparrots, 32);
+			KvGetString(kv, "foggy", strisfoggy, 2);
 			KvGetString(kv, "boss", strisboss, 2);
+			KvGetString(kv, "corruptor", striscorrupt, 2);
 			
 			waveParrotCount[ibuffer] = StringToInt(strparrotcount, 10);
 			waveGiantParrotCount[ibuffer] = StringToInt(strgiantparrotcount, 10);
 			waveMaxParrots[ibuffer] = StringToInt(strmaxparrots, 10);
+			
+			new fogint;
+			fogint = StringToInt(strisfoggy, 10);
+			if (fogint == 0)
+				waveIsFoggy[ibuffer] = false;
+			else if (fogint == 1)
+				waveIsFoggy[ibuffer] = true;
+			else
+			{
+				waveIsFoggy[ibuffer] = false;
+				LogError("KeyValue \"foggy\" can only be 0 or 1.");
+			}
 			
 			new bossint;
 			bossint = StringToInt(strisboss, 10);
@@ -245,10 +286,22 @@ public ReadNOAMPScript()
 				waveIsBossWave[ibuffer] = false;
 			else if (bossint == 1)
 				waveIsBossWave[ibuffer] = true;
-			else if (bossint != 0 || bossint != 1)
+			else
 			{
 				waveIsBossWave[ibuffer] = false;
 				LogError("KeyValue \"boss\" can only be 0 or 1.");
+			}
+			
+			new corruptint;
+			corruptint = StringToInt(striscorrupt, 10);
+			if (corruptint == 0)
+				waveIsCorruptorWave[ibuffer] = false;
+			else if (corruptint == 1)
+				waveIsCorruptorWave[ibuffer] = true;
+			else
+			{
+				waveIsCorruptorWave[ibuffer] = false;
+				LogError("KeyValue \"corruptor\" can only be 0 or 1.");
 			}
 			
 			waveCount++;
@@ -310,12 +363,20 @@ public cvHookScheme(Handle:cvar, const String:oldVal[], const String:newVal[])
 public Action:NormalSoundHook(iClients[64], &iNumClients, String:strSample[PLATFORM_MAX_PATH], &iEntity, &iChannel, &Float:flVolume, &iLevel, &iPitch, &iFlags)
 {
 	new bool:bValid = false;
+	new bool:bValidTimer = false;
 	
 	bValid = StrContains(strSample, "weapons/parrot", false) == 0;
+	bValidTimer = StrContains(strSample, "noamp/timertick.wav", false) == 0;
 	
 	if (bValid)
 	{
 		iPitch = parrotSoundPitch;
+		iFlags |= SND_CHANGEPITCH;
+		return Plugin_Changed;
+	}
+	if (bValidTimer)
+	{
+		iPitch = timerSoundPitch;
 		iFlags |= SND_CHANGEPITCH;
 		return Plugin_Changed;
 	}

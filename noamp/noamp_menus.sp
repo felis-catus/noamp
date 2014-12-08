@@ -1,3 +1,20 @@
+/************************************************************************
+*	This file is part of NOAMP.
+*
+*	NOAMP is free software: you can redistribute it and/or modify
+*	it under the terms of the GNU General Public License as published by
+*	the Free Software Foundation, either version 3 of the License, or
+*	(at your option) any later version.
+*
+*	NOAMP is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*	GNU General Public License for more details.
+*
+*	You should have received a copy of the GNU General Public License
+*	along with NOAMP.  If not, see <http://www.gnu.org/licenses/>.
+************************************************************************/
+
 // NOAMP Menus
 
 #include <sourcemod>
@@ -5,8 +22,6 @@
 #include <sdkhooks>
 #include <smlib>
 #include <morecolors>
-
-// FIXME: this whole menu thing feels... bad. there must be a better way to do these
 
 public MainMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 {
@@ -447,6 +462,12 @@ public NOAMP_Menu(client)
 {
 	if (!IsClientInGame(client))
 		return Plugin_Handled;
+	
+	if (IsCorrupted)
+	{
+		CorruptionBlockAction(client);
+		return Plugin_Handled;
+	}
 	
 	new Handle:menu = CreateMenu(MainMenuHandler, MENU_ACTIONS_ALL);
 	SetMenuTitle(menu, "%T", "NOAMP Menu", LANG_SERVER);

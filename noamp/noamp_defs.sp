@@ -1,3 +1,20 @@
+/************************************************************************
+*	This file is part of NOAMP.
+*
+*	NOAMP is free software: you can redistribute it and/or modify
+*	it under the terms of the GNU General Public License as published by
+*	the Free Software Foundation, either version 3 of the License, or
+*	(at your option) any later version.
+*
+*	NOAMP is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*	GNU General Public License for more details.
+*
+*	You should have received a copy of the GNU General Public License
+*	along with NOAMP.  If not, see <http://www.gnu.org/licenses/>.
+************************************************************************/
+
 // NOAMP Definitions and stuff like that
 
 #define PL_VERSION "0.4"
@@ -59,10 +76,10 @@ new String:BossParrotSpawns[1001][128];
 
 new clientLives[MAXPLAYERS+1];
 new clientMoney[MAXPLAYERS+1];
-new clientSavedMoney[MAXPLAYERS+1];
 new clientKills[MAXPLAYERS+1];
 
-new clientOldHP[MAXPLAYERS+1];
+new bool:clientWantsSpec[MAXPLAYERS+1];
+new bool:clientForcedSpec[MAXPLAYERS+1];
 
 new bool:clientUpgradesMaxHP[MAXPLAYERS+1];
 new bool:clientUpgradesMaxArmor[MAXPLAYERS+1];
@@ -70,12 +87,24 @@ new bool:clientUpgradesMaxSpeed[MAXPLAYERS+1];
 
 new clientPowerUpFillSpecial[MAXPLAYERS+1];
 
+new clientSavedMoney[MAXPLAYERS+1];
+new bool:clientSavedUpgradesMaxHP[MAXPLAYERS+1];
+new bool:clientSavedUpgradesMaxArmor[MAXPLAYERS+1];
+new bool:clientSavedUpgradesMaxSpeed[MAXPLAYERS+1];
+new clientSavedPowerUpFillSpecial[MAXPLAYERS+1];
+new clientSavedHP[MAXPLAYERS+1];
+new clientSavedArmorValue[MAXPLAYERS+1];
+new clientSavedMaxspeed[MAXPLAYERS+1];
+new clientSavedDefaultSpeed[MAXPLAYERS+1];
+
 new String:schemeName[256] = "null";
 
 new waveParrotCount[NOAMP_MAXWAVES+1];
 new waveGiantParrotCount[NOAMP_MAXWAVES+1];
 new waveMaxParrots[NOAMP_MAXWAVES+1];
 new bool:waveIsBossWave[NOAMP_MAXWAVES+1];
+new bool:waveIsCorruptorWave[NOAMP_MAXWAVES+1];
+new bool:waveIsFoggy[NOAMP_MAXWAVES+1];
 
 new playerLives;
 new maxHPPrice;
@@ -98,11 +127,17 @@ new preparingSecs;
 new gameOverSecs;
 new musicSecs;
 new deadplayers;
+new bool:msgshown[MAXPLAYERS+1];
+
+new corruptsecs;
+new bool:soundplayed;
+new bool:valuesSaved;
 
 new bool:IsEnabled;
 new bool:IsGameStarted;
 new bool:IsGameOver;
 new bool:IsPreparing;
+new bool:IsCorrupted;
 new bool:IsWaitingForPlayers;
 new bool:IsLivesDisabled;
 new bool:giantParrotSpawned;
@@ -110,6 +145,7 @@ new bool:bossParrotSpawned;
 
 new parrotCurrentBossHP;
 new parrotSoundPitch;
+new timerSoundPitch;
 
 new h_iSpecial;
 new h_iHealth;
@@ -119,33 +155,3 @@ new h_iMaxArmor;
 new h_flMaxspeed;
 new h_flDefaultSpeed;
 new h_iPlayerClass;
-new h_flModelScale;
-new h_iDismemberment;
-
-/* if there ever is a use for these
-static const class_default_properties[9][3] = 
-{
-{ 100 , 90  }, // skirmisher
-{ 125 , 150 }, // captain
-{ 100 , 80  }, // sharpshooter
-{ 175 , 100 }, // berserker
-{ 130 , 160 }, // huscarl
-{ 115 , 120 }, // gestir
-{ 125 , 200 }, // heavy knight
-{ 100 , 80  }, // archer
-{ 105 , 130  } // man at arms
-};
-
-static const Float:class_default_speeds[9] = 
-{
-260.0, // skirmisher
-210.0, // captain
-210.0, // sharpshooter
-220.0, // berserker
-200.0, // huscarl
-210.0, // gestir
-190.0, // heavy knight
-210.0, // archer
-225.0  // man at arms
-};
-*/

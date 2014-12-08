@@ -1,3 +1,20 @@
+/************************************************************************
+*	This file is part of NOAMP.
+*
+*	NOAMP is free software: you can redistribute it and/or modify
+*	it under the terms of the GNU General Public License as published by
+*	the Free Software Foundation, either version 3 of the License, or
+*	(at your option) any later version.
+*
+*	NOAMP is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*	GNU General Public License for more details.
+*
+*	You should have received a copy of the GNU General Public License
+*	along with NOAMP.  If not, see <http://www.gnu.org/licenses/>.
+************************************************************************/
+
 // NOAMP Events
 
 #include <sourcemod>
@@ -30,8 +47,14 @@ public OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 			return;
 		
 		// should not spawn, force join spec
-		ClientCommand(client, "changeteam 1");
-		PrintToChat(client, "%s No lives left! You have been moved to spec.", CHAT_PREFIX);
+		ForceJoinSpec(client);
+		
+		// because it shows up many times sometimes
+		if (!msgshown[client])
+		{
+			CPrintToChat(client, "%s No lives left! You have been moved to spec.", CHAT_PREFIX);
+			msgshown[client] = true;
+		}
 	}
 	else
 	{
@@ -70,16 +93,7 @@ public OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 
 public OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));
-	new attacker = GetEventInt(event, "attacker");
-	new attackerid = GetClientOfUserId(attacker);
 	
-	if (Entity_IsPlayer(attacker))
-	{
-		clientOldHP[client] = GetClientHealth(client);
-		//new damage = clientOldHP[client] - GetClientHealth(client);
-		SetEntData(client, h_iHealth, clientOldHP[client], 4, true);
-	}
 }
 
 public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
@@ -101,8 +115,11 @@ public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	
 	clientLives[victim] -= 1;
 	
+	// HACK: Force ragdoll into ghostly one, pls dont patch this devs
 	new ragdoll = GetEntPropEnt(victim, Prop_Send, "m_hRagdoll");
-	SetEntProp(ragdoll, Prop_Send, "m_iDismemberment", 11);
+	SetEntProp(ragdoll, Prop_Send, "m_iDismemberment", 11); // 11 is PVK2_DEATH_GHOST
+	
+	CreateTimer(3.0, DissolveRagdoll, victim);
 
 	EmitSoundToAll("noamp/playerdeath.mp3", SOUND_FROM_PLAYER, SNDCHAN_STREAM, SNDLEVEL_NORMAL);
 }
