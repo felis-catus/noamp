@@ -1,10 +1,12 @@
-noamp
+Night of a Million Parrots
 =====
 
-Night of a Million Parrots, custom gamemode for Pirates, Vikings and Knights II
+Night of a Million Parrots, custom SourceMod gamemode for Pirates, Vikings and Knights II
+- Team up with other players to kill waves of... parrots?! 
+- Based on a hit video: https://www.youtube.com/watch?v=xXBtIm82CIg
 
-This is heavily WIP and early alpha, so there might be some bugs. Use at your own risk!
+**WARNING:** This is heavily WIP and early alpha, so it may cause serious problems to your server, use it at your own risk!
 
 To compile, you need:
-SMLIB: https://forums.alliedmods.net/showthread.php?t=148387
-More Colors: https://forums.alliedmods.net/showthread.php?t=185016
+- SMLIB: https://forums.alliedmods.net/showthread.php?t=148387
+- More Colors: https://forums.alliedmods.net/showthread.php?t=185016

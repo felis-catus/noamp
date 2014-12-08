@@ -117,7 +117,7 @@ public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	
 	// HACK: Force ragdoll into ghostly one, pls dont patch this devs
 	new ragdoll = GetEntPropEnt(victim, Prop_Send, "m_hRagdoll");
-	SetEntProp(ragdoll, Prop_Send, "m_iDismemberment", 11); // 11 is PVK2_DEATH_GHOST
+	SetEntProp(ragdoll, Prop_Send, "m_iDismemberment", 11);
 	
 	CreateTimer(3.0, DissolveRagdoll, victim);
 
