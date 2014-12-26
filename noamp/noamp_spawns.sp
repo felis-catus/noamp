@@ -282,3 +282,29 @@ public SpawnBossParrot()
 		PrintToServer("Boss parrot spawned at %s", orgstring);
 	}
 }
+
+public SpawnVulture(client)
+{
+	new vulture = CreateEntityByName("npc_vulture");
+	
+	decl Float:entorg[3];
+	GetEntPropVector(client, Prop_Data, "m_vecOrigin", entorg);
+	
+	decl String:orgstring[128];
+	Format(orgstring, 128, "%f %f %f", entorg[0], entorg[1], entorg[2]);
+	
+	// left or right?
+	new rand = GetRandomInt(1, 2);
+	if (rand == 1)
+		entorg[1] = 20;
+	else if (rand == 2)
+		entorg[1] = -20;
+	
+	DispatchKeyValue(vulture, "origin", orgstring);
+	DispatchSpawn(vulture);
+	
+	decl String:targetname[128];
+	Format(targetname, 128, "noamp_vulture_%d", client);
+	
+	DispatchKeyValue(vulture, "targetname", targetname);
+}

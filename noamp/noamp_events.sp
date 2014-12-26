@@ -35,7 +35,7 @@ public Event_WaitEnd(Handle:event, const String:name[], bool:dontBroadcast)
 
 public OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if (!IsGameStarted)
+	if (!HasGameStarted)
 		return;
 	
 	new userid = GetEventInt(event, "userid");
@@ -98,7 +98,7 @@ public OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast)
 
 public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if (!IsGameStarted)
+	if (!HasGameStarted)
 		return;
 	
 	if (IsLivesDisabled)
@@ -119,14 +119,14 @@ public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	new ragdoll = GetEntPropEnt(victim, Prop_Send, "m_hRagdoll");
 	SetEntProp(ragdoll, Prop_Send, "m_iDismemberment", 11);
 	
-	CreateTimer(3.0, DissolveRagdoll, victim);
+	CreateTimer(2.0, DissolveRagdoll, victim);
 
 	EmitSoundToAll("noamp/playerdeath.mp3", SOUND_FROM_PLAYER, SNDCHAN_STREAM, SNDLEVEL_NORMAL);
 }
 
 public OnParrotDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if (!IsGameStarted)
+	if (!HasGameStarted)
 		return;
 	
 	if (IsPreparing)
@@ -137,26 +137,32 @@ public OnParrotDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	GetEventString(event, "type", type, sizeof(type));
 	
 	new attacker = GetClientOfUserId(attackerId);
-	new attackerFrags = GetClientFrags(attacker);
+	new attackerFrags;
 	new parrotsLeft;
 	
-	new specialValue = GetEntData(attacker, h_iSpecial, 4);
+	new specialValue;
 	
 	if (StrEqual(type, "npc_parrot", false))
 	{
 		parrotsKilled++;
 		parrotsLeft = waveParrotCount[wave] - parrotsKilled;
 		
-		clientKills[attacker] += 1;
-		clientMoney[attacker] += 10;
+		attackerFrags = GetClientFrags(attacker);
+		specialValue = GetEntData(attacker, h_iSpecial, 4);
 		
-		specialValue += 10;
-		SetEntData(attacker, h_iSpecial, specialValue, 4);
+		if (attacker != 0 && IsClientInGame(attacker))
+		{
+			clientKills[attacker] += 1;
+			clientMoney[attacker] += 10;
 		
-		AddScore(attackerId);
+			specialValue += 10;
+			SetEntData(attacker, h_iSpecial, specialValue, 4);
 		
-		attackerFrags += 1;
-		SetEntProp(attacker, Prop_Data, "m_iFrags", attackerFrags);
+			AddScore(attackerId);
+		
+			attackerFrags += 1;
+			SetEntProp(attacker, Prop_Data, "m_iFrags", attackerFrags);
+		}
 		
 		if (GetConVarBool(cvar_debug))
 		{
@@ -168,7 +174,7 @@ public OnParrotDeath(Handle:event, const String:name[], bool:dontBroadcast)
 
 public OnChestCapture(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if (!IsGameStarted)
+	if (!HasGameStarted)
 		return;
 	
 	new userid = GetEventInt(event, "userid");

@@ -31,6 +31,7 @@
 #define UPGRADE_MAXSPEED 3
 
 #define POWERUP_FILLSPECIAL 1
+#define POWERUP_VULTURES 2
 
 #define CHOICE1 "#choice1"
 #define CHOICE2 "#choice2"
@@ -86,12 +87,16 @@ new bool:clientUpgradesMaxArmor[MAXPLAYERS+1];
 new bool:clientUpgradesMaxSpeed[MAXPLAYERS+1];
 
 new clientPowerUpFillSpecial[MAXPLAYERS+1];
+new clientPowerUpVultures[MAXPLAYERS+1];
+
+new bool:clientHasVulturesOut[MAXPLAYERS+1];
 
 new clientSavedMoney[MAXPLAYERS+1];
 new bool:clientSavedUpgradesMaxHP[MAXPLAYERS+1];
 new bool:clientSavedUpgradesMaxArmor[MAXPLAYERS+1];
 new bool:clientSavedUpgradesMaxSpeed[MAXPLAYERS+1];
 new clientSavedPowerUpFillSpecial[MAXPLAYERS+1];
+new clientSavedPowerUpVultures[MAXPLAYERS+1];
 new clientSavedHP[MAXPLAYERS+1];
 new clientSavedArmorValue[MAXPLAYERS+1];
 new clientSavedMaxspeed[MAXPLAYERS+1];
@@ -111,6 +116,7 @@ new maxHPPrice;
 new maxArmorPrice;
 new maxSpeedPrice;
 new powerupFillSpecialPrice;
+new powerupVulturesPrice;
 new kegPrice;
 new chestAward;
 new preparationSecs;
@@ -123,6 +129,7 @@ new spawnedParrots;
 new wave;
 new waveCount;
 new specialOffset;
+new hudSecs;
 new preparingSecs;
 new gameOverSecs;
 new musicSecs;
@@ -134,7 +141,8 @@ new bool:soundplayed;
 new bool:valuesSaved;
 
 new bool:IsEnabled;
-new bool:IsGameStarted;
+new bool:HasGameStarted;
+new bool:HasWaveStarted;
 new bool:IsGameOver;
 new bool:IsPreparing;
 new bool:IsCorrupted;

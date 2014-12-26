@@ -25,7 +25,7 @@
 
 public MainMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 {
-	switch(action)
+	switch (action)
 	{
 		case MenuAction_Display:
 		{
@@ -67,13 +67,14 @@ public MainMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 				SetMenuTitle(powerupsmenu, "%T", "Powerups", LANG_SERVER);
 				
 				new String:choice1[64];
-				//new String:choice2[64];
+				new String:choice2[64];
 				//new String:choice3[64];
 				
 				Format(choice1, 64, "Fill Special (%d): $%d", clientPowerUpFillSpecial[param1], powerupFillSpecialPrice);
+				Format(choice2, 64, "Vultures (%d): $%d", clientPowerUpVultures[param1], powerupVulturesPrice);
 				
 				AddMenuItem(powerupsmenu, CHOICE1, choice1);
-				//AddMenuItem(powerupsmenu, CHOICE2, choice2);
+				AddMenuItem(powerupsmenu, CHOICE2, choice2);
 				//AddMenuItem(powerupsmenu, CHOICE3, choice3);
 				
 				SetMenuExitButton(powerupsmenu, true);
@@ -165,7 +166,7 @@ public MainMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 
 public UpgradesMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 {
-	switch(action)
+	switch (action)
 	{ 
 		case MenuAction_Display:
 		{
@@ -225,7 +226,7 @@ public UpgradesMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 
 public PowerupsMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 {
-	switch(action)
+	switch (action)
 	{ 
 		case MenuAction_Display:
 		{
@@ -243,6 +244,10 @@ public PowerupsMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 			if (StrEqual(info, CHOICE1))
 			{
 				BuyPowerup(param1, POWERUP_FILLSPECIAL);
+			}
+			else if (StrEqual(info, CHOICE2))
+			{
+				BuyPowerup(param1, POWERUP_VULTURES);
 			}
 		}
 		
@@ -277,7 +282,7 @@ public PowerupsMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 
 public WeaponsMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 {
-	switch(action)
+	switch (action)
 	{ 
 		case MenuAction_Display:
 		{
@@ -329,7 +334,7 @@ public WeaponsMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 
 public MiscMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 {
-	switch(action)
+	switch (action)
 	{ 
 		case MenuAction_Display:
 		{
@@ -386,7 +391,7 @@ public MiscMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 
 public DebugMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 {
-	switch(action)
+	switch (action)
 	{ 
 		case MenuAction_Display:
 		{

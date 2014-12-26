@@ -30,7 +30,7 @@ public Action:ChangeTeamListener(client, const String:command[], argc)
 		if (!IsEnabled)
 			return Plugin_Continue;
 		
-		if (!IsGameStarted)
+		if (!HasGameStarted)
 			return Plugin_Continue;
 		
 		if (IsLivesDisabled)
@@ -48,7 +48,7 @@ public Action:ChangeTeamListener(client, const String:command[], argc)
 			// check for player lives, block join attempt if none
 			if (StrEqual(sArg, "2", false) || StrEqual(sArg, "3", false) || StrEqual(sArg, "4", false) || StrEqual(sArg, "0", false))
 			{
-				if (!IsGameStarted)
+				if (!HasGameStarted)
 					return Plugin_Continue;
 				
 				if (clientForcedSpec[client])
@@ -75,7 +75,7 @@ public Action:ChangeTeamListener(client, const String:command[], argc)
 			
 			if (StrEqual(sArg, "1", false)) // spec
 			{
-				if (!IsGameStarted)
+				if (!HasGameStarted)
 					return Plugin_Continue;
 				
 				// spec autojoin wont affect the players who want to spec
@@ -125,6 +125,7 @@ public Action:ChatListener(client, const String:command[], argc)
 	return Plugin_Continue;
 }
 
+// this is used as powerup activation command
 public Action:DropItemListener(client, const String:command[], argc)
 {
 	if (IsCorrupted)
@@ -138,7 +139,7 @@ public Action:DropItemListener(client, const String:command[], argc)
 		if (!IsEnabled)
 			return Plugin_Continue;
 		
-		if (!IsGameStarted)
+		if (!HasGameStarted)
 			return Plugin_Continue;
 		
 		if (client)
@@ -146,6 +147,11 @@ public Action:DropItemListener(client, const String:command[], argc)
 			if (clientPowerUpFillSpecial[client] > 0)
 			{
 				ActivatePowerup(client, POWERUP_FILLSPECIAL);
+				return Plugin_Handled;
+			}
+			else if (clientPowerUpVultures[client] > 0)
+			{
+				ActivatePowerup(client, POWERUP_VULTURES);
 				return Plugin_Handled;
 			}
 		}
@@ -158,16 +164,33 @@ public Action:HUD(Handle:timer)
 	if (!IsEnabled)
 		return Plugin_Stop;
 	
-	if (waveIsBossWave[wave])
+	new r;
+	new g;
+	new b;
+	
+	if (IsCorrupted)
 	{
-		SetHudTextParams(-1.0, -1.8, 0.3, 255, 0, 0, 255, 0, 0.0, 0.0, 0.0);
+		r = GetRandomInt(0, 255);
+		g = GetRandomInt(0, 255);
+		b = GetRandomInt(0, 255);
+		SetHudTextParams(-1.0, -1.8, 0.3, r, g, b, 255, 0, 0.0, 0.0, 0.0);
+	}
+	else if (waveIsBossWave[wave])
+	{
+		r = 255;
+		g = 0;
+		b = 0;
+		SetHudTextParams(-1.0, -1.8, 0.3, r, g, b, 255, 0, 0.0, 0.0, 0.0);
 	}
 	else
 	{
-		SetHudTextParams(-1.0, -1.8, 0.3, 255, 255, 255, 255, 0, 0.0, 0.0, 0.0);
+		r = 255;
+		g = 255;
+		b = 255;
+		SetHudTextParams(-1.0, -1.8, 0.3, r, g, b, 255, 0, 0.0, 0.0, 0.0);
 	}
 	
-	if (!IsGameStarted)
+	if (!HasGameStarted)
 	{
 		for (new i = 1; i < MaxClients; i++)
 		{
@@ -208,7 +231,6 @@ public Action:HUD(Handle:timer)
 			}
 		}
 	}
-	
 	return Plugin_Continue;
 }
 
@@ -219,7 +241,7 @@ public StartGame()
 	CPrintToChatAll("{unusual}little late for halloween");
 	CPrintToChatAll("{selfmade}Current scheme: %s", schemeName);
 	
-	IsGameStarted = true;
+	HasGameStarted = true;
 	IsGameOver = false;
 	
 	for (new i = 1; i < MaxClients; i++)
@@ -249,7 +271,7 @@ public Action:WaveThink(Handle:timer)
 	if (!IsEnabled)
 		return Plugin_Stop;
 	
-	if (!IsGameStarted)
+	if (!HasGameStarted)
 		return Plugin_Stop;
 	
 	if (IsPreparing)
@@ -297,7 +319,7 @@ public Action:WaveThink(Handle:timer)
 		if (!IsCorrupted)
 		{
 			new rng;
-			rng = GetRandomInt(1, 100);
+			rng = GetRandomInt(1, 300);
 			if (rng == 6)
 			{
 				CreateTimer(1.0, Corruption, _, TIMER_REPEAT);
@@ -323,7 +345,7 @@ public Action:WaveThink(Handle:timer)
 	if (dead >= clients && clients >= 1)
 	{
 		CreateTimer(1.0, GameOver, _, TIMER_REPEAT);
-		EmitSoundToAll("noamp/noamp_gameover.mp3", SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL);
+		EmitSoundToAll("noamp/gameover.mp3", SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL);
 		return Plugin_Stop;
 	}
 	
@@ -347,6 +369,7 @@ public WaveFinished()
 	giantParrotSpawned = false;
 	
 	IsPreparing = true;
+	HasWaveStarted = false;
 	
 	if (wave > waveCount)
 	{
@@ -375,6 +398,7 @@ public WaveFinished()
 	}
 	
 	ParrotKiller();
+	VultureKiller();
 	
 	EmitSoundToAll("music/deadparrotachieved.mp3", SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL);
 	StopMusicAll();
@@ -409,10 +433,13 @@ public Action:GameOver(Handle:timer)
 	{
 		for (new i = 1; i < MaxClients; i++)
 		{
-			new rng = GetRandomInt(1, 3);
-			decl String:buffer[32];
-			Format(buffer, 32, "changeteam %d", rng);
-			ClientCommand(i, buffer);
+			if (IsClientInGame(i))
+			{
+				new rng = GetRandomInt(1, 3);
+				decl String:buffer[32];
+				Format(buffer, 32, "changeteam %d", rng);
+				ClientCommand(i, buffer);
+			}
 		}
 		gameOverSecs = 0;
 		ResetGame(true, true);
@@ -454,7 +481,7 @@ public Action:PreparingTime(Handle:timer)
 		{
 			timerSoundPitch = 120;
 		}
-		else if (preparingSecs == GetPreparationSeconds() - 1)
+		else if (preparingSecs == GetPreparationSeconds())
 		{
 			timerSoundPitch = 130;
 		}
@@ -485,7 +512,8 @@ public Action:PreparingTime(Handle:timer)
 		}
 		
 		IsPreparing = false;
-		CreateTimer(1.0, WaveThink, _, TIMER_REPEAT);
+		HasWaveStarted = true;
+		CreateTimer(0.1, WaveThink, _, TIMER_REPEAT);
 		CreateTimer(1.0, ParrotCreator, _, TIMER_REPEAT);
 		preparingSecs = 0;
 		timerSoundPitch = 100;
@@ -513,7 +541,7 @@ public Action:PreparingTime(Handle:timer)
 
 public Action:ParrotCreator(Handle:timer)
 {
-	if (!IsGameStarted)
+	if (!HasGameStarted)
 		return Plugin_Stop;
 	
 	if (IsPreparing)
@@ -634,7 +662,7 @@ public CorruptionBlockAction(client)
 	EmitSoundToClient(client, "noamp/corruptor/glitch.mp3", SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS);
 }
 
-stock GetRandomBool()
+public GetRandomBool()
 {
 	new i = GetRandomInt(0, 1);
 	if (i == 0)
@@ -653,7 +681,7 @@ public GetRandomString(length, String:dest[])
 	{
 		str[i] = charlist[GetRandomInt(0, sizeof(charlist)) - 1];
 	}
-	strcopy(dest, 256, str);
+	strcopy(dest, length, str);
 }
 
 // FIXME: lol, wtf is this
@@ -682,7 +710,7 @@ public Action:DissolveRagdoll(Handle:timer, any:client)
 	
 	if (hRagdoll < 0)
 	{
-		ThrowError("Couldn't get the player's ragdoll.\n");
+		ThrowError("Couldn't get the player's ragdoll.");
 		return;
 	}
 	
@@ -714,6 +742,21 @@ public ParrotKiller()
 	if (GetConVarBool(cvar_debug))
 	{
 		PrintToServer("Killed %d parrots.", count);
+	}
+}
+
+public VultureKiller()
+{
+	new vulture = INVALID_ENT_REFERENCE;
+	new count = 0;
+	while ((vulture = FindEntityByClassname(vulture, "npc_vulture")) != INVALID_ENT_REFERENCE) 
+	{
+		AcceptEntityInput(vulture, "kill");
+		count++;
+	}
+	if (GetConVarBool(cvar_debug))
+	{
+		PrintToServer("Killed %d vultures.", count);
 	}
 }
 
@@ -830,6 +873,10 @@ public BuyPowerup(client, powerup)
 			}
 			else if (clientMoney[client] >= powerupFillSpecialPrice)
 			{
+				if (clientPowerUpVultures[client] != 0)
+				{
+					clientPowerUpVultures[client] = 0;
+				}
 				clientPowerUpFillSpecial[client]++;
 				clientMoney[client] -= powerupFillSpecialPrice;
 				PlayAmbientSoundFromPlayer(client, "noamp/kaching.mp3");
@@ -837,6 +884,27 @@ public BuyPowerup(client, powerup)
 			else
 			{
 				CPrintToChat(client, "{red}You don't have enough money! I want %d$.", powerupFillSpecialPrice);
+			}
+		}
+		case POWERUP_VULTURES:
+		{
+			if (clientPowerUpVultures[client] >= 3)
+			{
+				CPrintToChat(client, "{red}You have this powerup filled already! (3 uses)");
+			}
+			else if (clientMoney[client] >= powerupVulturesPrice)
+			{
+				if (clientPowerUpFillSpecial[client] != 0)
+				{
+					clientPowerUpFillSpecial[client] = 0;
+				}
+				clientPowerUpVultures[client]++;
+				clientMoney[client] -= powerupVulturesPrice;
+				PlayAmbientSoundFromPlayer(client, "noamp/kaching.mp3");
+			}
+			else
+			{
+				CPrintToChat(client, "{red}You don't have enough money! I want %d$.", powerupVulturesPrice);
 			}
 		}
 		default:
@@ -856,15 +924,64 @@ public ActivatePowerup(client, powerup)
 			clientPowerUpFillSpecial[client]--;
 			PlayAmbientSoundFromPlayer(client, "noamp/mystic.mp3");
 		}
+		case POWERUP_VULTURES:
+		{
+			if (clientHasVulturesOut[client])
+			{
+				CPrintToChat(client, "{red}You already have your vultures out!");
+				return;
+			}
+			PowerupVultures(client);
+			clientPowerUpVultures[client]--;
+			PlayAmbientSoundFromPlayer(client, "noamp/mystic.mp3");
+		}
 	}
 }
 
-public PlayAmbientSoundFromPlayer(client, String:name[256])
+public PowerupVultures(client)
+{	
+	for (new i = 0; i < 5; i++)
+	{
+		SpawnVulture(client);
+	}
+	
+	clientHasVulturesOut[client] = true;
+	CreateTimer(60.0, KillVultures, client);
+}
+
+public Action:KillVultures(Handle:timer, any:client)
+{
+	new vulture = INVALID_ENT_REFERENCE;
+	new count = 0;
+	decl String:targetname[128];
+	decl String:strclientname[128];
+	decl String:name[128];
+	
+	Format(strclientname, sizeof(targetname), "noamp_vulture_%d", client);
+	GetClientName(client, name, sizeof(name));
+	
+	while ((vulture = FindEntityByClassname(vulture, "npc_vulture")) != INVALID_ENT_REFERENCE) 
+	{
+		GetEntPropString(vulture, Prop_Data, "m_iName", targetname, sizeof(targetname));
+		if (StrEqual(strclientname, targetname, false))
+		{
+			AcceptEntityInput(vulture, "kill");
+			count++;
+		}
+	}
+	if (GetConVarBool(cvar_debug))
+	{
+		PrintToServer("Killed %d vultures owned by %s", count, name);
+	}
+	
+	clientHasVulturesOut[client] = false;
+}
+
+public PlayAmbientSoundFromPlayer(client, String:name[])
 {
 	decl Float:entorg[3];
-	new index = GetClientOfUserId(client);
-	GetEntPropVector(index, Prop_Data, "m_vecOrigin", entorg);
-	EmitAmbientSound(name, entorg, SOUND_FROM_WORLD, SNDLEVEL_NORMAL, SND_NOFLAGS);
+	GetEntPropVector(client, Prop_Data, "m_vecOrigin", entorg);
+	EmitAmbientSound(name, entorg, SOUND_FROM_PLAYER, SNDLEVEL_NORMAL, SND_NOFLAGS);
 }
 
 public Action:GiveMoneyToTarget(client, args)
@@ -991,7 +1108,8 @@ public ForceJoinSpec(client)
 
 public ResetGame(bool:gameover, bool:startgame)
 {	
-	IsGameStarted = false;
+	HasGameStarted = false;
+	HasWaveStarted = false;
 	IsGameOver = false;
 	IsPreparing = false;
 	IsCorrupted = false;
@@ -1025,6 +1143,7 @@ public ResetGame(bool:gameover, bool:startgame)
 	valuesSaved = false;
 	
 	ParrotKiller();
+	VultureKiller();
 	ResetSpawns();
 	ResetWaves();
 	ReadNOAMPScript();
@@ -1058,8 +1177,11 @@ public ResetClient(client, bool:gameover)
 		clientUpgradesMaxHP[client] = false;
 		clientUpgradesMaxArmor[client] = false;
 		clientUpgradesMaxSpeed[client] = false;
+		clientPowerUpFillSpecial[client] = false;
+		clientPowerUpVultures[client] = false;
 		clientWantsSpec[client] = false;
 		clientForcedSpec[client] = false;
+		clientHasVulturesOut[client] = false;
 	}
 }
 
@@ -1072,6 +1194,7 @@ public SaveValues(client, bool:corruption)
 		clientSavedUpgradesMaxArmor[client] = clientUpgradesMaxArmor[client];
 		clientSavedUpgradesMaxSpeed[client] = clientUpgradesMaxSpeed[client];
 		clientSavedPowerUpFillSpecial[client] = clientPowerUpFillSpecial[client];
+		clientSavedPowerUpVultures[client] = clientPowerUpVultures[client];
 		
 		if (IsClientInGame(client) && IsValidEntity(client))
 		{
@@ -1088,6 +1211,7 @@ public SaveValues(client, bool:corruption)
 		clientSavedUpgradesMaxArmor[client] = clientUpgradesMaxArmor[client];
 		clientSavedUpgradesMaxSpeed[client] = clientUpgradesMaxSpeed[client];
 		clientSavedPowerUpFillSpecial[client] = clientPowerUpFillSpecial[client];
+		clientSavedPowerUpVultures[client] = clientPowerUpVultures[client];
 	}
 }
 

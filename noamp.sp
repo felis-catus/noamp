@@ -185,6 +185,12 @@ public ReadNOAMPScript()
 	
 	if (!KvGotoFirstSubKey(kv))
 	{
+		if (StrEqual(KVPath, "data/noamp/default.txt", false))
+		{
+			LogError("Error reading default KeyValues, default.txt might be missing. NOAMP will not be loaded.");
+			IsEnabled = false;
+			return;
+		}
 		LogError("Error reading KeyValues, file might be missing. Loading default scheme.");
 		BuildPath(Path_SM, KVPath, sizeof(KVPath), "data/noamp/default.txt");
 		ReadNOAMPScript();
@@ -208,6 +214,7 @@ public ReadNOAMPScript()
 		decl String:strmaxspeedprice[32];
 		decl String:strkegprice[32];
 		decl String:strfillspecialprice[32];
+		decl String:strvulturesprice[32];
 		
 		KvGetString(kv, "name", strschemename, 256);
 		KvGetString(kv, "bossparrothp", strbossparrothp, 32);
@@ -221,6 +228,7 @@ public ReadNOAMPScript()
 		KvGetString(kv, "maxspeedprice", strmaxspeedprice, 32);
 		KvGetString(kv, "kegprice", strkegprice, 32);
 		KvGetString(kv, "fillspecialprice", strfillspecialprice, 32);
+		KvGetString(kv, "vulturesprice", strvulturesprice, 32);
 		
 		schemeName = strschemename;
 		parrotBossHP = StringToInt(strbossparrothp);
@@ -234,6 +242,7 @@ public ReadNOAMPScript()
 		maxSpeedPrice = StringToInt(strmaxspeedprice, 10);
 		kegPrice = StringToInt(strkegprice, 10);
 		powerupFillSpecialPrice = StringToInt(strfillspecialprice, 10);
+		powerupVulturesPrice = StringToInt(strvulturesprice, 10);
 		
 		KvGotoNextKey(kv);
 	}
@@ -385,7 +394,12 @@ public Action:NormalSoundHook(iClients[64], &iNumClients, String:strSample[PLATF
 
 public OnClientConnected(client)
 {
-	
+	decl String:name[128];
+	GetClientName(client, name, sizeof(name));
+	if (HasWaveStarted)
+	{
+		CPrintToChat(client, "Welcome to NOAMP %s! A wave is currently in progress and you can join in after it ends.", name);
+	}
 }
 
 public OnClientDisconnect(client)
@@ -460,7 +474,7 @@ public OnMapStart()
 	
 	CreateTimer(0.1, HUD, _, TIMER_REPEAT);
 	
-	IsGameStarted = false;
+	HasGameStarted = false;
 	IsMapLoaded = true;
 	IsWaitingForPlayers = true;
 	
