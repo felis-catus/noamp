@@ -74,6 +74,8 @@ RegisterCvars()
 	cvar_difficulty = CreateConVar("noamp_difficulty", "normal", "Game difficulty, loads a script named {mapname}_{difficulty}.txt eg. noamp_forest_normal.txt. If you want to choose a scheme to load, use noamp_scheme.");
 	cvar_scheme = CreateConVar("noamp_scheme", "null", "If not \"null\", loads a chosen script from ../sourcemod/data/noamp. Difficulty settings will be used otherwise.");
 	cvar_ignoreprefix = CreateConVar("noamp_ignoreprefix", "0", "Ignores the noamp_ map prefix check in map start. Allows NOAMP in every other map.");
+	cvar_timelimit = FindConVar("mp_timelimit");
+	
 	
 	HookConVarChange(cvar_enabled, cvHookEnabled);
 	HookConVarChange(cvar_difficulty, cvHookDifficulty);
@@ -151,6 +153,7 @@ AddFilesToDownloadTable()
 {
 	AddFileToDownloadsTable("sound/noamp/gameover.mp3");
 	AddFileToDownloadsTable("sound/noamp/music/corruptor.mp3");
+	AddFileToDownloadsTable("sound/noamp/music/corruptor2.mp3");
 	AddFileToDownloadsTable("sound/noamp/corruptor/corruption.mp3");
 	AddFileToDownloadsTable("noamp/corruptor/glitch.mp3");
 	AddFileToDownloadsTable("noamp/corruptor/secret.mp3");
@@ -167,6 +170,7 @@ public Precache()
 	PrecacheSound("music/deadparrotachieved.mp3");
 	PrecacheSound("noamp/gameover.mp3");
 	PrecacheSound("noamp/music/corruptor.mp3");
+	PrecacheSound("noamp/music/corruptor2.mp3");
 	PrecacheSound("noamp/corruptor/corruption.mp3");
 	PrecacheSound("noamp/corruptor/glitch.mp3");
 	PrecacheSound("noamp/corruptor/secret.mp3");
@@ -176,6 +180,16 @@ public Precache()
 	PrecacheSound("noamp/playerdisconnect.mp3");
 	PrecacheSound("noamp/mystic.mp3");
 	PrecacheSound("noamp/timertick.wav");
+	
+	for (new i = 0; i < MAXCLASSES; i++)
+	{
+		for (new x = 1; x <= numSoundsClasses[i]; x++)
+		{
+			decl String:sample[64];
+			Format(sample, sizeof(sample), "%s%d%s", RoundStartSounds[i], x, ".wav");
+			PrecacheSound(sample);
+		}
+	}
 }
 
 public ReadNOAMPScript()
@@ -215,6 +229,7 @@ public ReadNOAMPScript()
 		decl String:strkegprice[32];
 		decl String:strfillspecialprice[32];
 		decl String:strvulturesprice[32];
+		decl String:strbaseupgrade1price[32];
 		
 		KvGetString(kv, "name", strschemename, 256);
 		KvGetString(kv, "bossparrothp", strbossparrothp, 32);
@@ -229,6 +244,7 @@ public ReadNOAMPScript()
 		KvGetString(kv, "kegprice", strkegprice, 32);
 		KvGetString(kv, "fillspecialprice", strfillspecialprice, 32);
 		KvGetString(kv, "vulturesprice", strvulturesprice, 32);
+		KvGetString(kv, "baseupgrade1price", strbaseupgrade1price, 32);
 		
 		schemeName = strschemename;
 		parrotBossHP = StringToInt(strbossparrothp);
@@ -243,6 +259,7 @@ public ReadNOAMPScript()
 		kegPrice = StringToInt(strkegprice, 10);
 		powerupFillSpecialPrice = StringToInt(strfillspecialprice, 10);
 		powerupVulturesPrice = StringToInt(strvulturesprice, 10);
+		baseUpgradePrices[1] = StringToInt(strbaseupgrade1price, 10);
 		
 		KvGotoNextKey(kv);
 	}
@@ -356,7 +373,7 @@ public cvHookScheme(Handle:cvar, const String:oldVal[], const String:newVal[])
 {
 	decl String:scheme[128] = "null";
 	GetConVarString(cvar_scheme, scheme, 128);
-
+	
 	if (StrEqual(scheme, "null", false) || StrEqual(scheme, "", false))
 	{
 		LogError("\"null\" scheme, loading default scheme.");
@@ -482,6 +499,11 @@ public OnMapStart()
 		IsLivesDisabled = true;
 	else
 	IsLivesDisabled = false;
+	
+	// time limit will end the game in progress, attemping to disable
+	// save the old value so we can restore
+	timelimitSavedValue = GetConVarInt(cvar_timelimit);
+	SetConVarInt(cvar_timelimit, 0);
 }
 
 public OnMapEnd()

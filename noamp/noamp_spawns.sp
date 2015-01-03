@@ -86,15 +86,15 @@ public FindSpawns()
 
 public ResetSpawns()
 {
-	for (new i = 0; i < 1000; i++)
+	for (new i = 0; i < NOAMP_MAXSPAWNS-1; i++)
 	{
 		ParrotSpawns[i] = "null";
 	}
-	for (new i = 0; i < 1000; i++)
+	for (new i = 0; i < NOAMP_MAXSPAWNS-1; i++)
 	{
 		GiantParrotSpawns[i] = "null";
 	}
-	for (new i = 0; i < 1000; i++)
+	for (new i = 0; i < NOAMP_MAXSPAWNS-1; i++)
 	{
 		BossParrotSpawns[i] = "null";
 	}
@@ -105,7 +105,7 @@ public ResetSpawns()
 public GetSpawnCount()
 {
 	new spawns = 0;
-	for (new i = 0; i <= 1000; i++)
+	for (new i = 0; i <= NOAMP_MAXSPAWNS-1; i++)
 	{
 		if (!StrEqual(ParrotSpawns[i], "null", false))
 		{

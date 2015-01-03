@@ -27,13 +27,7 @@ public Action:ChangeTeamListener(client, const String:command[], argc)
 {
 	if (StrEqual(command, "changeteam", false)) // note to self: jointeam is changeteam in pvk, dont mess up... you did that twice baka -.-
 	{
-		if (!IsEnabled)
-			return Plugin_Continue;
-		
-		if (!HasGameStarted)
-			return Plugin_Continue;
-		
-		if (IsLivesDisabled)
+		if (!IsEnabled || !HasGameStarted || IsLivesDisabled)
 			return Plugin_Continue;
 		
 		if (client)
@@ -47,10 +41,7 @@ public Action:ChangeTeamListener(client, const String:command[], argc)
 			
 			// check for player lives, block join attempt if none
 			if (StrEqual(sArg, "2", false) || StrEqual(sArg, "3", false) || StrEqual(sArg, "4", false) || StrEqual(sArg, "0", false))
-			{
-				if (!HasGameStarted)
-					return Plugin_Continue;
-				
+			{				
 				if (clientForcedSpec[client])
 				{
 					CPrintToChat(client, "{unusual}%s{red} You have to wait for the wave to end before joining teams!", CHAT_PREFIX);
@@ -75,9 +66,6 @@ public Action:ChangeTeamListener(client, const String:command[], argc)
 			
 			if (StrEqual(sArg, "1", false)) // spec
 			{
-				if (!HasGameStarted)
-					return Plugin_Continue;
-				
 				// spec autojoin wont affect the players who want to spec
 				if (!clientForcedSpec[client])
 				{
@@ -136,10 +124,7 @@ public Action:DropItemListener(client, const String:command[], argc)
 	
 	if (StrEqual(command, "dropitem", false))
 	{
-		if (!IsEnabled)
-			return Plugin_Continue;
-		
-		if (!HasGameStarted)
+		if (!IsEnabled || !HasGameStarted)
 			return Plugin_Continue;
 		
 		if (client)
@@ -268,16 +253,7 @@ public StartGame()
 
 public Action:WaveThink(Handle:timer)
 {
-	if (!IsEnabled)
-		return Plugin_Stop;
-	
-	if (!HasGameStarted)
-		return Plugin_Stop;
-	
-	if (IsPreparing)
-		return Plugin_Stop;
-	
-	if (IsGameOver)
+	if (!IsEnabled || !HasGameStarted || IsPreparing || IsGameOver)
 		return Plugin_Stop;
 	
 	if (!waveIsBossWave[wave])
@@ -410,15 +386,7 @@ public Action:GameWin(Handle:timer)
 {
 	if (gameOverSecs >= 5)
 	{
-		new game_end = CreateEntityByName("game_end");
-		
-		if (game_end == -1) 
-		{
-			ThrowError("Unable to create entity \"game_end\"");
-		}
-		
-		AcceptEntityInput(game_end, "EndGame");
-		return Plugin_Stop;
+		EndGame();
 	}
 	
 	gameOverSecs++;
@@ -450,6 +418,23 @@ public Action:GameOver(Handle:timer)
 	IsGameOver = true;
 	PrintCenterTextAll("Game over! Restarting wave...");
 	return Plugin_Continue;
+}
+
+public EndGame()
+{
+	new game_end = CreateEntityByName("game_end");
+	
+	if (game_end == -1) 
+	{
+		ThrowError("Unable to create entity \"game_end\"");
+	}
+	
+	AcceptEntityInput(game_end, "EndGame");
+	
+	// restore mp_timelimit
+	SetConVarInt(cvar_timelimit, timelimitSavedValue);
+	
+	return Plugin_Stop;
 }
 
 public Action:PreparingTime(Handle:timer)
@@ -490,48 +475,7 @@ public Action:PreparingTime(Handle:timer)
 	
 	if (preparingSecs >= GetPreparationSeconds())
 	{
-		// check if there still are players in spectator, force them to join a team so they can't just sit there
-		for (new i = 1; i < MaxClients; i++)
-		{
-			if (IsClientInGame(i) && GetClientTeam(i) == 1 && clientWantsSpec[i] == false) // unless they want so...
-			{
-				new lives = playerLives;
-				
-				if (lives != 0)
-				{
-					if (clientLives[i] <= 0)
-					{
-						CPrintToChat(i, "{unusual}%s{lightgreen} Preparation time over, joining random team.", CHAT_PREFIX);
-						new rng = GetRandomInt(1, 3);
-						decl String:buffer[32];
-						Format(buffer, 32, "changeteam %d", rng);
-						ClientCommand(i, buffer);
-					}
-				}
-			}
-		}
-		
-		IsPreparing = false;
-		HasWaveStarted = true;
-		CreateTimer(0.1, WaveThink, _, TIMER_REPEAT);
-		CreateTimer(1.0, ParrotCreator, _, TIMER_REPEAT);
-		preparingSecs = 0;
-		timerSoundPitch = 100;
-		/*
-		if (waveIsFoggy[wave])
-		{
-			EnableFog();
-		}
-		else
-		{
-			DisableFog();
-		}
-		*/
-		if (waveIsBossWave[wave])
-		{
-			EmitSoundToAll(NOAMP_BOSSMUSIC, SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL);
-			CreateTimer(1.0, BossMusicLooper, _, TIMER_REPEAT);
-		}
+		WaveStart();
 		return Plugin_Stop;
 	}
 	
@@ -539,15 +483,71 @@ public Action:PreparingTime(Handle:timer)
 	return Plugin_Continue;
 }
 
+public WaveStart()
+{
+	// check if there still are players in spectator, force them to join a team so they can't just sit there
+	for (new i = 1; i < MaxClients; i++)
+	{
+		if (IsClientInGame(i) && GetClientTeam(i) == 1 && clientWantsSpec[i] == false) // unless they want so...
+		{
+			new lives = playerLives;
+			
+			if (lives != 0)
+			{
+				if (clientLives[i] <= 0)
+				{
+					CPrintToChat(i, "{unusual}%s{lightgreen} Preparation time over, joining random team.", CHAT_PREFIX);
+					new rng = GetRandomInt(1, 3);
+					decl String:buffer[32];
+					Format(buffer, 32, "changeteam %d", rng);
+					ClientCommand(i, buffer);
+				}
+			}
+		}
+		
+		if (IsClientInGame(i))
+		{				
+			new iTeam = GetEntProp(i, Prop_Data, "m_iTeamNum");
+			new iClass = GetEntProp(i, Prop_Data, "m_iClassRespawningAs");
+			new Handle:datapack;
+			CreateDataTimer(GetRandomFloat(1.0, 4.0), RoundStartCheer, datapack);
+			WritePackCell(datapack, i);
+			WritePackCell(datapack, iTeam);
+			WritePackCell(datapack, iClass);
+		}
+	}
+	
+	IsPreparing = false;
+	HasWaveStarted = true;
+	CreateTimer(0.1, WaveThink, _, TIMER_REPEAT);
+	CreateTimer(1.0, ParrotCreator, _, TIMER_REPEAT);
+	preparingSecs = 0;
+	timerSoundPitch = 100;
+	/*
+	if (waveIsFoggy[wave])
+	{
+	EnableFog();
+	}
+	else
+	{
+	DisableFog();
+	}
+	*/
+	if (waveIsCorruptorWave[wave])
+	{
+		EmitSoundToAll(NOAMP_BOSSMUSIC2, SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL);
+		CreateTimer(1.0, BossMusicLooper, _, TIMER_REPEAT);
+	}
+	else if (waveIsBossWave[wave])
+	{
+		EmitSoundToAll(NOAMP_BOSSMUSIC, SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL);
+		CreateTimer(1.0, BossMusicLooper, _, TIMER_REPEAT);
+	}
+}
+
 public Action:ParrotCreator(Handle:timer)
 {
-	if (!HasGameStarted)
-		return Plugin_Stop;
-	
-	if (IsPreparing)
-		return Plugin_Stop;
-	
-	if (IsGameOver)
+	if (!HasGameStarted || IsPreparing || IsGameOver)
 		return Plugin_Stop;
 	
 	decl String:entclass[128];
@@ -729,6 +729,39 @@ public Action:DissolveRagdoll(Handle:timer, any:client)
 	}
 }
 
+// thx Spirrwell
+public Action:RoundStartCheer(Handle:Timer, Handle:datapack)
+{
+	ResetPack(datapack);
+	new client = ReadPackCell(datapack);
+	
+	if (!IsClientInGame(client) || !IsPlayerAlive(client))
+		return Plugin_Handled;
+	
+	new iTeam = ReadPackCell(datapack);
+	new iClass = ReadPackCell(datapack);
+	
+	if (iTeam == TEAM_VIKINGS)
+		iClass += 3;
+	if (iTeam == TEAM_KNIGHTS)
+		iClass += 6;
+	
+	//Need to rewrite to play from player voice channel.
+	if (iTeam >= TEAM_PIRATES && iTeam <= TEAM_KNIGHTS)
+	{
+		new Float:vOrigin[3];
+		new Float:vPos[3];
+		new Float:vViewOffset[3];
+		GetEntPropVector(client, Prop_Data, "m_vecAbsOrigin", vOrigin);
+		GetEntPropVector(client, Prop_Data, "m_vecViewOffset", vViewOffset);
+		AddVectors(vOrigin, vViewOffset, vPos);
+		decl String:sample[64];
+		Format(sample, sizeof(sample), "%s%d%s", RoundStartSounds[iClass], GetRandomInt(1, numSoundsClasses[iClass]), ".wav");
+		EmitAmbientSoundFromPlayer(client, sample, true);
+	}
+	return Plugin_Handled;
+}
+
 public ParrotKiller()
 {
 	new parrot = INVALID_ENT_REFERENCE;
@@ -763,7 +796,7 @@ public VultureKiller()
 public EnableFog()
 {
 	new fog = FindEntityByClassname(fog, "env_fog_controller");
-
+	
 	if (fog == -1) 
 	{
 		fog = CreateEntityByName("env_fog_controller");
@@ -802,7 +835,7 @@ public BuyUpgrade(client, upgrade)
 				SetEntData(client, h_iHealth, hp * 2, 4, true);
 				
 				clientMoney[client] -= maxHPPrice;
-				PlayAmbientSoundFromPlayer(client, "noamp/kaching.mp3");
+				EmitAmbientSoundFromPlayer(client, "noamp/kaching.mp3", false);
 			}
 			else
 			{
@@ -823,7 +856,7 @@ public BuyUpgrade(client, upgrade)
 				SetEntData(client, h_ArmorValue, armor * 2, 4, true);
 				
 				clientMoney[client] -= maxArmorPrice;
-				PlayAmbientSoundFromPlayer(client, "noamp/kaching.mp3");
+				EmitAmbientSoundFromPlayer(client, "noamp/kaching.mp3", false);
 			}
 			else
 			{
@@ -847,7 +880,7 @@ public BuyUpgrade(client, upgrade)
 				SetEntData(client, h_flDefaultSpeed, defspeed * 2.0, 4, true);
 				
 				clientMoney[client] -= maxSpeedPrice;
-				PlayAmbientSoundFromPlayer(client, "noamp/kaching.mp3");
+				EmitAmbientSoundFromPlayer(client, "noamp/kaching.mp3", false);
 			}
 			else
 			{
@@ -879,7 +912,7 @@ public BuyPowerup(client, powerup)
 				}
 				clientPowerUpFillSpecial[client]++;
 				clientMoney[client] -= powerupFillSpecialPrice;
-				PlayAmbientSoundFromPlayer(client, "noamp/kaching.mp3");
+				EmitAmbientSoundFromPlayer(client, "noamp/kaching.mp3", false);
 			}
 			else
 			{
@@ -900,7 +933,7 @@ public BuyPowerup(client, powerup)
 				}
 				clientPowerUpVultures[client]++;
 				clientMoney[client] -= powerupVulturesPrice;
-				PlayAmbientSoundFromPlayer(client, "noamp/kaching.mp3");
+				EmitAmbientSoundFromPlayer(client, "noamp/kaching.mp3", false);
 			}
 			else
 			{
@@ -922,7 +955,7 @@ public ActivatePowerup(client, powerup)
 		{
 			FillSpecial(client);
 			clientPowerUpFillSpecial[client]--;
-			PlayAmbientSoundFromPlayer(client, "noamp/mystic.mp3");
+			EmitAmbientSoundFromPlayer(client, "noamp/mystic.mp3", false);
 		}
 		case POWERUP_VULTURES:
 		{
@@ -933,7 +966,7 @@ public ActivatePowerup(client, powerup)
 			}
 			PowerupVultures(client);
 			clientPowerUpVultures[client]--;
-			PlayAmbientSoundFromPlayer(client, "noamp/mystic.mp3");
+			EmitAmbientSoundFromPlayer(client, "noamp/mystic.mp3", false);
 		}
 	}
 }
@@ -977,11 +1010,86 @@ public Action:KillVultures(Handle:timer, any:client)
 	clientHasVulturesOut[client] = false;
 }
 
-public PlayAmbientSoundFromPlayer(client, String:name[])
+public BuyBaseUpgrade(client, baseupgrade)
 {
-	decl Float:entorg[3];
-	GetEntPropVector(client, Prop_Data, "m_vecOrigin", entorg);
-	EmitAmbientSound(name, entorg, SOUND_FROM_PLAYER, SNDLEVEL_NORMAL, SND_NOFLAGS);
+	for (new i = 1; i < NOAMP_MAXBASEUPGRADES; i++)
+	{
+		if (i != baseupgrade)
+			continue;
+		
+		else if (i == baseupgrade)
+		{
+			if (baseUpgrades[i] == true)
+			{
+				CPrintToChat(client, "{red}You already have this base upgrade!");
+			}
+			else if (clientMoney[client] >= baseUpgradePrices[i])
+			{
+				baseUpgrades[i] = true;
+				ActivateBaseUpgrade(client, baseupgrade);
+				
+				clientMoney[client] -= baseUpgradePrices[i];
+				EmitAmbientSoundFromPlayer(client, "noamp/kaching.mp3", false);
+			}
+			else
+			{
+				CPrintToChat(client, "{red}You don't have enough money! I want %d$.", baseUpgradePrices[i]);
+			}
+		}
+	}
+}
+
+/* 
+* base upgrades in NOAMP work like this:
+* mapper must block the entrance with func_brush named noamp_baseupgrade{number} eg. noamp_baseupgrade1
+* this function looks for that ent and attempts to disable it so players can access the new area
+* simple as that.
+*/
+
+public ActivateBaseUpgrade(client, baseupgrade)
+{
+	new ent = INVALID_ENT_REFERENCE;
+	decl String:targetname[128];
+	decl String:targetname2[128];
+	for (new i = 1; i < NOAMP_MAXBASEUPGRADES; i++)
+	{
+		while ((ent = FindEntityByClassname(ent, "func_brush")) != INVALID_ENT_REFERENCE) 
+		{
+			GetEntPropString(ent, Prop_Data, "m_iName", targetname, sizeof(targetname));
+			Format(targetname2, 128, "noamp_baseupgrade%d", i);
+			if (StrEqual(targetname, targetname2, false))
+			{
+				if (baseupgrade == i)
+				{
+					AcceptEntityInput(ent, "Disable");
+					if (GetConVarBool(cvar_debug))
+					{
+						PrintToServer("Disabled %s.", targetname2);
+					}
+				}
+			}
+		}
+	}
+}
+
+public EmitAmbientSoundFromPlayer(client, String:name[], bool:voice)
+{
+	if (voice)
+	{
+		new Float:vOrigin[3];
+		new Float:vPos[3];
+		new Float:vViewOffset[3];
+		GetEntPropVector(client, Prop_Data, "m_vecAbsOrigin", vOrigin);
+		GetEntPropVector(client, Prop_Data, "m_vecViewOffset", vViewOffset);
+		AddVectors(vOrigin, vViewOffset, vPos);
+		EmitAmbientSound(name, vPos, client);
+	}
+	else
+	{
+		decl Float:entorg[3];
+		GetEntPropVector(client, Prop_Data, "m_vecOrigin", entorg);
+		EmitAmbientSound(name, entorg, SOUND_FROM_PLAYER, SNDLEVEL_NORMAL, SND_NOFLAGS);
+	}
 }
 
 public Action:GiveMoneyToTarget(client, args)
@@ -1146,6 +1254,7 @@ public ResetGame(bool:gameover, bool:startgame)
 	VultureKiller();
 	ResetSpawns();
 	ResetWaves();
+	ResetBaseUpgrades();
 	ReadNOAMPScript();
 	StopMusicAll();
 	
@@ -1252,5 +1361,27 @@ public ResetWaves()
 		waveMaxParrots[i] = 0;
 		waveIsBossWave[i] = false;
 		waveIsCorruptorWave[i] = false;
+	}
+}
+
+public ResetBaseUpgrades()
+{
+	for (new i = 1; i < NOAMP_MAXBASEUPGRADES; i++)
+	{
+		baseUpgrades[i] = false;
+		baseUpgradePrices[i] = 0;
+	}
+	
+	new ent = INVALID_ENT_REFERENCE;
+	for (new i = 1; i < NOAMP_MAXBASEUPGRADES; i++)
+	{
+		while ((ent = FindEntityByClassname(ent, "func_brush")) != INVALID_ENT_REFERENCE) 
+		{
+			AcceptEntityInput(ent, "Enable");
+			if (GetConVarBool(cvar_debug))
+			{
+				PrintToServer("Enabled all baseupgrades");
+			}
+		}
 	}
 }
