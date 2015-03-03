@@ -17,26 +17,38 @@
 
 // NOAMP Definitions and stuff like that
 
-#define PL_VERSION "0.5"
+#define PL_VERSION "0.5a"
 #define SERVER_TAG "noamp"
 #define CHAT_PREFIX "[NOAMP]"
 
 #define NOAMP_MAXPLAYERS 6
 #define NOAMP_MAXWAVES 32
-#define NOAMP_MAXSPAWNS 257
-#define NOAMP_MAXBASEUPGRADES 12
+#define NOAMP_MAXSPAWNS 256
+#define NOAMP_MAXBASEUPGRADES 6
+#define NOAMP_MAXPARROTCREATOR_WAVES 6
 #define NOAMP_BOSSMUSIC "noamp/music/corruptor.mp3"
-#define NOAMP_BOSSMUSIC2 "noamp/music/corruptor2.mp3"
 #define STEAM_GROUP_ID 6185427
 
 #define UPGRADE_MAXHP 1
 #define UPGRADE_MAXARMOR 2
 #define UPGRADE_MAXSPEED 3
 
+#define UPGRADE_PRICERAISE 50
+
 #define POWERUP_FILLSPECIAL 1
 #define POWERUP_VULTURES 2
 
 #define BASEUPGRADE1 1
+
+#define PARROT_NORMAL 1
+#define PARROT_GIANT 2
+#define PARROT_SMALL 3
+#define PARROT_BOSS 4
+
+#define PARROTCREATOR_NORMAL 1
+#define PARROTCREATOR_GIANTS 2
+#define PARROTCREATOR_SMALL 3
+#define PARROTCREATOR_BOSS 4
 
 #define CHOICE1 "#choice1"
 #define CHOICE2 "#choice2"
@@ -45,21 +57,20 @@
 #define CHOICE5 "#choice5"
 #define CHOICE6 "#choice6"
 
-
 #define TEAM_SPECTATOR 1
 #define TEAM_PIRATES 2
 #define TEAM_VIKINGS 3
 #define TEAM_KNIGHTS 4
 
-#define CLASS_SKIRMISHER 	0
-#define CLASS_CAPTAIN 		1
-#define CLASS_SHARPSHOOTER 	2
-#define CLASS_BERSERKER 	3
-#define CLASS_HUSCARL 		4
-#define CLASS_GESTIR 		5
-#define CLASS_HEAVYKNIGHT 	6
-#define CLASS_ARCHER 		7
-#define CLASS_MANATARMS 	8
+#define CLASS_SKIRMISHER 	1
+#define CLASS_CAPTAIN 		2
+#define CLASS_SHARPSHOOTER 	3
+#define CLASS_BERSERKER 	4
+#define CLASS_HUSCARL 		5
+#define CLASS_GESTIR 		6
+#define CLASS_HEAVYKNIGHT 	7
+#define CLASS_ARCHER 		8
+#define CLASS_MANATARMS 	9
 
 #define MAXCLASSES 10
 
@@ -81,13 +92,14 @@ new Handle:cvar_giantparrotsize;
 new Handle:cvar_bossparrotsize;
 */
 
-new String:KVPath[PLATFORM_MAX_PATH];
+new String:ScriptPath[PLATFORM_MAX_PATH];
+new String:ParrotCreatorScriptPath[PLATFORM_MAX_PATH];
 
 new bool:IsMapLoaded = false;
 new bool:IsCustomScheme = false;
-new String:ParrotSpawns[NOAMP_MAXSPAWNS][128];
-new String:GiantParrotSpawns[NOAMP_MAXSPAWNS][128];
-new String:BossParrotSpawns[NOAMP_MAXSPAWNS][128];
+new String:ParrotSpawns[NOAMP_MAXSPAWNS+1][128];
+new String:GiantParrotSpawns[NOAMP_MAXSPAWNS+1][128];
+new String:BossParrotSpawns[NOAMP_MAXSPAWNS+1][128];
 
 new clientLives[MAXPLAYERS+1];
 new clientMoney[MAXPLAYERS+1];
@@ -96,19 +108,25 @@ new clientKills[MAXPLAYERS+1];
 new bool:clientWantsSpec[MAXPLAYERS+1];
 new bool:clientForcedSpec[MAXPLAYERS+1];
 
-new bool:clientUpgradesMaxHP[MAXPLAYERS+1];
-new bool:clientUpgradesMaxArmor[MAXPLAYERS+1];
-new bool:clientUpgradesMaxSpeed[MAXPLAYERS+1];
+new clientUpgradesMaxHP[MAXPLAYERS+1];
+new clientUpgradesMaxArmor[MAXPLAYERS+1];
+new clientUpgradesMaxSpeed[MAXPLAYERS+1];
+
+new clientMaxHPPrice[MAXPLAYERS+1];
+new clientMaxArmorPrice[MAXPLAYERS+1];
+new clientMaxSpeedPrice[MAXPLAYERS+1];
 
 new clientPowerUpFillSpecial[MAXPLAYERS+1];
 new clientPowerUpVultures[MAXPLAYERS+1];
 
 new bool:clientHasVulturesOut[MAXPLAYERS+1];
+new bool:clientAboutToKillVultures[MAXPLAYERS+1];
+new String:clientVultureTargetname[MAXPLAYERS+1][256];
 
 new clientSavedMoney[MAXPLAYERS+1];
-new bool:clientSavedUpgradesMaxHP[MAXPLAYERS+1];
-new bool:clientSavedUpgradesMaxArmor[MAXPLAYERS+1];
-new bool:clientSavedUpgradesMaxSpeed[MAXPLAYERS+1];
+new clientSavedUpgradesMaxHP[MAXPLAYERS+1];
+new clientSavedUpgradesMaxArmor[MAXPLAYERS+1];
+new clientSavedUpgradesMaxSpeed[MAXPLAYERS+1];
 new clientSavedPowerUpFillSpecial[MAXPLAYERS+1];
 new clientSavedPowerUpVultures[MAXPLAYERS+1];
 new clientSavedHP[MAXPLAYERS+1];
@@ -116,7 +134,25 @@ new clientSavedArmorValue[MAXPLAYERS+1];
 new clientSavedMaxspeed[MAXPLAYERS+1];
 new clientSavedDefaultSpeed[MAXPLAYERS+1];
 
+new clientLastestTeam[MAXPLAYERS+1];
+new bool:clientValuesSaved[MAXPLAYERS+1];
+
 new String:schemeName[256] = "null";
+
+new parrotCreatorMode;
+new parrotCreatorScheme[NOAMP_MAXWAVES][NOAMP_MAXPARROTCREATOR_WAVES];
+/*new parrotCreatorDefaultScheme[1][NOAMP_MAXPARROTCREATOR_WAVES] = 
+{ 
+	PARROTCREATOR_NORMAL,
+	PARROTCREATOR_NORMAL,
+	PARROTCREATOR_SMALL,
+	PARROTCREATOR_GIANTS,
+	PARROTCREATOR_NORMAL
+};
+*/
+new bool:parrotCreatorSpawned;
+
+new parrotDesiredSoundPitch;
 
 new waveParrotCount[NOAMP_MAXWAVES];
 new waveGiantParrotCount[NOAMP_MAXWAVES];
@@ -126,6 +162,7 @@ new bool:waveIsCorruptorWave[NOAMP_MAXWAVES];
 new bool:waveIsFoggy[NOAMP_MAXWAVES];
 
 new bool:baseUpgrades[NOAMP_MAXBASEUPGRADES];
+new bool:baseUpgradesIsValid[NOAMP_MAXBASEUPGRADES];
 new baseUpgradePrices[NOAMP_MAXBASEUPGRADES];
 
 new numSoundsClasses[MAXCLASSES] = 
@@ -154,6 +191,60 @@ new const String:RoundStartSounds[][] =
 	"player/knights/manatarms/k_manat-roundstartcheer"	//Man-At-Arms
 };
 
+new numFriendDeadSoundsClasses[MAXCLASSES] = 
+{
+	1, //Skirmisher
+	1, //Captain
+	5, //Sharpshooter
+	3, //Berserker
+	1, //Huscarl
+	1, //Gestir
+	3, //Heavy Knight
+	1, //Archer
+	1  //Man-At-Arms
+};
+
+new const String:FriendDeadSounds[][] = 
+{
+	"player/pirates/skirm/p_skirm-bighurtvox1",
+	"player/pirates/captain/p_captain-corpse-friendly1",
+	"player/pirates/sharp/p_sharp-spottedteammatecorpse",
+	"player/vikings/berserker/v_zerk-spotteammatecorpse",
+	"player/vikings/huscarl/v_husc_killknight3",
+	"player/vikings/gestir/v_gesti_spotteammatecorpse",
+	"player/knights/heavyknight/k_hk-friendlycorpse",
+	"player/knights/archer/k_arche-spotteamcorpse",
+	"player/knights/manatarms/k_manat-roundstartcheer"
+};
+
+new const String:FriendDeadSoundsUnique[][] = // for easy precache
+{
+	"player/pirates/skirm/p_skirm-bighurtvox1",
+	"player/pirates/captain/p_captain-corpse-friendly1",
+	"player/vikings/huscarl/v_husc_killknight3"
+};
+
+new const String:SpookySounds[][] = 
+{
+	"ambient/creatures/town_moan1.wav",
+	"ambient/creatures/town_scared_breathing1.wav",
+	"ambient/creatures/town_scared_breathing2.wav",
+	"ambient/creatures/town_scared_sob1.wav",
+	"ambient/creatures/town_scared_sob2.wav",
+	"ambient/machines/combine_terminal_idle1.wav",
+	"ambient/machines/combine_terminal_idle2.wav",
+	"ambient/machines/combine_terminal_idle3.wav",
+	"ambient/machines/combine_terminal_idle4.wav"
+};
+
+new const String:CorruptorSpeech[][] = 
+{
+	"noamp/corruptor/speech1.mp3",
+	"noamp/corruptor/speech2.mp3",
+	"noamp/corruptor/speech3.mp3",
+	"noamp/corruptor/speech4.mp3"
+};
+
 new playerLives;
 new maxHPPrice;
 new maxArmorPrice;
@@ -169,19 +260,18 @@ new parrotBossHP;
 
 new parrotsKilled;
 new spawnedParrots;
+new spawnedParrots2;
 new wave;
+new creatorwave;
 new waveCount;
 new specialOffset;
-new hudSecs;
 new preparingSecs;
 new gameOverSecs;
 new musicSecs;
 new deadplayers;
-new bool:msgshown[MAXPLAYERS+1];
 
 new corruptsecs;
 new bool:soundplayed;
-new bool:valuesSaved;
 
 new bool:IsEnabled;
 new bool:HasGameStarted;
@@ -207,4 +297,18 @@ new h_flMaxspeed;
 new h_flDefaultSpeed;
 new h_iPlayerClass;
 
+new Handle:h_TimerHUD = INVALID_HANDLE;
+new Handle:h_TimerWaveThink = INVALID_HANDLE;
+new Handle:h_TimerGameWin = INVALID_HANDLE;
+new Handle:h_TimerGameOver = INVALID_HANDLE;
+new Handle:h_TimerPreparingTime = INVALID_HANDLE;
+new Handle:h_TimerParrotCreator = INVALID_HANDLE;
+new Handle:h_TimerCorruption = INVALID_HANDLE;
+new Handle:h_TimerBossMusicLooper = INVALID_HANDLE;
+new Handle:h_TimerKillVultures = INVALID_HANDLE;
+new Handle:h_TimerWaitingForPlayers = INVALID_HANDLE;
+new Handle:h_TimerCorruptorThink = INVALID_HANDLE;
+
 new timelimitSavedValue;
+new String:temphudstr[128];
+new String:temphudstr2[128];

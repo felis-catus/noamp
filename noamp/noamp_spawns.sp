@@ -25,7 +25,6 @@
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
-#include <smlib>
 #include <morecolors>
 
 public FindSpawns()
@@ -54,7 +53,7 @@ public FindSpawns()
 					PrintToServer("m_vecOrigin = %s", ParrotSpawns[count]);
 				}
 			}
-			
+			/* WTF: its actually a better idea to get rid of this and use normal spawns
 			if (StrEqual(targetname, "noamp_giantparrot_spawn"))
 			{
 				giantcount++;
@@ -67,7 +66,7 @@ public FindSpawns()
 					PrintToServer("m_vecOrigin = %s", GiantParrotSpawns[giantcount]);
 				}
 			}
-			
+			*/
 			if (StrEqual(targetname, "noamp_boss_spawn"))
 			{
 				bosscount++;
@@ -89,13 +88,7 @@ public ResetSpawns()
 	for (new i = 0; i < NOAMP_MAXSPAWNS-1; i++)
 	{
 		ParrotSpawns[i] = "null";
-	}
-	for (new i = 0; i < NOAMP_MAXSPAWNS-1; i++)
-	{
 		GiantParrotSpawns[i] = "null";
-	}
-	for (new i = 0; i < NOAMP_MAXSPAWNS-1; i++)
-	{
 		BossParrotSpawns[i] = "null";
 	}
 	
@@ -130,7 +123,6 @@ public GetRandomSpawnPoint()
 	
 	if (nodecount == 0)
 	{
-		PrintToServer("NO NODES!!!!");
 		return 0;
 	}
 	
@@ -198,7 +190,7 @@ public SpawnGiantParrot()
 	new parrot = CreateEntityByName("npc_parrot");
 	
 	decl String:nodepoints[3][128];
-	ExplodeString(GiantParrotSpawns[randomnode], " ", nodepoints, 3, 128);
+	ExplodeString(ParrotSpawns[randomnode], " ", nodepoints, 3, 128);
 	
 	decl Float:nodeorg[3];
 	nodeorg[0] = StringToFloat(nodepoints[0]);
@@ -211,16 +203,14 @@ public SpawnGiantParrot()
 	DispatchKeyValue(parrot, "origin", orgstring);
 	DispatchSpawn(parrot);
 	
-	decl Float:vecParrotMins[3];
-	decl Float:vecParrotMaxs[3];
-	GetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMins);
-	GetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMaxs", vecParrotMaxs);
+	// FIXME: lol
+	new Float:vecParrotMin[3] = { -15.0, -15.0, 0.0 }, Float:vecParrotMax[3] = { 15.0,  15.0, 50.0 };
 	
-	ScaleVector(vecParrotMins, giantParrotSize);
-	ScaleVector(vecParrotMaxs, giantParrotSize);
+	ScaleVector(vecParrotMin, giantParrotSize);
+	ScaleVector(vecParrotMax, giantParrotSize);
 	
-	SetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMins);
-	SetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMaxs", vecParrotMaxs);
+	SetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMin);
+	SetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMaxs", vecParrotMax);
 	
 	new Float:scalevalue = giantParrotSize;
 	SetEntPropFloat(parrot, Prop_Send, "m_flModelScale", scalevalue);
@@ -234,7 +224,53 @@ public SpawnGiantParrot()
 	}
 }
 
-public SpawnBossParrot()
+public SpawnSmallParrot()
+{	
+	new randomnode = GetRandomSpawnPoint();
+	
+	if (randomnode == 0)
+	{
+		LogError("No nodes, not spawning parrot.");
+		return;
+	}
+	
+	new parrot = CreateEntityByName("npc_parrot");
+	
+	decl String:nodepoints[3][128];
+	ExplodeString(ParrotSpawns[randomnode], " ", nodepoints, 3, 128);
+	
+	decl Float:nodeorg[3];
+	nodeorg[0] = StringToFloat(nodepoints[0]);
+	nodeorg[1] = StringToFloat(nodepoints[1]);
+	nodeorg[2] = StringToFloat(nodepoints[2]);
+	
+	decl String:orgstring[128];
+	Format(orgstring, 128, "%f %f %f", nodeorg[0], nodeorg[1], nodeorg[2]);
+	
+	DispatchKeyValue(parrot, "origin", orgstring);
+	DispatchSpawn(parrot);
+	
+	// FIXME: lol
+	new Float:vecParrotMin[3] = { -15.0, -15.0, 0.0 }, Float:vecParrotMax[3] = { 15.0,  15.0, 50.0 };
+	
+	ScaleVector(vecParrotMin, smallParrotSize);
+	ScaleVector(vecParrotMax, smallParrotSize);
+	
+	SetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMin);
+	SetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMaxs", vecParrotMax);
+	
+	new Float:scalevalue = smallParrotSize;
+	SetEntPropFloat(parrot, Prop_Send, "m_flModelScale", scalevalue);
+	
+	DispatchKeyValue(parrot, "targetname", "noamp_small");
+	
+	if (GetConVarBool(cvar_debug))
+	{
+		PrintToServer("Small parrot spawned at %s", orgstring);
+	}
+}
+
+public SpawnBossParrot(bool:corruptor)
 {	
 	new randomnode = GetRandomSpawnPoint();
 	
@@ -260,22 +296,26 @@ public SpawnBossParrot()
 	DispatchKeyValue(parrot, "origin", orgstring);
 	DispatchSpawn(parrot);
 	
-	decl Float:vecParrotMins[3];
-	decl Float:vecParrotMaxs[3];
-	GetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMins);
-	GetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMaxs);
+	// FIXME: lol
+	new Float:vecParrotMin[3] = { -15.0, -15.0, 0.0 }, Float:vecParrotMax[3] = { 15.0,  15.0, 50.0 };
 	
-	ScaleVector(vecParrotMins, bossParrotSize);
-	ScaleVector(vecParrotMaxs, bossParrotSize);
+	ScaleVector(vecParrotMin, giantParrotSize);
+	ScaleVector(vecParrotMax, giantParrotSize);
 	
-	SetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMins);
-	SetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMaxs", vecParrotMaxs);
+	SetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMin);
+	SetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMaxs", vecParrotMax);
 	
 	new Float:scalevalue = bossParrotSize;
 	SetEntPropFloat(parrot, Prop_Send, "m_flModelScale", scalevalue);
 	
 	SetEntProp(parrot, Prop_Data, "m_iHealth", parrotBossHP);
 	DispatchKeyValue(parrot, "targetname", "noamp_boss");
+	
+	if (corruptor)
+	{
+		// blak brid
+		SetEntityRenderColor(parrot, 0, 0, 0, 255);
+	}
 	
 	if (GetConVarBool(cvar_debug))
 	{

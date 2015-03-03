@@ -20,12 +20,11 @@
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
-#include <smlib>
 #include <morecolors>
 
 public Action:CmdTestSpawns(client, args)
 {
-	if (GetConVarBool(cvar_debug) == true)
+	if (IsDebug())
 	{
 		for (new i = 0; i < 10; i++)
 		{
@@ -42,7 +41,7 @@ public Action:CmdTestSpawns(client, args)
 
 public Action:CmdTestGiantSpawns(client, args)
 {
-	if (GetConVarBool(cvar_debug) == true)
+	if (IsDebug())
 	{
 		for (new i = 0; i < 2; i++)
 		{
@@ -59,7 +58,7 @@ public Action:CmdTestGiantSpawns(client, args)
 
 public Action:CmdGiveMoney(client, args)
 {
-	if (GetConVarBool(cvar_debug) == true)
+	if (IsDebug())
 	{
 		clientMoney[client] += 10000;
 	}
@@ -73,7 +72,7 @@ public Action:CmdGiveMoney(client, args)
 
 public Action:CmdGiveAllUpgrades(client, args)
 {
-	if (GetConVarBool(cvar_debug) == true)
+	if (IsDebug())
 	{
 		clientUpgradesMaxHP[client] = true;
 		clientUpgradesMaxArmor[client] = true;
@@ -124,7 +123,7 @@ public Action:CmdJumpToWave(client, args)
 	
 	new iarg = StringToInt(arg1);
 	
-	if (GetConVarBool(cvar_debug) == true)
+	if (IsDebug())
 	{
 		wave = iarg - 1;
 		WaveFinished();

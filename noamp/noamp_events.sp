@@ -20,9 +20,9 @@
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
-#include <smlib>
 #include <morecolors>
 
+/*
 public Event_WaitEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if (!IsEnabled)
@@ -32,7 +32,7 @@ public Event_WaitEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	IsWaitingForPlayers = false;
 	StartGame();
 }
-
+*/
 public OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if (!HasGameStarted)
@@ -48,39 +48,30 @@ public OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 		
 		// should not spawn, force join spec
 		ForceJoinSpec(client);
-		
-		// because it shows up many times sometimes
-		if (!msgshown[client])
-		{
-			CPrintToChat(client, "%s No lives left! You have been moved to spec.", CHAT_PREFIX);
-			msgshown[client] = true;
-		}
 	}
 	else
 	{
-		if (clientUpgradesMaxHP[client] == true)
+		for (new i = 1; i < 5; i++)
 		{
-			clientUpgradesMaxHP[client] = true;
-			new hp = GetEntData(client, h_iMaxHealth, 4);
-			SetEntData(client, h_iMaxHealth, hp * 2, 4, true);
-			SetEntData(client, h_iHealth, hp * 2, 4, true);
-		}
-		
-		if (clientUpgradesMaxArmor[client] == true)
-		{
-			clientUpgradesMaxArmor[client] = true;
-			new armor = GetEntData(client, h_iMaxArmor, 4);
-			SetEntData(client, h_iMaxArmor, armor * 2, 4, true);
-			SetEntData(client, h_ArmorValue, armor * 2, 4, true);
-		}
-		
-		if (clientUpgradesMaxSpeed[client] == true)
-		{
-			clientUpgradesMaxSpeed[client] = true;
-			new Float:maxspeed = GetEntData(client, h_flMaxspeed, 4);
-			SetEntData(client, h_flMaxspeed, maxspeed * 2.0, 4, true);
-			new Float:defspeed = GetEntData(client, h_flDefaultSpeed, 4);
-			SetEntData(client, h_flDefaultSpeed, defspeed * 2.0, 4, true);
+			if (clientUpgradesMaxHP[client] == i)
+			{
+				new hp = GetEntData(client, h_iMaxHealth, 4);
+				SetEntData(client, h_iMaxHealth, hp + 20 * i, 4, true);
+				SetEntData(client, h_iHealth, hp + 20 * i, 4, true);
+			}
+			if (clientUpgradesMaxArmor[client] == i)
+			{
+				new armor = GetEntData(client, h_iMaxArmor, 4);
+				SetEntData(client, h_iMaxArmor, armor + 20 * i, 4, true);
+				SetEntData(client, h_ArmorValue, armor + 20 * i, 4, true);
+			}
+			if (clientUpgradesMaxSpeed[client] == i)
+			{
+				new Float:maxspeed = GetEntData(client, h_flMaxspeed, 4);
+				SetEntData(client, h_flMaxspeed, maxspeed + 20 * i, 4, true);
+				new Float:defspeed = GetEntData(client, h_flDefaultSpeed, 4);
+				SetEntData(client, h_flDefaultSpeed, defspeed + 20 * i, 4, true);
+			}
 		}
 		
 		// TODO: remove keg from skirm
@@ -98,13 +89,7 @@ public OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast)
 
 public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if (!HasGameStarted)
-		return;
-	
-	if (IsLivesDisabled)
-		return;
-	
-	if (IsPreparing)
+	if (!HasGameStarted || IsLivesDisabled || IsPreparing)
 		return;
 	
 	new victimId = GetEventInt(event, "userid");
@@ -113,23 +98,22 @@ public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	if (GetPlayerLives(victim) <= 0)
 		return;
 	
-	clientLives[victim] -= 1;
+	clientLives[victim]--;
 	
 	// HACK: Force ragdoll into ghostly one, pls dont patch this devs
 	new ragdoll = GetEntPropEnt(victim, Prop_Send, "m_hRagdoll");
 	SetEntProp(ragdoll, Prop_Send, "m_iDismemberment", 11);
 	
-	CreateTimer(2.0, DissolveRagdoll, victim);
+	// dissolve me because the particle bug is annoying, pls patch it devs
+	CreateTimer(1.5, DissolveRagdoll, victim);
 
-	EmitSoundToAll("noamp/playerdeath.mp3", SOUND_FROM_PLAYER, SNDCHAN_STREAM, SNDLEVEL_NORMAL);
+	EmitSoundToAll("noamp/playerdeath.mp3", SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL);
+	FriendDeadVoice(GetRandomInt(1, GetClientCount(true)));
 }
 
 public OnParrotDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if (!HasGameStarted)
-		return;
-	
-	if (IsPreparing)
+	if (!HasGameStarted || IsPreparing)
 		return;
 	
 	new attackerId = GetEventInt(event, "attacker");
@@ -137,34 +121,23 @@ public OnParrotDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	GetEventString(event, "type", type, sizeof(type));
 	
 	new attacker = GetClientOfUserId(attackerId);
-	new attackerFrags;
 	new parrotsLeft;
-	
-	new specialValue;
 	
 	if (StrEqual(type, "npc_parrot", false))
 	{
 		parrotsKilled++;
 		parrotsLeft = waveParrotCount[wave] - parrotsKilled;
 		
-		attackerFrags = GetClientFrags(attacker);
-		specialValue = GetEntData(attacker, h_iSpecial, 4);
-		
 		if (attacker != 0 && IsClientInGame(attacker))
 		{
-			clientKills[attacker] += 1;
-			clientMoney[attacker] += 10;
-		
-			specialValue += 10;
-			SetEntData(attacker, h_iSpecial, specialValue, 4);
-		
+			clientKills[attacker]++;
+			AddMoney(attacker, 10);
+			AddSpecial(attacker, 10);
 			AddScore(attackerId);
-		
-			attackerFrags += 1;
-			SetEntProp(attacker, Prop_Data, "m_iFrags", attackerFrags);
+			AddFrags(attacker, 1);
 		}
 		
-		if (GetConVarBool(cvar_debug))
+		if (IsDebug())
 		{
 			PrintToServer("Parrots killed: %d", parrotsKilled);
 			PrintToServer("Parrots left: %d", parrotsLeft);
@@ -185,7 +158,7 @@ public OnChestCapture(Handle:event, const String:name[], bool:dontBroadcast)
 	{
 		if (IsClientInGame(i))
 		{
-			clientMoney[i] += chestAward;
+			AddMoney(i, chestAward);
 			PrintToChat(i, "You received $%d from chest capture!", chestAward);
 		}
 	}

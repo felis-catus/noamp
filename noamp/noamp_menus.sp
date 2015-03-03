@@ -20,7 +20,6 @@
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
-#include <smlib>
 #include <morecolors>
 
 public MainMenuHandler(Handle:menu, MenuAction:action, param1, param2)
@@ -49,9 +48,9 @@ public MainMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 				new String:choice2[64];
 				new String:choice3[64];
 				
-				Format(choice1, 64, "Max HP Increase x2: $%d", maxHPPrice);
-				Format(choice2, 64, "Max Armor Increase x2: $%d", maxArmorPrice);
-				Format(choice3, 64, "Max Speed Increase x2: $%d", maxSpeedPrice);
+				Format(choice1, 64, "Max HP Increase +20: $%d (%d)", clientMaxHPPrice[param1], clientUpgradesMaxHP[param1]);
+				Format(choice2, 64, "Max Armor Increase +20: $%d (%d)", clientMaxArmorPrice[param1], clientUpgradesMaxArmor[param1]);
+				Format(choice3, 64, "Max Speed Increase +20: $%d (%d)", clientMaxSpeedPrice[param1], clientUpgradesMaxSpeed[param1]);
 				
 				AddMenuItem(upgradesmenu, CHOICE1, choice1);
 				AddMenuItem(upgradesmenu, CHOICE2, choice2);
@@ -81,7 +80,7 @@ public MainMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 				SetMenuExitBackButton(powerupsmenu, true);
 				DisplayMenu(powerupsmenu, param1, 20);
 			}
-			else if (StrEqual(info, CHOICE3))
+			/*else if (StrEqual(info, CHOICE3))
 			{
 				new Handle:weaponsmenu = CreateMenu(WeaponsMenuHandler, MENU_ACTIONS_DEFAULT);
 				SetMenuTitle(weaponsmenu, "%T", "Weapons", LANG_SERVER);
@@ -96,22 +95,32 @@ public MainMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 				SetMenuExitBackButton(weaponsmenu, true);
 				DisplayMenu(weaponsmenu, param1, 20);
 			}
-			else if (StrEqual(info, CHOICE4))
+			*/
+			else if (StrEqual(info, CHOICE3))
 			{
 				new Handle:baseupgmenu = CreateMenu(BaseUpgradesMenuHandler, MENU_ACTIONS_DEFAULT);
 				SetMenuTitle(baseupgmenu, "%T", "Base Upgrades", LANG_SERVER);
 				
-				new String:choice1[64];
+				decl String:choices[NOAMP_MAXBASEUPGRADES][128];
+				CheckBaseUpgrades();
+				new upgradescount = NOAMP_MAXBASEUPGRADES;
 				
-				Format(choice1, 64, "Base Upgrade 1 $%d", baseUpgradePrices[1]);
-				
-				AddMenuItem(baseupgmenu, CHOICE1, choice1);
+				for (new i = 1; i < upgradescount; i++)
+				{
+					decl String:buffer[256];
+					Format(choices[i], 128, "Base Upgrade %d $%d", i, baseUpgradePrices[i]);
+					
+					decl String:choicestr[64];
+					Format(choicestr, 128, "#choice%d", i);
+					
+					AddMenuItem(baseupgmenu, choicestr, choices[i]);
+				}
 				
 				SetMenuExitButton(baseupgmenu, true);
 				SetMenuExitBackButton(baseupgmenu, true);
 				DisplayMenu(baseupgmenu, param1, 20);
 			}
-			else if (StrEqual(info, CHOICE5))
+			else if (StrEqual(info, CHOICE4))
 			{
 				new Handle:miscmenu = CreateMenu(MiscMenuHandler, MENU_ACTIONS_DEFAULT);
 				SetMenuTitle(miscmenu, "%T", "Miscellaneous", LANG_SERVER);
@@ -123,7 +132,6 @@ public MainMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 				new String:choice5[64];
 				
 				Format(choice1, 64, "Restore player lives");
-				Format(choice2, 64, "Fill special");
 				
 				AddMenuItem(miscmenu, CHOICE1, choice1);
 				AddMenuItem(miscmenu, CHOICE2, choice2);
@@ -132,7 +140,7 @@ public MainMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 				SetMenuExitBackButton(miscmenu, true);
 				DisplayMenu(miscmenu, param1, 20);
 			}
-			else if (StrEqual(info, CHOICE6))
+			else if (StrEqual(info, CHOICE5))
 			{
 				new Handle:debugmenu = CreateMenu(DebugMenuHandler, MENU_ACTIONS_DEFAULT);
 				SetMenuTitle(debugmenu, "%T", "Debug", LANG_SERVER);
@@ -295,6 +303,7 @@ public PowerupsMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 	return 0;
 }
 
+/*
 public WeaponsMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 {
 	switch (action)
@@ -346,7 +355,7 @@ public WeaponsMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 	
 	return 0;
 }
-
+*/
 public BaseUpgradesMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 {
 	switch (action)
@@ -364,9 +373,19 @@ public BaseUpgradesMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 		{
 			decl String:info[32];
 			GetMenuItem(menu, param2, info, sizeof(info));
-			if (StrEqual(info, CHOICE1))
-			{
-				BuyBaseUpgrade(param1, BASEUPGRADE1);
+			
+			decl String:choices[NOAMP_MAXBASEUPGRADES][128];
+			new upgradescount = NOAMP_MAXBASEUPGRADES;
+			
+			for (new i = 1; i < upgradescount; i++)
+			{				
+				decl String:choicestr[64];
+				Format(choicestr, 128, "#choice%d", i);
+				
+				if (StrEqual(info, choicestr))
+				{
+					BuyBaseUpgrade(param1, i);
+				}
 			}
 		}
 		
@@ -420,10 +439,6 @@ public MiscMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 			{
 				// TODO
 				PrintToChat(param1, "Not done yet?! Get to work Felis!");
-			}
-			else if (StrEqual(info, CHOICE2))
-			{
-				FillSpecial(param1);
 			}
 		}
 		
@@ -545,10 +560,10 @@ public NOAMP_Menu(client)
 	SetMenuTitle(menu, "%T", "NOAMP Menu", LANG_SERVER);
 	AddMenuItem(menu, CHOICE1, "Upgrades");
 	AddMenuItem(menu, CHOICE2, "Powerups");
-	AddMenuItem(menu, CHOICE3, "Weapons");
-	AddMenuItem(menu, CHOICE4, "Base Upgrades");
-	AddMenuItem(menu, CHOICE5, "Misc.");
-	AddMenuItem(menu, CHOICE6, "Debug");
+	//AddMenuItem(menu, CHOICE3, "Weapons");
+	AddMenuItem(menu, CHOICE3, "Base Upgrades");
+	AddMenuItem(menu, CHOICE4, "Misc.");
+	AddMenuItem(menu, CHOICE5, "Debug");
 	SetMenuExitButton(menu, true);
 	DisplayMenu(menu, client, 20);
 	
