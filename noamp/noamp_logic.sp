@@ -729,7 +729,7 @@ public ParrotCreatorController()
 	if (waveIsBossWave[wave])
 		return;
 	
-	if (parrotCreatorSpawned && )
+	if ( parrotCreatorSpawned )
 	{
 		creatorwave++;
 		
@@ -848,56 +848,45 @@ public Action:DissolveRagdoll(Handle:timer, any:client)
 }
 
 // thx Spirrwell
-public Action:RoundStartCheer(Handle:Timer, Handle:datapack)
+public Action:RoundStartCheer( Handle:Timer, Handle:datapack )
 {
-	ResetPack(datapack);
-	new client = ReadPackCell(datapack);
+	ResetPack( datapack );
+	int client = ReadPackCell(datapack);
 	
-	if (!IsClientInGame(client) || !IsPlayerAlive(client))
+	if ( !IsClientInGame(client) || !IsPlayerAlive( client ) )
 		return Plugin_Handled;
 	
-	new iTeam = ReadPackCell(datapack);
-	new iClass = ReadPackCell(datapack);
+	int iTeam = ReadPackCell(datapack);
+	int iClass = ReadPackCell(datapack);
 	
-	if (iTeam == TEAM_VIKINGS)
-		iClass += 3;
-	if (iTeam == TEAM_KNIGHTS)
-		iClass += 6;
-	
-	if (iTeam >= TEAM_PIRATES && iTeam <= TEAM_KNIGHTS)
+	if ( iTeam >= TEAM_PIRATES && iTeam <= TEAM_KNIGHTS )
 	{
-		decl String:sample[64];
-		Format(sample, sizeof(sample), "%s%d%s", RoundStartSounds[iClass], GetRandomInt(1, numSoundsClasses[iClass]), ".wav");
-		EmitAmbientSoundFromPlayer(client, sample, true);
+		EmitAmbientGameSoundFromPlayer( client, RoundStartGameSounds[ iClass ], true );
 	}
+
 	return Plugin_Handled;
 }
 
-public FriendDeadVoice(client)
+public FriendDeadVoice( int client, int victim )
 {
-	if (!IsClientInGame(client) || !IsPlayerAlive(client) || GetClientTeam(client) <= TEAM_SPECTATOR)
+	if ( !IsClientInGame( client ) || client == victim || !IsPlayerAlive( client ) || GetClientTeam( client ) <= TEAM_SPECTATOR )
 		return Plugin_Handled;
 	
-	new team = GetClientTeam(client);
-	new class = GetPlayerClass(client);
+	int victimTeam = GetClientTeam( victim );
+	int team = GetClientTeam( client );
 	
-	if (team == TEAM_VIKINGS)
-		class += 3;
-	if (team == TEAM_KNIGHTS)
-		class += 6;
+	// The game already does dead teammate sound for teammates
+	if ( victimTeam == team )
+		return Plugin_Handled;
 	
-	if (team >= TEAM_PIRATES && team <= TEAM_KNIGHTS)
-	{
-		decl String:sample[64];
-		// these classes do not have dead friend lines, do special treatment
-		if (class == CLASS_SKIRMISHER || class == CLASS_HUSCARL || class == CLASS_MANATARMS)
+	int class = GetPlayerClass( client );
+	
+	if ( team >= TEAM_PIRATES && team <= TEAM_KNIGHTS )
+	{		
+		// these classes do not have dead friend lines
+		if ( class != PVK2_CLASS_SKIRMISHER && class != PVK2_CLASS_HUSCARL && class != PVK2_CLASS_MANATARMS )
 		{
-			Format(sample, sizeof(sample), "%s%s", FriendDeadSounds[class], ".wav");
-		}
-		else
-		{
-			Format(sample, sizeof(sample), "%s%d%s", FriendDeadSounds[class], GetRandomInt(1, numFriendDeadSoundsClasses[class]), ".wav");
-			EmitAmbientSoundFromPlayer(client, sample, true);
+			EmitAmbientGameSoundFromPlayer( client, DeadTeammateGameSounds[ class ], true );
 		}
 	}
 }
@@ -1265,6 +1254,26 @@ public CheckBaseUpgrades()
 				baseUpgradesIsValid[i] = true;
 			}
 		}
+	}
+}
+
+public EmitAmbientGameSoundFromPlayer( int ent, const char[] gameSound, bool voice )
+{
+	if ( voice )
+	{
+		float vOrigin[ 3 ];
+		float vPos[ 3 ];
+		float vViewOffset[ 3 ];
+		GetEntPropVector( ent, Prop_Data, "m_vecAbsOrigin", vOrigin );
+		GetEntPropVector( ent, Prop_Data, "m_vecViewOffset", vViewOffset );
+		AddVectors( vOrigin, vViewOffset, vPos );
+		EmitAmbientGameSound( gameSound, vPos, ent );
+	}
+	else
+	{
+		float entOrigin[ 3 ];
+		GetEntPropVector( ent, Prop_Data, "m_vecOrigin", entOrigin );
+		EmitAmbientGameSound( gameSound, entOrigin, ent );
 	}
 }
 

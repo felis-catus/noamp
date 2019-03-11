@@ -194,23 +194,6 @@ public Precache()
 	PrecacheSound("noamp/mystic.mp3");
 	PrecacheSound("noamp/timertick.wav");
 	
-	for (new i = 0; i < MAXCLASSES; i++)
-	{
-		for (new x = 1; x <= numSoundsClasses[i]; x++)
-		{
-			decl String:sample[64];
-			Format(sample, sizeof(sample), "%s%d%s", RoundStartSounds[i], x, ".wav");
-			PrecacheSound(sample);
-		}
-	}
-	
-	for (new i = 1; i < 3; i++)
-	{
-		decl String:sample2[64];
-		Format(sample2, sizeof(sample2), "%s%s", FriendDeadSoundsUnique[i], ".wav");
-		PrecacheSound(sample2);
-	}
-	
 	for (new i = 0; i < 9; i++)
 	{
 		decl String:sample[64];
@@ -442,6 +425,7 @@ public ReadNOAMPScript()
 		decl String:strbossparrothp[32];
 		decl String:strbossparrotsize[32];
 		decl String:strchestaward[32];
+		decl String:strsmallparrotsize[32];
 		decl String:strgiantparrotsize[32];
 		decl String:strplayerlives[32];
 		decl String:strpreparationsecs[32];
@@ -457,6 +441,7 @@ public ReadNOAMPScript()
 		KvGetString(kv, "bossparrothp", strbossparrothp, 32);
 		KvGetString(kv, "bossparrotsize", strbossparrotsize, 32);
 		KvGetString(kv, "chestaward", strchestaward, 32);
+		KvGetString(kv, "smallparrotsize", strsmallparrotsize, 32);
 		KvGetString(kv, "giantparrotsize", strgiantparrotsize, 32);
 		KvGetString(kv, "playerlives", strplayerlives, 32);
 		KvGetString(kv, "preparationsecs", strpreparationsecs, 32);
@@ -472,6 +457,7 @@ public ReadNOAMPScript()
 		parrotBossHP = StringToInt(strbossparrothp);
 		bossParrotSize = StringToFloat(strbossparrotsize);
 		chestAward = StringToInt(strchestaward, 10);
+		smallParrotSize = StringToFloat(strsmallparrotsize);
 		giantParrotSize = StringToFloat(strgiantparrotsize);
 		playerLives = StringToInt(strplayerlives, 10);
 		preparationSecs = StringToInt(strpreparationsecs, 10);
@@ -588,7 +574,7 @@ public ReadParrotCreatorScript(mode)
 
 		if (!foundcreatorline && !StrEqual(fileline, "ParrotCreator", false))
 		{
-			ThrowError("ParrotCreator script reading failed! Didn't find \"ParrotCreator\"".);
+			ThrowError("ParrotCreator script reading failed! Didn't find \"ParrotCreator\"");
 			break;
 		}
 		
@@ -607,7 +593,7 @@ public ReadParrotCreatorScript(mode)
 		if (mode == 1 && foundcreatorline && StrContains(fileline, "beginwave", false) == 0)
 		{
 			PrintToServer("Found beginwave");
-			new value = ExplodeTrimAndConvertString(fileline, "_", 1);
+			new value = ExplodeTrimAndConvertStringToInt( fileline, "_" );
 			currentwave = value;
 			PrintToServer("currentwave = %d", currentwave);
 			foundwavestartline = true;
@@ -690,8 +676,8 @@ public ReadParrotCreatorScript(mode)
 		else if (mode == 2 && StrContains(fileline, "onchange", false) == 0)
 		{
 			PrintToServer("Found onchange");
-			new value = ExplodeTrimAndConvertString(fileline, "_", 1);
-			if (value == creatorwave)
+			int value = ExplodeTrimAndConvertStringToInt( fileline, "_" );
+			if ( value == creatorwave )
 			{
 				ScriptCommands(fileline);
 			}
@@ -708,38 +694,39 @@ public ReadParrotCreatorScript(mode)
 
 public ScriptCommands(const String:fileline[])
 {
-	if (StrContains(fileline, "spawnparrots", false) == 0)
+	if ( StrContains( fileline, "spawnparrots", false ) == 0 )
 	{
-		if (StrContains(fileline, "normal", false) == 0)
+		if ( StrContains( fileline, "normal", false ) == 0 )
 		{
-			new value = ExplodeTrimAndConvertString(fileline, "=", 1);
-			SpawnParrotAmount(value, PARROT_NORMAL);
+			int value = ExplodeTrimAndConvertStringToInt( fileline, "=" );
+			SpawnParrotAmount( value, PARROT_NORMAL );
 		}
-		else if (StrContains(fileline, "giant", false) == 0)
+		else if ( StrContains( fileline, "giant", false ) == 0 )
 		{
-			new value = ExplodeTrimAndConvertString(fileline, "=", 1);
-			SpawnParrotAmount(value, PARROT_GIANT);
+			int value = ExplodeTrimAndConvertStringToInt( fileline, "=" );
+			SpawnParrotAmount( value, PARROT_GIANT );
 		}
-		else if (StrContains(fileline, "small", false) == 0)
+		else if ( StrContains( fileline, "small", false ) == 0 )
 		{
-			new value = ExplodeTrimAndConvertString(fileline, "=", 1);
-			SpawnParrotAmount(value, PARROT_SMALL);
+			int value = ExplodeTrimAndConvertStringToInt( fileline, "=" );
+			SpawnParrotAmount( value, PARROT_SMALL );
 		}
-		else if (StrContains(fileline, "boss", false) == 0)
+		else if ( StrContains( fileline, "boss", false ) == 0 )
 		{
-			new value = ExplodeTrimAndConvertString(fileline, "=", 1);
-			SpawnParrotAmount(value, PARROT_BOSS);
+			int value = ExplodeTrimAndConvertStringToInt( fileline, "=" );
+			SpawnParrotAmount( value, PARROT_BOSS );
 		}
 	}
-	else if (StrContains(fileline, "setpitch", false) == 0)
+	else if ( StrContains( fileline, "setpitch", false ) == 0 )
 	{
-		new value = ExplodeTrimAndConvertString(fileline, "=", 1);
+		int value = ExplodeTrimAndConvertStringToInt( fileline, "=" );
 		parrotDesiredSoundPitch = value;
 	}
-	else if (StrContains(fileline, "setsize", false) == 0)
+	else if ( StrContains( fileline, "setsize", false ) == 0 )
 	{
-		new value = ExplodeTrimAndConvertString(fileline, "=", 1);
+		float value = ExplodeTrimAndConvertStringToFloat( fileline, "=" );
 		giantParrotSize = value;
 		bossParrotSize = value;
+		smallParrotSize = value;
 	}
 }

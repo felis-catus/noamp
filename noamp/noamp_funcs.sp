@@ -32,7 +32,7 @@ stock GetPreparationSeconds() { return preparationSecs; }
 
 stock GetPlayerKills(client) { return clientKills[client]; }
 stock GetPlayerLives(client) { return clientLives[client]; }
-stock GetPlayerClass(client) { return GetEntData(client, h_iPlayerClass, 4)+1; } // NOTE: +1 cuz weird enums
+stock GetPlayerClass(client) { return GetEntData(client, h_iPlayerClass, 4); } // NOTE: +1 cuz weird enums
 
 stock SetParrotSoundPitch(pitch) { parrotSoundPitch = pitch; }
 
@@ -125,21 +125,22 @@ stock GetRandomString(length, String:dest[])
 	strcopy(dest, length, str);
 }
 
-// func of the year, for temp creator "script"
-stock ExplodeTrimAndConvertString(const String:string[], const String:split[], conversiontype)
+stock ExplodeTrimAndConvertStringToInt( const String:string[], const String:split[] )
 {
-	decl buffer[3][64];
-	ExplodeString(string, split, buffer, 2, 64);
-	TrimString(buffer[1]);
-	if (conversiontype == 1)
-	{
-		return StringToInt(buffer[1], 10);
-	}
-	else if (conversiontype == 2)
-	{
-		new Float:fl = StringToFloat(buffer[1]);
-		return fl;
-	}
+	char buffer[ 2 ][ 64 ];
+	ExplodeString( string, split, buffer, 2, 64 );
+	TrimString( buffer[ 1 ] );
+	
+	return StringToInt( buffer[ 1 ] );
+}
+
+stock float ExplodeTrimAndConvertStringToFloat( const String:string[], const String:split[] )
+{
+	char buffer[ 2 ][ 64 ];
+	ExplodeString( string, split, buffer, 2, 64 );
+	TrimString( buffer[ 1 ] );
+	
+	return StringToFloat( buffer[ 1 ] );
 }
 
 stock SpawnParrotAmount(amount, type)

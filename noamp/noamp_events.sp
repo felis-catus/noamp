@@ -75,7 +75,7 @@ public OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 		}
 		
 		// TODO: remove keg from skirm
-		if (GetPlayerClass(client) == CLASS_SKIRMISHER)
+		if ( GetClientTeam( client ) == TEAM_PIRATES &&  GetPlayerClass( client ) == PVK2_CLASS_SKIRMISHER )
 		{
 			
 		}
@@ -92,8 +92,8 @@ public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	if (!HasGameStarted || IsLivesDisabled || IsPreparing)
 		return;
 	
-	new victimId = GetEventInt(event, "userid");
-	new victim = GetClientOfUserId(victimId);
+	int victimId = GetEventInt(event, "userid");
+	int victim = GetClientOfUserId( victimId );
 	
 	if (GetPlayerLives(victim) <= 0)
 		return;
@@ -101,14 +101,16 @@ public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	clientLives[victim]--;
 	
 	// HACK: Force ragdoll into ghostly one, pls dont patch this devs
-	new ragdoll = GetEntPropEnt(victim, Prop_Send, "m_hRagdoll");
-	SetEntProp(ragdoll, Prop_Send, "m_iDismemberment", 11);
+	//new ragdoll = GetEntPropEnt(victim, Prop_Send, "m_hRagdoll");
+	//SetEntProp(ragdoll, Prop_Send, "m_iDismemberment", 11);
+	
+	SetEntProp(victim, Prop_Send, "m_iRagdollDismemberment", 11);
 	
 	// dissolve me because the particle bug is annoying, pls patch it devs
-	CreateTimer(1.5, DissolveRagdoll, victim);
+	//CreateTimer(1.5, DissolveRagdoll, victim);
 
 	EmitSoundToAll("noamp/playerdeath.mp3", SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL);
-	FriendDeadVoice(GetRandomInt(1, GetClientCount(true)));
+	FriendDeadVoice( GetRandomInt( 1, GetClientCount( true ) ), victim );
 }
 
 public OnParrotDeath(Handle:event, const String:name[], bool:dontBroadcast)

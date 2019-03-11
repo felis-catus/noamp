@@ -62,17 +62,28 @@
 #define TEAM_VIKINGS 3
 #define TEAM_KNIGHTS 4
 
-#define CLASS_SKIRMISHER 	1
-#define CLASS_CAPTAIN 		2
-#define CLASS_SHARPSHOOTER 	3
-#define CLASS_BERSERKER 	4
-#define CLASS_HUSCARL 		5
-#define CLASS_GESTIR 		6
-#define CLASS_HEAVYKNIGHT 	7
-#define CLASS_ARCHER 		8
-#define CLASS_MANATARMS 	9
+enum PlayerClass_t
+{
+	PVK2_CLASS_SKIRMISHER = 0,
+	PVK2_CLASS_CAPTAIN,
+	PVK2_CLASS_SHARPSHOOTER,
 
-#define MAXCLASSES 10
+	PVK2_CLASS_BERSERKER,
+	PVK2_CLASS_HUSCARL,
+	PVK2_CLASS_GESTIR,
+	PVK2_CLASS_BONDI,
+
+	PVK2_CLASS_HEAVYKNIGHT,
+	PVK2_CLASS_ARCHER,
+	PVK2_CLASS_MANATARMS,
+
+	PVK2_NUM_CLASSES,
+	PVK2_CLASS_INVALID = -1
+}
+
+#define NUM_CLASSES_PIRATES 3
+#define NUM_CLASSES_VIKINGS 4
+#define NUM_CLASSES_KNIGHTS 3
 
 new Handle:cvar_enabled;
 new Handle:cvar_debug;
@@ -165,63 +176,32 @@ new bool:baseUpgrades[NOAMP_MAXBASEUPGRADES];
 new bool:baseUpgradesIsValid[NOAMP_MAXBASEUPGRADES];
 new baseUpgradePrices[NOAMP_MAXBASEUPGRADES];
 
-new numSoundsClasses[MAXCLASSES] = 
+new const String:RoundStartGameSounds[][] =
 {
-	6, //Skirmisher
-	6, //Captain
-	9, //Sharpshooter
-	4, //Berserker
-	6, //Huscarl
-	5, //Gestir
-	4, //Heavy Knight
-	5, //Archer
-	4  //Man-At-Arms
-};
+	"Skirmisher.RoundStart",	// Skirmisher
+	"Captain.RoundStart",		// Captain
+	"Sharpshooter.RoundStart",	// Sharpshooter
+	"Berserker.RoundStart",		// Berserker
+	"Huscarl.RoundStart",		// Huscarl
+	"Gestir.RoundStart",		// Gestir
+	"Bondi.RoundStart",			// Bondi
+	"HeavyKnight.RoundStart",	// Heavy Knight
+	"Archer.RoundStart",		// Archer
+	"ManAtArms.RoundStart"		// Man-At-Arms
+}
 
-new const String:RoundStartSounds[][] = 
+new const String:DeadTeammateGameSounds[][] =
 {
-	"player/pirates/skirm/p_skirm-roundstartcheerup",	//Skirmisher
-	"player/pirates/captain/p_captain-roundstart",		//Captain
-	"player/pirates/sharp/p_sharp-roundstartcheerup",	//Sharpshooter
-	"player/vikings/berserker/v_zerk-roundstartcheer",	//Berserker
-	"player/vikings/huscarl/v_husc_roundstartcheer",	//Huscarl
-	"player/vikings/gestir/v_gesti_roundstartcheer",	//Gestir
-	"player/knights/heavyknight/k_hk-roundstartcheer",	//Heavy Knight
-	"player/knights/archer/k_arche-roundstartcheer",	//Archer
-	"player/knights/manatarms/k_manat-roundstartcheer"	//Man-At-Arms
-};
-
-new numFriendDeadSoundsClasses[MAXCLASSES] = 
-{
-	1, //Skirmisher
-	1, //Captain
-	5, //Sharpshooter
-	3, //Berserker
-	1, //Huscarl
-	1, //Gestir
-	3, //Heavy Knight
-	1, //Archer
-	1  //Man-At-Arms
-};
-
-new const String:FriendDeadSounds[][] = 
-{
-	"player/pirates/skirm/p_skirm-bighurtvox1",
-	"player/pirates/captain/p_captain-corpse-friendly1",
-	"player/pirates/sharp/p_sharp-spottedteammatecorpse",
-	"player/vikings/berserker/v_zerk-spotteammatecorpse",
-	"player/vikings/huscarl/v_husc_killknight3",
-	"player/vikings/gestir/v_gesti_spotteammatecorpse",
-	"player/knights/heavyknight/k_hk-friendlycorpse",
-	"player/knights/archer/k_arche-spotteamcorpse",
-	"player/knights/manatarms/k_manat-roundstartcheer"
-};
-
-new const String:FriendDeadSoundsUnique[][] = // for easy precache
-{
-	"player/pirates/skirm/p_skirm-bighurtvox1",
-	"player/pirates/captain/p_captain-corpse-friendly1",
-	"player/vikings/huscarl/v_husc_killknight3"
+	"Skirmisher.DeadTeamMate",		// Skirmisher (None)
+	"Captain.DeadTeamMate",			// Captain
+	"Sharpshooter.DeadTeamMate",	// Sharpshooter
+	"Berserker.DeadTeamMate",		// Berserker
+	"Huscarl.DeadTeamMate",			// Huscarl (None)
+	"Gestir.DeadTeamMate",			// Gestir
+	"Bondi.DeadTeamMate",			// Bondi
+	"HeavyKnight.DeadTeamMate",		// Heavy Knight
+	"Archer.DeadTeamMate",			// Archer
+	"ManAtArms.DeadTeamMate"		// Man-At-Arms (None)
 };
 
 new const String:SpookySounds[][] = 
@@ -254,6 +234,7 @@ new powerupVulturesPrice;
 new kegPrice;
 new chestAward;
 new preparationSecs;
+new Float:smallParrotSize;
 new Float:giantParrotSize;
 new Float:bossParrotSize;
 new parrotBossHP;
