@@ -1,0 +1,84 @@
+// NIGHT OF A MILLION PARROTS game scheme
+
+// Values:
+// "bossparrotsize" : Size of the boss parrot, float value.
+// "chestaward" : How much money every player gets from chest capture?
+// "smallparrotsize" : Size of small parrots, float value.
+// "giantparrotsize" : Size of giant parrots, float value.
+// "playerlives" : How many lives players have. 0 for infinite.
+// "preparationsecs" : Preparation phase time.
+// "maxhpprice" : How much max HP upgrade costs?
+// "maxarmorprice" : How much max armor upgrade costs?
+// "maxspeedprice" : How much max speed upgrade costs?
+// "kegprice" : How much one powder keg costs?
+// "fillspecialprice" : How much one fill special powerup costs?
+
+// Wave values:
+// "parrotcount" : How many parrots spawn in one wave.
+// "giantparrotcount" : Same as above, except with bigger peckers.
+// "maxparrots" : How many parrots can be in the map at once. Don't forget about the performance!
+// "boss" : Boss wave boolean, if 1, boss parrot will appear in this wave.
+
+"NOAMP_Scheme"
+{
+	"general"
+	{
+		"name"				"Default"
+		"bossparrothp"		"1000"
+		"bossparrotsize" 	"12.0"
+		"chestaward" 		"200"
+		"smallparrotsize"	"1.0"
+		"giantparrotsize"	"4.0"
+		"playerlives"		"5"
+		"preparationsecs"	"30"
+		"maxhpprice"		"500"
+		"maxarmorprice"		"300"
+		"maxspeedprice"		"450"
+		"kegprice"			"100"
+		"fillspecialprice"	"50"
+	}
+	
+	// Waves
+	"1"
+	{
+		"parrotcount"		"30"
+		"giantparrotcount"	"0"
+		"maxparrots"		"15"
+		"boss"				"0"
+	}
+	"2"
+	{
+		"parrotcount"		"60"
+		"giantparrotcount"	"0"
+		"maxparrots"		"15"
+		"boss"				"0"
+	}
+	"3"
+	{
+		"parrotcount"		"90"
+		"giantparrotcount"	"1"
+		"maxparrots"		"15"
+		"boss"				"0"
+	}
+	"4"
+	{
+		"parrotcount"		"120"
+		"giantparrotcount"	"2"
+		"maxparrots"		"15"
+		"boss"				"0"
+	}
+	"5"
+	{
+		"parrotcount"		"150"
+		"giantparrotcount"	"3"
+		"maxparrots"		"15"
+		"boss"				"0"
+	}
+	"6"
+	{
+		"parrotcount"		"0"
+		"giantparrotcount"	"0"
+		"maxparrots"		"15"
+		"boss"				"1"
+	}
+}
