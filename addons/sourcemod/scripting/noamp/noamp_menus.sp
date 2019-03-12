@@ -107,7 +107,7 @@ public MainMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 				
 				for (new i = 1; i < upgradescount; i++)
 				{
-					decl String:buffer[256];
+					//char buffer[ 256 ];
 					Format(choices[i], 128, "Base Upgrade %d $%d", i, baseUpgradePrices[i]);
 					
 					decl String:choicestr[64];
@@ -120,25 +120,25 @@ public MainMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 				SetMenuExitBackButton(baseupgmenu, true);
 				DisplayMenu(baseupgmenu, param1, 20);
 			}
-			else if (StrEqual(info, CHOICE4))
+			else if ( StrEqual( info, CHOICE4 ) )
 			{
-				new Handle:miscmenu = CreateMenu(MiscMenuHandler, MENU_ACTIONS_DEFAULT);
-				SetMenuTitle(miscmenu, "%T", "Miscellaneous", LANG_SERVER);
+				Handle miscmenu = CreateMenu( MiscMenuHandler, MENU_ACTIONS_DEFAULT );
+				SetMenuTitle( miscmenu, "%T", "Miscellaneous", LANG_SERVER );
 				
-				new String:choice1[64];
-				new String:choice2[64];
-				new String:choice3[64];
-				new String:choice4[64];
-				new String:choice5[64];
+				char choice1[ 64 ];
+				char choice2[ 64 ];
+				//char choice3[ 64 ];
+				//char choice4[ 64 ];
+				//char choice5[ 64 ];
 				
-				Format(choice1, 64, "Restore player lives");
+				Format( choice1, 64, "Restore player lives" );
 				
-				AddMenuItem(miscmenu, CHOICE1, choice1);
-				AddMenuItem(miscmenu, CHOICE2, choice2);
+				AddMenuItem( miscmenu, CHOICE1, choice1 );
+				AddMenuItem( miscmenu, CHOICE2, choice2 );
 				
-				SetMenuExitButton(miscmenu, true);
-				SetMenuExitBackButton(miscmenu, true);
-				DisplayMenu(miscmenu, param1, 20);
+				SetMenuExitButton( miscmenu, true );
+				SetMenuExitBackButton( miscmenu, true );
+				DisplayMenu( miscmenu, param1, 20 );
 			}
 			else if (StrEqual(info, CHOICE5))
 			{
@@ -371,20 +371,20 @@ public BaseUpgradesMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 		
 		case MenuAction_Select:
 		{
-			decl String:info[32];
-			GetMenuItem(menu, param2, info, sizeof(info));
+			char info[ 32 ];
+			GetMenuItem( menu, param2, info, sizeof( info ) );
 			
-			decl String:choices[NOAMP_MAXBASEUPGRADES][128];
-			new upgradescount = NOAMP_MAXBASEUPGRADES;
+			//char choices[ NOAMP_MAXBASEUPGRADES ][ 128 ];
+			int upgradescount = NOAMP_MAXBASEUPGRADES;
 			
-			for (new i = 1; i < upgradescount; i++)
+			for ( int i = 1; i < upgradescount; i++ )
 			{				
-				decl String:choicestr[64];
-				Format(choicestr, 128, "#choice%d", i);
+				char choicestr[ 64 ];
+				Format( choicestr, 128, "#choice%d", i );
 				
-				if (StrEqual(info, choicestr))
+				if ( StrEqual( info, choicestr ) )
 				{
-					BuyBaseUpgrade(param1, i);
+					BuyBaseUpgrade( param1, i );
 				}
 			}
 		}
@@ -541,31 +541,29 @@ public DebugMenuHandler(Handle:menu, MenuAction:action, param1, param2)
 
 public Action:CMD_NOAMP_Menu(client, args)
 {
-	NOAMP_Menu(client);
+	NOAMP_Menu( client );
 	return Plugin_Handled;
 }
 
-public NOAMP_Menu(client)
+public NOAMP_Menu( int client )
 {
-	if (!IsClientInGame(client))
-		return Plugin_Handled;
+	if ( !IsClientInGame( client ) )
+		return;
 	
-	if (IsCorrupted)
+	if ( IsCorrupted )
 	{
-		CorruptionBlockAction(client);
-		return Plugin_Handled;
+		CorruptionBlockAction( client );
+		return;
 	}
 	
-	new Handle:menu = CreateMenu(MainMenuHandler, MENU_ACTIONS_ALL);
-	SetMenuTitle(menu, "%T", "NOAMP Menu", LANG_SERVER);
-	AddMenuItem(menu, CHOICE1, "Upgrades");
-	AddMenuItem(menu, CHOICE2, "Powerups");
-	//AddMenuItem(menu, CHOICE3, "Weapons");
-	AddMenuItem(menu, CHOICE3, "Base Upgrades");
-	AddMenuItem(menu, CHOICE4, "Misc.");
-	AddMenuItem(menu, CHOICE5, "Debug");
-	SetMenuExitButton(menu, true);
-	DisplayMenu(menu, client, 20);
-	
-	return Plugin_Handled;
+	Handle menu = CreateMenu( MainMenuHandler, MENU_ACTIONS_ALL );
+	SetMenuTitle( menu, "%T", "NOAMP Menu", LANG_SERVER );
+	AddMenuItem( menu, CHOICE1, "Upgrades" );
+	AddMenuItem( menu, CHOICE2, "Powerups" );
+	//AddMenuItem( menu, CHOICE3, "Weapons");
+	AddMenuItem( menu, CHOICE3, "Base Upgrades" );
+	AddMenuItem( menu, CHOICE4, "Misc." );
+	AddMenuItem( menu, CHOICE5, "Debug" );
+	SetMenuExitButton( menu, true );
+	DisplayMenu( menu, client, 20 );
 }
