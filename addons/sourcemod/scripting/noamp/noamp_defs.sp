@@ -40,6 +40,7 @@
 
 #define BASEUPGRADE1 1
 
+#define PARROT_ANY -1
 #define PARROT_NORMAL 1
 #define PARROT_GIANT 2
 #define PARROT_SMALL 3
@@ -268,6 +269,10 @@ bool bossParrotSpawned;
 
 int parrotCurrentBossHP;
 int parrotSoundPitch;
+int g_iParrotSoundPitchSmall = 150;
+int g_iParrotSoundPitchNormal = 100;
+int g_iParrotSoundPitchGiant = 85;
+int g_iParrotSoundPitchBoss = 75;
 int timerSoundPitch;
 
 int h_iSpecial;

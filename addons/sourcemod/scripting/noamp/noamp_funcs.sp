@@ -73,7 +73,9 @@ stock GetAliveParrots( parrottype )
 	{
 		GetEntPropString( parrot, Prop_Data, "m_iName", targetname, sizeof( targetname ) );
 		
-		if ( parrottype == PARROT_NORMAL && StrEqual( targetname, "noamp_parrot", false ) )
+		if ( parrottype == PARROT_ANY && StrContains( targetname, "noamp_", false ) == 0 )
+			aliveParrots++;
+		else if ( parrottype == PARROT_NORMAL && StrEqual( targetname, "noamp_parrot", false ) )
 			aliveParrots++;
 		else if ( parrottype == PARROT_GIANT && StrEqual( targetname, "noamp_giant", false ) )
 			aliveParrots++;

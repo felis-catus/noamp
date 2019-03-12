@@ -32,7 +32,7 @@ public FindSpawns()
 	char targetname[ 128 ];
 	float entorg[ 3 ];
 	int count = 0;
-	int giantcount = 0;
+	//int giantcount = 0;
 	int bosscount = 0;
 	int curSpawn = -1;
 

@@ -12,12 +12,19 @@
 // "maxspeedprice" : How much max speed upgrade costs?
 // "kegprice" : How much one powder keg costs?
 // "fillspecialprice" : How much one fill special powerup costs?
+// "vulturesprice" : How much vultures powerup costs?
+// "baseupgrade1price" : How much first base upgrade costs?
+// "smallparrotpitch" : "Sound pitch of small parrot, integer value"
+// "normalparrotpitch" : "Sound pitch of normal parrot, integer value"
+// "giantparrotpitch" : "Sound pitch of giant parrot, integer value"
+// "bossparrotpitch" : "Sound pitch of boss parrot, integer value"
 
 // Wave values:
 // "parrotcount" : How many parrots spawn in one wave.
 // "giantparrotcount" : Same as above, except with bigger peckers.
 // "maxparrots" : How many parrots can be in the map at once. Don't forget about the performance!
 // "boss" : Boss wave boolean, if 1, boss parrot will appear in this wave.
+// "corruptor" : Corruptor boolean, if 1, boss parrot will "corrupt" your gameplay
 
 "NOAMP_Scheme"
 {
@@ -36,6 +43,12 @@
 		"maxspeedprice"		"450"
 		"kegprice"			"100"
 		"fillspecialprice"	"50"
+		"vulturesprice"		"150"
+		"baseupgrade1price"	"0"
+		"smallparrotpitch"	"150"
+		"normalparrotpitch"	"100"
+		"giantparrotpitch"	"85"
+		"bossparrotpitch"	"75"
 	}
 	
 	// Waves
@@ -80,5 +93,6 @@
 		"giantparrotcount"	"0"
 		"maxparrots"		"15"
 		"boss"				"1"
+		"corruptor"		"1"
 	}
 }

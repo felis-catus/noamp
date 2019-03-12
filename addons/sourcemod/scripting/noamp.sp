@@ -260,11 +260,21 @@ public Action:NormalSoundHook( iClients[ 64 ], &iNumClients, char strSample[ PLA
 	bool bValidTimer = false;
 	
 	bValid = StrContains( strSample, "weapons/parrot", false ) == 0;
-	bValidTimer = StrContains( strSample, "noamp/timertick.wav", false ) == 0;
+	bValidTimer = StrContains( strSample, "noamp/timertick.wav", false ) == 0;	
 	
 	if ( bValid )
 	{
-		iPitch = parrotSoundPitch;
+		iPitch = g_iParrotSoundPitchNormal; // Assume normal parrot
+		
+		char targetname[ 128 ];
+		GetEntPropString( iEntity, Prop_Data, "m_iName", targetname, sizeof( targetname ) );
+		if ( StrEqual( targetname, "noamp_giant", false ) )
+			iPitch = g_iParrotSoundPitchGiant;
+		else if ( StrEqual( targetname, "noamp_small", false ) )
+			iPitch = g_iParrotSoundPitchSmall;
+		else if ( StrEqual( targetname, "noamp_boss", false ) )
+			iPitch = g_iParrotSoundPitchBoss;
+		
 		iFlags |= SND_CHANGEPITCH;
 		return Plugin_Changed;
 	}
@@ -379,8 +389,8 @@ public OnMapStart()
 		SDKHook( curEnt, SDKHook_StartTouch, OnStartTouchChestZone );
 	}
 	
-	h_TimerHUD = CreateTimer( 0.1, HUD, _, TIMER_REPEAT );
-	h_TimerWaitingForPlayers = CreateTimer( 0.1, WaitingForPlayers, _, TIMER_REPEAT );
+	h_TimerHUD = CreateTimer( 0.1, HUD, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+	h_TimerWaitingForPlayers = CreateTimer( 0.1, WaitingForPlayers, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
 	
 	g_bHasGameStarted = false;
 	g_bIsMapLoaded = true;
@@ -458,6 +468,10 @@ public ReadNOAMPScript()
 		char strfillspecialprice[ 32 ];
 		char strvulturesprice[ 32 ];
 		char strbaseupgrade1price[ 32 ];
+		char strsmallparrotpitch[ 32 ];
+		char strnormalparrotpitch[ 32 ];
+		char strgiantparrotpitch[ 32 ];
+		char strbossparrotpitch[ 32 ];
 		
 		KvGetString( kv, "name", strschemename, 256 );
 		KvGetString( kv, "bossparrothp", strbossparrothp, 32 );
@@ -474,6 +488,10 @@ public ReadNOAMPScript()
 		KvGetString( kv, "fillspecialprice", strfillspecialprice, 32 );
 		KvGetString( kv, "vulturesprice", strvulturesprice, 32 );
 		KvGetString( kv, "baseupgrade1price", strbaseupgrade1price, 32 );
+		KvGetString( kv, "smallparrotpitch", strsmallparrotpitch, 32 );
+		KvGetString( kv, "normalparrotpitch", strnormalparrotpitch, 32 );
+		KvGetString( kv, "giantparrotpitch", strgiantparrotpitch, 32 );
+		KvGetString( kv, "bossparrotpitch", strbossparrotpitch, 32 );
 		
 		schemeName = strschemename;
 		parrotBossHP = StringToInt( strbossparrothp );
@@ -490,6 +508,10 @@ public ReadNOAMPScript()
 		powerupFillSpecialPrice = StringToInt( strfillspecialprice, 10 );
 		powerupVulturesPrice = StringToInt( strvulturesprice, 10 );
 		baseUpgradePrices[ 1 ] = StringToInt( strbaseupgrade1price, 10 );
+		g_iParrotSoundPitchSmall = StringToInt( strsmallparrotpitch );
+		g_iParrotSoundPitchNormal = StringToInt( strnormalparrotpitch );
+		g_iParrotSoundPitchGiant = StringToInt( strgiantparrotpitch );
+		g_iParrotSoundPitchBoss = StringToInt( strbossparrotpitch );
 		
 		KvGotoNextKey( kv );
 	}
@@ -574,7 +596,7 @@ public ReadNOAMPScript()
 }
 
 // WTF: temp very stupid way of reading parrotcreator script
-public ReadParrotCreatorScript( int mode )
+/*public ReadParrotCreatorScript( int mode )
 {
 	Handle file = INVALID_HANDLE;
 	BuildPath( Path_SM, ParrotCreatorScriptPath, sizeof( ParrotCreatorScriptPath ), "data/noamp/default_parrotcreator.txt" );
@@ -715,7 +737,7 @@ public ReadParrotCreatorScript( int mode )
 	}
 
 	CloseHandle( file );
-}
+}*/
 
 public ScriptCommands( const char[] fileline )
 {
