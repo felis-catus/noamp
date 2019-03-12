@@ -53,33 +53,33 @@ public OnPluginStart()
 	CommandListeners();
 	AddFilesToDownloadTable();
 	
-	CreateDirectory("addons/sourcemod/data/noamp", 3);
+	CreateDirectory( "addons/sourcemod/data/noamp", 3 );
 	
-	LoadTranslations("noamp.phrases");
-	AddServerTag(SERVER_TAG);
+	LoadTranslations( "noamp.phrases" );
+	AddServerTag( SERVER_TAG );
 	
-	AddNormalSoundHook(NormalSoundHook);
+	AddNormalSoundHook( NormalSoundHook );
 }
 
-public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
+public APLRes:AskPluginLoad2( Handle myself, bool late, char[] error, err_max ) 
 {
-	MarkNativeAsOptional("GetUserMessageType");
+	MarkNativeAsOptional( "GetUserMessageType" );
 	return APLRes_Success;
 }
 
 RegisterCvars()
 {
-	cvar_enabled = CreateConVar("noamp_enabled", "1", "Enable NIGHT OF A MILLION PARROTS gamemode.");
-	cvar_debug = CreateConVar("noamp_debug", "0", "Enable debug mode for testing.");
-	cvar_difficulty = CreateConVar("noamp_difficulty", "normal", "Game difficulty, loads a script named {mapname}_{difficulty}.txt eg. noamp_forest_normal.txt. If you want to choose a scheme to load, use noamp_scheme.");
-	cvar_scheme = CreateConVar("noamp_scheme", "null", "If not \"null\", loads a chosen script from ../sourcemod/data/noamp. Difficulty settings will be used otherwise.");
-	cvar_ignoreprefix = CreateConVar("noamp_ignoreprefix", "0", "Ignores the noamp_ map prefix check in map start. Allows NOAMP in every other map.");
-	cvar_timelimit = FindConVar("mp_timelimit");
+	cvar_enabled = CreateConVar( "noamp_enabled", "1", "Enable NIGHT OF A MILLION PARROTS gamemode." );
+	cvar_debug = CreateConVar( "noamp_debug", "0", "Enable debug mode for testing." );
+	cvar_difficulty = CreateConVar( "noamp_difficulty", "normal", "Game difficulty, loads a script named {mapname}_{difficulty}.txt eg. noamp_forest_normal.txt. If you want to choose a scheme to load, use noamp_scheme." );
+	cvar_scheme = CreateConVar( "noamp_scheme", "null", "If not \"null\", loads a chosen script from ../sourcemod/data/noamp. Difficulty settings will be used otherwise." );
+	cvar_ignoreprefix = CreateConVar( "noamp_ignoreprefix", "0", "Ignores the noamp_ map prefix check in map start. Allows NOAMP in every other map." );
+	cvar_timelimit = FindConVar( "mp_timelimit" );
+	cvar_dmoldrules = FindConVar( "mp_dm_oldrules" );
 	
-	
-	HookConVarChange(cvar_enabled, cvHookEnabled);
-	HookConVarChange(cvar_difficulty, cvHookDifficulty);
-	HookConVarChange(cvar_scheme, cvHookScheme);
+	HookConVarChange( cvar_enabled, cvHookEnabled );
+	HookConVarChange( cvar_difficulty, cvHookDifficulty );
+	HookConVarChange( cvar_scheme, cvHookScheme );
 	
 	/* replaced by keyvalues
 	cvar_lives = CreateConVar("noamp_playerlives", "10", "How many lives players have. 0 for infinite.");
@@ -93,21 +93,21 @@ RegisterCvars()
 	cvar_bossparrotsize = CreateConVar("noamp_bossparrotsize", "12.0", "Size of giant parrots.");
 	*/
 	
-	AutoExecConfig(true, "noamp");
+	AutoExecConfig( true, "noamp" );
 }
 
 RegisterCmds()
 {
-	RegConsoleCmd("noamp_menu", CMD_NOAMP_Menu);
-	RegConsoleCmd("noamp_givemoney", GiveMoneyToTarget);
-	RegAdminCmd("noamp_startgame", CmdStartGame, ADMFLAG_KICK, "Start the game.");
-	RegAdminCmd("noamp_resetgame", CmdResetGame, ADMFLAG_KICK, "Reset the game.");
-	RegConsoleCmd("debug_noamp_testparrotspawns", CmdTestSpawns);
-	RegConsoleCmd("debug_noamp_testgiantparrotspawns", CmdTestGiantSpawns);
-	RegConsoleCmd("debug_noamp_gibemonipls", CmdGiveMoney);
-	RegConsoleCmd("debug_noamp_giballupgraeds", CmdGiveAllUpgrades);
-	RegConsoleCmd("debug_noamp_reloadscript", CmdReloadKeyValues);
-	RegConsoleCmd("debug_noamp_jumptowave", CmdJumpToWave);
+	RegConsoleCmd( "noamp_menu", CMD_NOAMP_Menu );
+	RegConsoleCmd( "noamp_givemoney", GiveMoneyToTarget );
+	RegAdminCmd( "noamp_startgame", CmdStartGame, ADMFLAG_KICK, "Start the game." );
+	RegAdminCmd( "noamp_resetgame", CmdResetGame, ADMFLAG_KICK, "Reset the game." );
+	RegConsoleCmd( "debug_noamp_testparrotspawns", CmdTestSpawns );
+	RegConsoleCmd( "debug_noamp_testgiantparrotspawns", CmdTestGiantSpawns );
+	RegConsoleCmd( "debug_noamp_gibemonipls", CmdGiveMoney );
+	RegConsoleCmd( "debug_noamp_giballupgraeds", CmdGiveAllUpgrades );
+	RegConsoleCmd( "debug_noamp_reloadscript", CmdReloadKeyValues );
+	RegConsoleCmd( "debug_noamp_jumptowave", CmdJumpToWave );
 }
 
 SDKStuff()
@@ -119,177 +119,178 @@ SDKStuff()
 
 HookEvents()
 {
-	HookEvent("npc_death", OnParrotDeath);
-	HookEvent("chest_capture", OnChestCapture);
-	HookEvent("player_spawn", OnPlayerSpawn);
-	HookEvent("player_death", OnPlayerDeath);
-	HookEvent("player_hurt", OnPlayerHurt);
+	HookEvent( "npc_death", OnParrotDeath );
+	HookEvent( "player_spawn", OnPlayerSpawn );
+	HookEvent( "player_death", OnPlayerDeath );
+	HookEvent( "player_hurt", OnPlayerHurt );
 }
 
 FindPropInfo()
 {
-	h_iSpecial = FindSendPropOffs("CPVK2Player", "m_iSpecial");
-	h_iHealth = FindSendPropInfo("CPVK2Player", "m_iHealth");
-	h_ArmorValue = FindSendPropInfo("CPVK2Player", "m_ArmorValue");
-	h_iMaxHealth = FindSendPropInfo("CPVK2Player", "m_iMaxHealth");
-	h_iMaxArmor = FindSendPropInfo("CPVK2Player", "m_iMaxArmor");
-	h_flMaxspeed = FindSendPropInfo("CPVK2Player", "m_flMaxspeed");
-	h_flDefaultSpeed = FindSendPropInfo("CPVK2Player", "m_flDefaultSpeed");
-	h_iPlayerClass = FindSendPropInfo("CPVK2Player", "m_iPlayerClass");
+	h_iSpecial = FindSendPropInfo( "CPVK2Player", "m_iSpecial" );
+	h_iMaxSpecial = FindSendPropInfo( "CPVK2Player", "m_iMaxSpecial" );
+	h_iHealth = FindSendPropInfo( "CPVK2Player", "m_iHealth" );
+	h_ArmorValue = FindSendPropInfo( "CPVK2Player", "m_ArmorValue" );
+	h_iMaxHealth = FindSendPropInfo( "CPVK2Player", "m_iMaxHealth" );
+	h_iMaxArmor = FindSendPropInfo( "CPVK2Player", "m_iMaxArmor" );
+	h_flMaxspeed = FindSendPropInfo( "CPVK2Player", "m_flMaxspeed" );
+	h_flDefaultSpeed = FindSendPropInfo( "CPVK2Player", "m_flDefaultSpeed" );
+	h_iPlayerClass = FindSendPropInfo( "CPVK2Player", "m_iPlayerClass" );
 }
 
 CommandListeners()
 {
-	AddCommandListener(ChatListener, "say");
-	AddCommandListener(ChatListener, "say2");
-	AddCommandListener(ChatListener, "say_team");
+	AddCommandListener( ChatListener, "say" );
+	AddCommandListener( ChatListener, "say2" );
+	AddCommandListener( ChatListener, "say_team" );
 	
-	AddCommandListener(ChangeTeamListener, "changeteam");
-	AddCommandListener(DropItemListener, "dropitem");
+	AddCommandListener( ChangeTeamListener, "changeteam" );
+	AddCommandListener( DropItemListener, "dropitem" );
 }
 
 AddFilesToDownloadTable()
 {
-	AddFileToDownloadsTable("sound/noamp/gameover.mp3");
-	AddFileToDownloadsTable("sound/noamp/music/corruptor.mp3");
-	AddFileToDownloadsTable("sound/noamp/music/corruptor2.mp3");
-	AddFileToDownloadsTable("sound/noamp/corruptor/corruption.mp3");
-	AddFileToDownloadsTable("noamp/corruptor/glitch.mp3");
-	AddFileToDownloadsTable("noamp/corruptor/secret.mp3");
-	AddFileToDownloadsTable("noamp/corruptor/something.mp3");
-	AddFileToDownloadsTable("sound/noamp/kaching.mp3");
-	AddFileToDownloadsTable("sound/noamp/playerdeath.mp3");
-	AddFileToDownloadsTable("sound/noamp/playerdisconnect.mp3");
-	AddFileToDownloadsTable("sound/noamp/mystic.mp3");
-	AddFileToDownloadsTable("sound/noamp/timertick.wav");
+	AddFileToDownloadsTable( "sound/noamp/gameover.mp3" );
+	AddFileToDownloadsTable( "sound/noamp/music/corruptor.mp3" );
+	AddFileToDownloadsTable( "sound/noamp/music/corruptor2.mp3" );
+	AddFileToDownloadsTable( "sound/noamp/corruptor/corruption.mp3" );
+	AddFileToDownloadsTable( "noamp/corruptor/glitch.mp3" );
+	AddFileToDownloadsTable( "noamp/corruptor/secret.mp3" );
+	AddFileToDownloadsTable( "noamp/corruptor/something.mp3" );
+	AddFileToDownloadsTable( "sound/noamp/kaching.mp3" );
+	AddFileToDownloadsTable( "sound/noamp/playerdeath.mp3" );
+	AddFileToDownloadsTable( "sound/noamp/playerdisconnect.mp3" );
+	AddFileToDownloadsTable( "sound/noamp/mystic.mp3" );
+	AddFileToDownloadsTable( "sound/noamp/timertick.wav" );
 	
-	for (new i = 0; i < 9; i++)
+	for ( int i = 0; i < 9; i++ )
 	{
-		decl String:sample[64];
-		Format(sample, sizeof(sample), "%s", SpookySounds[i]);
-		AddFileToDownloadsTable(sample);
+		char sample[ 64 ];
+		Format( sample, sizeof( sample ), "%s", SpookySounds[ i ] );
+		AddFileToDownloadsTable( sample );
 	}
 	
-	for (new i = 0; i < 4; i++)
+	for ( int i = 0; i < 4; i++ )
 	{
-		decl String:sample[64];
-		Format(sample, sizeof(sample), "%s", CorruptorSpeech[i]);
-		AddFileToDownloadsTable(sample);
+		char sample[ 64 ];
+		Format( sample, sizeof( sample ), "%s", CorruptorSpeech[ i ] );
+		AddFileToDownloadsTable( sample );
 	}
 }
 
 public Precache()
 {
-	PrecacheSound("music/deadparrotachieved.mp3");
-	PrecacheSound("noamp/gameover.mp3");
-	PrecacheSound("noamp/music/corruptor.mp3");
-	PrecacheSound("noamp/music/corruptor2.mp3");
-	PrecacheSound("noamp/corruptor/corruption.mp3");
-	PrecacheSound("noamp/corruptor/glitch.mp3");
-	PrecacheSound("noamp/corruptor/secret.mp3");
-	PrecacheSound("noamp/corruptor/something.mp3");
-	PrecacheSound("noamp/kaching.mp3");
-	PrecacheSound("noamp/playerdeath.mp3");
-	PrecacheSound("noamp/playerdisconnect.mp3");
-	PrecacheSound("noamp/mystic.mp3");
-	PrecacheSound("noamp/timertick.wav");
+	PrecacheSound( "music/deadparrotachieved.mp3" );
+	PrecacheSound( "noamp/gameover.mp3" );
+	PrecacheSound( "noamp/music/corruptor.mp3" );
+	PrecacheSound( "noamp/music/corruptor2.mp3" );
+	PrecacheSound( "noamp/corruptor/corruption.mp3" );
+	PrecacheSound( "noamp/corruptor/glitch.mp3" );
+	PrecacheSound( "noamp/corruptor/secret.mp3" );
+	PrecacheSound( "noamp/corruptor/something.mp3" );
+	PrecacheSound( "noamp/kaching.mp3" );
+	PrecacheSound( "noamp/playerdeath.mp3" );
+	PrecacheSound( "noamp/playerdisconnect.mp3" );
+	PrecacheSound( "noamp/mystic.mp3" );
+	PrecacheSound( "noamp/timertick.wav" );
 	
-	for (new i = 0; i < 9; i++)
+	for ( int i = 0; i < 9; i++ )
 	{
-		decl String:sample[64];
-		Format(sample, sizeof(sample), "%s", SpookySounds[i]);
-		PrecacheSound(sample);
+		char sample[ 64 ];
+		Format( sample, sizeof( sample ), "%s", SpookySounds[ i ] );
+		PrecacheSound( sample );
 	}
 	
-	for (new i = 0; i < 4; i++)
+	for ( int i = 0; i < 4; i++ )
 	{
-		decl String:sample[64];
-		Format(sample, sizeof(sample), "%s", CorruptorSpeech[i]);
-		PrecacheSound(sample);
+		char sample[ 64 ];
+		Format( sample, sizeof( sample ), "%s", CorruptorSpeech[ i ] );
+		PrecacheSound( sample );
 	}
 }
 
 
 
-public cvHookEnabled(Handle:cvar, const String:oldVal[], const String:newVal[])
+public cvHookEnabled( Handle cvar, const char[] oldVal, const char[] newVal )
 {
-	IsEnabled = GetConVarBool(cvar);
+	g_bIsEnabled = GetConVarBool( cvar );
 }
 
-public cvHookDifficulty(Handle:cvar, const String:oldVal[], const String:newVal[])
+public cvHookDifficulty( Handle cvar, const char[] oldVal, const char[] newVal )
 {
-	decl String:difficulty[128] = "null";
-	GetConVarString(cvar_difficulty, difficulty, 128);
+	char difficulty[ 128 ] = "null";
+	GetConVarString( cvar_difficulty, difficulty, sizeof( difficulty ) );
 	
-	decl String:currentMap[128];
-	GetCurrentMap(currentMap, 128);
+	char currentMap[ 128 ];
+	GetCurrentMap( currentMap, sizeof( currentMap ) );
 	
-	if (StrEqual(difficulty, "null", false) || StrEqual(difficulty, "", false))
+	if ( StrEqual( difficulty, "null", false ) || StrEqual( difficulty, "", false ) )
 	{
-		LogError("\"null\" difficulty, loading default scheme.");
-		BuildPath(Path_SM, ScriptPath, sizeof(ScriptPath), "data/noamp/default.txt");
+		LogError( "\"null\" difficulty, loading default scheme." );
+		BuildPath( Path_SM, ScriptPath, sizeof(ScriptPath), "data/noamp/default.txt" );
 	}
-	BuildPath(Path_SM, ScriptPath, sizeof(ScriptPath), "data/noamp/%s_%s.txt", currentMap, difficulty);
-	PrintToServer("Loaded NOAMP scheme %s.", ScriptPath);
+
+	BuildPath( Path_SM, ScriptPath, sizeof(ScriptPath), "data/noamp/%s_%s.txt", currentMap, difficulty );
+	PrintToServer( "Loaded NOAMP scheme %s.", ScriptPath );
 	
-	ResetGame(false, true);
+	ResetGame( false, true );
 	UpdateGameDesc();
 }
 
-public cvHookScheme(Handle:cvar, const String:oldVal[], const String:newVal[])
+public cvHookScheme( Handle cvar, const char[] oldVal, const char[] newVal )
 {
-	decl String:scheme[128] = "null";
-	GetConVarString(cvar_scheme, scheme, 128);
+	char scheme[ 128 ] = "null";
+	GetConVarString( cvar_scheme, scheme, sizeof( scheme ) );
 	
-	if (StrEqual(scheme, "null", false) || StrEqual(scheme, "", false))
+	if ( StrEqual( scheme, "null", false ) || StrEqual( scheme, "", false ) )
 	{
-		LogError("\"null\" scheme, loading default scheme.");
-		BuildPath(Path_SM, ScriptPath, sizeof(ScriptPath), "data/noamp/default.txt");
+		LogError( "\"null\" scheme, loading default scheme." );
+		BuildPath( Path_SM, ScriptPath, sizeof( ScriptPath ), "data/noamp/default.txt" );
 	}
-	BuildPath(Path_SM, ScriptPath, sizeof(ScriptPath), "data/noamp/%s", scheme);
-	PrintToServer("Loaded NOAMP scheme %s.", ScriptPath);
+	BuildPath( Path_SM, ScriptPath, sizeof( ScriptPath ), "data/noamp/%s", scheme );
+	PrintToServer( "Loaded NOAMP scheme %s.", ScriptPath );
 	
-	ResetGame(false, true);
+	ResetGame( false, true );
 	UpdateGameDesc();
 }
 
-public Action:NormalSoundHook(iClients[64], &iNumClients, String:strSample[PLATFORM_MAX_PATH], &iEntity, &iChannel, &Float:flVolume, &iLevel, &iPitch, &iFlags)
+public Action:NormalSoundHook( iClients[ 64 ], &iNumClients, char strSample[ PLATFORM_MAX_PATH ], &iEntity, &iChannel, &Float:flVolume, &iLevel, &iPitch, &iFlags )
 {
-	new bool:bValid = false;
-	new bool:bValidTimer = false;
+	bool bValid = false;
+	bool bValidTimer = false;
 	
-	bValid = StrContains(strSample, "weapons/parrot", false) == 0;
-	bValidTimer = StrContains(strSample, "noamp/timertick.wav", false) == 0;
+	bValid = StrContains( strSample, "weapons/parrot", false ) == 0;
+	bValidTimer = StrContains( strSample, "noamp/timertick.wav", false ) == 0;
 	
-	if (bValid)
+	if ( bValid )
 	{
 		iPitch = parrotSoundPitch;
 		iFlags |= SND_CHANGEPITCH;
 		return Plugin_Changed;
 	}
-	if (bValidTimer)
+	if ( bValidTimer )
 	{
 		iPitch = timerSoundPitch;
 		iFlags |= SND_CHANGEPITCH;
 		return Plugin_Changed;
 	}
+
 	return Plugin_Continue;
 }
 
-public OnClientConnected(client)
+public OnClientConnected( int client )
 {
-	decl String:name[128];
-	GetClientName(client, name, sizeof(name));
-	if (HasWaveStarted)
-	{
-		CPrintToChat(client, "Welcome to NOAMP %s! A wave is currently in progress and you can join in after it ends.", name);
-	}
+	char name[ 128 ];
+	GetClientName( client, name, sizeof( name ) );
+
+	if ( HasWaveStarted )
+		CPrintToChat( client, "Welcome to NOAMP %s! A wave is currently in progress and you can join in after it ends.", name );
 }
 
-public OnClientDisconnect(client)
+public OnClientDisconnect( int client )
 {
-	ResetClient(client, false);
-	EmitSoundToAll("noamp/playerdisconnect.wav", SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS);
+	ResetClient( client, false );
+	EmitSoundToAll( "noamp/playerdisconnect.wav", SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS );
 }
 
 public OnConfigsExecuted()
@@ -299,34 +300,46 @@ public OnConfigsExecuted()
 
 public OnMapStart()
 {
-	IsEnabled = GetConVarBool(cvar_enabled);
+	g_bIsEnabled = GetConVarBool( cvar_enabled );
 	
 	// just in case, slaughter the timers if something is left ticking from last game
 	//KillTimers();
 	
-	if (!IsEnabled)
+	if ( !g_bIsEnabled )
 	{
-		PrintToServer("NOAMP is disabled, not loading stuff.");
+		PrintToServer( "NOAMP is disabled, not loading stuff." );
 		return;
 	}
 	
-	decl String:currentMap[128];
-	GetCurrentMap(currentMap, 128);
+	char currentMap[ 128 ];
+	GetCurrentMap( currentMap, sizeof( currentMap ) );
 	
-	if (!GetConVarBool(cvar_ignoreprefix))
+	if ( !GetConVarBool( cvar_ignoreprefix ) )
 	{
-		if (StrContains(currentMap, "noamp_", false) == -1)
+		if ( StrContains( currentMap, "noamp_", false ) == -1 )
 		{
-			PrintToServer("NOAMP is disabled, maps prefix is not \"noamp_\". You can disable this check by changing cvar noamp_ignoreprefix to 1.");
-			IsEnabled = false;
+			PrintToServer( "NOAMP is disabled, maps prefix is not \"noamp_\". You can disable this check by changing cvar noamp_ignoreprefix to 1." );
+			g_bIsEnabled = false;
 			return;
 		}
 	}
 	
-	decl String:scheme[128] = "null";
-	GetConVarString(cvar_scheme, scheme, 128);
+	bool bDMOldRules = GetConVarBool( cvar_dmoldrules );
 	
-	if (StrEqual(scheme, "null", false) || StrEqual(scheme, "", false))
+	// HACK: Since original NOAMP, TDM got actual rules
+	// We need to set to old rules and reset map
+	if ( !bDMOldRules )
+	{
+		g_bIsEnabled = false;
+		SetConVarInt( cvar_dmoldrules, 1, true, true );
+		ForceChangeLevel( currentMap, "NOAMP requires old DM rules!" );
+		return;
+	}
+	
+	char scheme[ 128 ] = "null";
+	GetConVarString( cvar_scheme, scheme, sizeof( scheme ) );
+	
+	if ( StrEqual( scheme, "null", false ) || StrEqual( scheme, "", false ) )
 	{
 		IsCustomScheme = false;
 	}
@@ -335,364 +348,376 @@ public OnMapStart()
 		IsCustomScheme = true;
 	}
 	
-	if (IsCustomScheme)
+	if ( IsCustomScheme )
 	{
-		BuildPath(Path_SM, ScriptPath, sizeof(ScriptPath), "data/noamp/%s", scheme);
-		PrintToServer("Loaded NOAMP scheme %s.", ScriptPath);
+		BuildPath( Path_SM, ScriptPath, sizeof( ScriptPath ), "data/noamp/%s", scheme );
+		PrintToServer( "Loaded NOAMP scheme %s.", ScriptPath );
 	}
 	else
 	{
-		decl String:difficulty[128] = "null";
-		GetConVarString(cvar_difficulty, difficulty, 128);
+		char difficulty[ 128 ] = "null";
+		GetConVarString( cvar_difficulty, difficulty, sizeof( difficulty ) );
 		
-		if (StrEqual(difficulty, "null", false) || StrEqual(difficulty, "", false))
+		if ( StrEqual( difficulty, "null", false ) || StrEqual( difficulty, "", false ) )
 		{
-			LogError("\"null\" difficulty, loading default scheme.");
-			BuildPath(Path_SM, ScriptPath, sizeof(ScriptPath), "data/noamp/default.txt");
+			LogError( "\"null\" difficulty, loading default scheme." );
+			BuildPath( Path_SM, ScriptPath, sizeof( ScriptPath ), "data/noamp/default.txt" );
 		}
 		
-		BuildPath(Path_SM, ScriptPath, sizeof(ScriptPath), "data/noamp/%s_%s.txt", currentMap, difficulty);
-		PrintToServer("Loaded NOAMP scheme %s.", ScriptPath);
+		BuildPath( Path_SM, ScriptPath, sizeof( ScriptPath ), "data/noamp/%s_%s.txt", currentMap, difficulty );
+		PrintToServer( "Loaded NOAMP scheme %s.", ScriptPath );
 	}
 	
 	Precache();
-	ResetGame(false, false);
+	ResetGame( false, false );
 	FindSpawns();
 	
-	h_TimerHUD = CreateTimer(0.1, HUD, _, TIMER_REPEAT);
-	h_TimerWaitingForPlayers = CreateTimer(0.1, WaitingForPlayers, _, TIMER_REPEAT);
+	int curEnt = -1;
 	
-	HasGameStarted = false;
-	IsMapLoaded = true;
+	while( ( curEnt = FindEntityByClassname( curEnt, "func_chestzone" ) ) != -1 )
+	{
+		SDKHook( curEnt, SDKHook_StartTouch, OnStartTouchChestZone );
+	}
 	
-	if (playerLives == 0)
+	h_TimerHUD = CreateTimer( 0.1, HUD, _, TIMER_REPEAT );
+	h_TimerWaitingForPlayers = CreateTimer( 0.1, WaitingForPlayers, _, TIMER_REPEAT );
+	
+	g_bHasGameStarted = false;
+	g_bIsMapLoaded = true;
+	
+	if ( playerLives == 0 )
 		IsLivesDisabled = true;
 	else
-	IsLivesDisabled = false;
+		IsLivesDisabled = false;
 	
 	// time limit will end the game in progress, attemping to disable
 	// save the old value so we can restore
 	// TODO: replace this with a custom time limit thing in the future
-	timelimitSavedValue = GetConVarInt(cvar_timelimit);
-	SetConVarInt(cvar_timelimit, 0);
+	timelimitSavedValue = GetConVarInt( cvar_timelimit );
+	SetConVarInt( cvar_timelimit, 0 );
 }
 
 public OnMapEnd()
 {
-	IsMapLoaded = false;
-	ResetGame(false, false);
+	g_bIsMapLoaded = false;
+	ResetGame( false, false );
 }
 
 public UpdateGameDesc()
 {
-	decl String:gamedesc[256];
-	if (StrEqual(schemeName, "null", false))
+	char gamedesc[ 256 ];
+	if ( StrEqual( schemeName, "null", false ) )
 	{
-		Format(gamedesc, 256, "NOAMP %s", PL_VERSION);
+		Format( gamedesc, sizeof( gamedesc ), "NOAMP %s", PL_VERSION );
 	}
 	else
 	{
-		Format(gamedesc, 256, "NOAMP %s: %s", PL_VERSION, schemeName);
+		Format( gamedesc, sizeof( gamedesc ), "NOAMP %s: %s", PL_VERSION, schemeName );
 	}
-	Steam_SetGameDescription(gamedesc);
+
+	Steam_SetGameDescription( gamedesc );
 }
 
 public ReadNOAMPScript()
 {
-	new Handle:kv = CreateKeyValues("NOAMP_Scheme");
-	FileToKeyValues(kv, ScriptPath);
+	Handle kv = CreateKeyValues( "NOAMP_Scheme" );
+	FileToKeyValues( kv, ScriptPath );
 	
-	if (!KvGotoFirstSubKey(kv))
+	if ( !KvGotoFirstSubKey( kv ) )
 	{
-		if (StrEqual(ScriptPath, "data/noamp/default.txt", false))
+		if ( StrEqual( ScriptPath, "data/noamp/default.txt", false ) )
 		{
-			LogError("Error reading default KeyValues, default.txt might be missing. NOAMP will not be loaded.");
-			IsEnabled = false;
+			LogError( "Error reading default KeyValues, default.txt might be missing. NOAMP will not be loaded." );
+			g_bIsEnabled = false;
 			return;
 		}
-		LogError("Error reading KeyValues, file might be missing. Loading default scheme.");
-		BuildPath(Path_SM, ScriptPath, sizeof(ScriptPath), "data/noamp/default.txt");
+
+		LogError( "Error reading KeyValues, file might be missing. Loading default scheme." );
+		BuildPath( Path_SM, ScriptPath, sizeof( ScriptPath ), "data/noamp/default.txt" );
 		ReadNOAMPScript();
 		return;
 	}
 	
-	decl String:buffer[12];
-	KvGetSectionName(kv, buffer, sizeof(buffer));
+	char buffer[ 12 ];
+	KvGetSectionName( kv, buffer, sizeof( buffer ) );
 	
-	if (StrEqual(buffer, "general"))
+	if ( StrEqual( buffer, "general" ) )
 	{
-		decl String:strschemename[256];
-		decl String:strbossparrothp[32];
-		decl String:strbossparrotsize[32];
-		decl String:strchestaward[32];
-		decl String:strsmallparrotsize[32];
-		decl String:strgiantparrotsize[32];
-		decl String:strplayerlives[32];
-		decl String:strpreparationsecs[32];
-		decl String:strmaxhpprice[32];
-		decl String:strmaxarmorprice[32];
-		decl String:strmaxspeedprice[32];
-		decl String:strkegprice[32];
-		decl String:strfillspecialprice[32];
-		decl String:strvulturesprice[32];
-		decl String:strbaseupgrade1price[32];
+		char strschemename[ 256 ];
+		char strbossparrothp[ 32 ];
+		char strbossparrotsize[ 32 ];
+		char strchestaward[ 32 ];
+		char strsmallparrotsize[ 32 ];
+		char strgiantparrotsize[ 32 ];
+		char strplayerlives[ 32 ];
+		char strpreparationsecs[ 32 ];
+		char strmaxhpprice[ 32 ];
+		char strmaxarmorprice[ 32 ];
+		char strmaxspeedprice[ 32 ];
+		char strkegprice[ 32 ];
+		char strfillspecialprice[ 32 ];
+		char strvulturesprice[ 32 ];
+		char strbaseupgrade1price[ 32 ];
 		
-		KvGetString(kv, "name", strschemename, 256);
-		KvGetString(kv, "bossparrothp", strbossparrothp, 32);
-		KvGetString(kv, "bossparrotsize", strbossparrotsize, 32);
-		KvGetString(kv, "chestaward", strchestaward, 32);
-		KvGetString(kv, "smallparrotsize", strsmallparrotsize, 32);
-		KvGetString(kv, "giantparrotsize", strgiantparrotsize, 32);
-		KvGetString(kv, "playerlives", strplayerlives, 32);
-		KvGetString(kv, "preparationsecs", strpreparationsecs, 32);
-		KvGetString(kv, "maxhpprice", strmaxhpprice, 32);
-		KvGetString(kv, "maxarmorprice", strmaxarmorprice, 32);
-		KvGetString(kv, "maxspeedprice", strmaxspeedprice, 32);
-		KvGetString(kv, "kegprice", strkegprice, 32);
-		KvGetString(kv, "fillspecialprice", strfillspecialprice, 32);
-		KvGetString(kv, "vulturesprice", strvulturesprice, 32);
-		KvGetString(kv, "baseupgrade1price", strbaseupgrade1price, 32);
+		KvGetString( kv, "name", strschemename, 256 );
+		KvGetString( kv, "bossparrothp", strbossparrothp, 32 );
+		KvGetString( kv, "bossparrotsize", strbossparrotsize, 32 );
+		KvGetString( kv, "chestaward", strchestaward, 32 );
+		KvGetString( kv, "smallparrotsize", strsmallparrotsize, 32 );
+		KvGetString( kv, "giantparrotsize", strgiantparrotsize, 32 );
+		KvGetString( kv, "playerlives", strplayerlives, 32 );
+		KvGetString( kv, "preparationsecs", strpreparationsecs, 32 );
+		KvGetString( kv, "maxhpprice", strmaxhpprice, 32 );
+		KvGetString( kv, "maxarmorprice", strmaxarmorprice, 32 );
+		KvGetString( kv, "maxspeedprice", strmaxspeedprice, 32 );
+		KvGetString( kv, "kegprice", strkegprice, 32 );
+		KvGetString( kv, "fillspecialprice", strfillspecialprice, 32 );
+		KvGetString( kv, "vulturesprice", strvulturesprice, 32 );
+		KvGetString( kv, "baseupgrade1price", strbaseupgrade1price, 32 );
 		
 		schemeName = strschemename;
-		parrotBossHP = StringToInt(strbossparrothp);
-		bossParrotSize = StringToFloat(strbossparrotsize);
-		chestAward = StringToInt(strchestaward, 10);
-		smallParrotSize = StringToFloat(strsmallparrotsize);
-		giantParrotSize = StringToFloat(strgiantparrotsize);
-		playerLives = StringToInt(strplayerlives, 10);
-		preparationSecs = StringToInt(strpreparationsecs, 10);
-		maxHPPrice = StringToInt(strmaxhpprice, 10);
-		maxArmorPrice = StringToInt(strmaxarmorprice, 10);
-		maxSpeedPrice = StringToInt(strmaxspeedprice, 10);
-		kegPrice = StringToInt(strkegprice, 10);
-		powerupFillSpecialPrice = StringToInt(strfillspecialprice, 10);
-		powerupVulturesPrice = StringToInt(strvulturesprice, 10);
-		baseUpgradePrices[1] = StringToInt(strbaseupgrade1price, 10);
+		parrotBossHP = StringToInt( strbossparrothp );
+		bossParrotSize = StringToFloat( strbossparrotsize );
+		chestAward = StringToInt( strchestaward, 10 );
+		smallParrotSize = StringToFloat( strsmallparrotsize );
+		giantParrotSize = StringToFloat( strgiantparrotsize );
+		playerLives = StringToInt( strplayerlives, 10 );
+		preparationSecs = StringToInt( strpreparationsecs, 10 );
+		maxHPPrice = StringToInt( strmaxhpprice, 10 );
+		maxArmorPrice = StringToInt( strmaxarmorprice, 10 );
+		maxSpeedPrice = StringToInt( strmaxspeedprice, 10 );
+		kegPrice = StringToInt( strkegprice, 10 );
+		powerupFillSpecialPrice = StringToInt( strfillspecialprice, 10 );
+		powerupVulturesPrice = StringToInt( strvulturesprice, 10 );
+		baseUpgradePrices[ 1 ] = StringToInt( strbaseupgrade1price, 10 );
 		
-		KvGotoNextKey(kv);
+		KvGotoNextKey( kv );
 	}
 	
-	new ibuffer;
-	decl String:stri[32];
+	int ibuffer;
+	char stri[ 32 ];
 	waveCount = 0;
 	
-	for (new i = 1; i < NOAMP_MAXWAVES; i++)
+	for ( int i = 1; i < NOAMP_MAXWAVES; i++ )
 	{
-		KvGetSectionName(kv, buffer, sizeof(buffer));
-		ibuffer = StringToInt(buffer, 10);
-		IntToString(i, stri, 32);
+		KvGetSectionName( kv, buffer, sizeof( buffer ) );
+		ibuffer = StringToInt( buffer, 10 );
+		IntToString( i, stri, 32 );
 		
-		if (StrEqual(buffer, stri))
+		if ( StrEqual( buffer, stri ) )
 		{
-			decl String:strparrotcount[32];
-			decl String:strgiantparrotcount[32];
-			decl String:strmaxparrots[32];
-			decl String:strisfoggy[2];
-			decl String:strisboss[2];
-			decl String:striscorrupt[2];
+			char strparrotcount[ 32 ];
+			char strgiantparrotcount[ 32 ];
+			char strmaxparrots[ 32 ];
+			char strisfoggy[ 2 ];
+			char strisboss[ 2 ];
+			char striscorrupt[ 2 ];
 			
-			KvGetString(kv, "parrotcount", strparrotcount, 32);
-			KvGetString(kv, "giantparrotcount", strgiantparrotcount, 32);
-			KvGetString(kv, "maxparrots", strmaxparrots, 32);
-			KvGetString(kv, "foggy", strisfoggy, 2);
-			KvGetString(kv, "boss", strisboss, 2);
-			KvGetString(kv, "corruptor", striscorrupt, 2);
+			KvGetString( kv, "parrotcount", strparrotcount, 32 );
+			KvGetString( kv, "giantparrotcount", strgiantparrotcount, 32 );
+			KvGetString( kv, "maxparrots", strmaxparrots, 32 );
+			KvGetString( kv, "foggy", strisfoggy, 2 );
+			KvGetString( kv, "boss", strisboss, 2 );
+			KvGetString( kv, "corruptor", striscorrupt, 2 );
 			
-			waveParrotCount[ibuffer] = StringToInt(strparrotcount, 10);
-			waveGiantParrotCount[ibuffer] = StringToInt(strgiantparrotcount, 10);
-			waveMaxParrots[ibuffer] = StringToInt(strmaxparrots, 10);
+			waveParrotCount[ ibuffer ] = StringToInt( strparrotcount, 10 );
+			waveGiantParrotCount[ibuffer] = StringToInt( strgiantparrotcount, 10 );
+			waveMaxParrots[ibuffer] = StringToInt( strmaxparrots, 10 );
 			
-			new fogint;
-			fogint = StringToInt(strisfoggy, 10);
-			if (fogint == 0)
-				waveIsFoggy[ibuffer] = false;
-			else if (fogint == 1)
-				waveIsFoggy[ibuffer] = true;
+			int fogint = StringToInt( strisfoggy, 10 );
+
+			if ( fogint == 0 )
+				waveIsFoggy[ ibuffer ] = false;
+			else if ( fogint == 1 )
+				waveIsFoggy[ ibuffer ] = true;
 			else
 			{
-				waveIsFoggy[ibuffer] = false;
-				LogError("KeyValue \"foggy\" can only be 0 or 1.");
+				waveIsFoggy[ ibuffer ] = false;
+				LogError( "KeyValue \"foggy\" can only be 0 or 1." );
 			}
 			
-			new bossint;
-			bossint = StringToInt(strisboss, 10);
-			if (bossint == 0)
-				waveIsBossWave[ibuffer] = false;
-			else if (bossint == 1)
-				waveIsBossWave[ibuffer] = true;
+			int bossint = StringToInt( strisboss, 10 );
+
+			if ( bossint == 0 )
+				waveIsBossWave[ ibuffer ] = false;
+			else if ( bossint == 1 )
+				waveIsBossWave[ ibuffer ] = true;
 			else
 			{
-				waveIsBossWave[ibuffer] = false;
-				LogError("KeyValue \"boss\" can only be 0 or 1.");
+				waveIsBossWave[ ibuffer ] = false;
+				LogError( "KeyValue \"boss\" can only be 0 or 1." );
 			}
 			
-			new corruptint;
-			corruptint = StringToInt(striscorrupt, 10);
-			if (corruptint == 0)
-				waveIsCorruptorWave[ibuffer] = false;
-			else if (corruptint == 1)
-				waveIsCorruptorWave[ibuffer] = true;
+			int corruptint = StringToInt( striscorrupt, 10 );
+
+			if ( corruptint == 0 )
+				waveIsCorruptorWave[ ibuffer ] = false;
+			else if ( corruptint == 1 )
+				waveIsCorruptorWave[ ibuffer ] = true;
 			else
 			{
-				waveIsCorruptorWave[ibuffer] = false;
-				LogError("KeyValue \"corruptor\" can only be 0 or 1.");
+				waveIsCorruptorWave[ ibuffer ] = false;
+				LogError( "KeyValue \"corruptor\" can only be 0 or 1." );
 			}
 			
 			waveCount++;
 		}
-		KvGotoNextKey(kv);
+		KvGotoNextKey( kv );
 	}
 	
-	if (IsDebug())
+	if ( IsDebug() )
 	{
-		PrintToServer("Wave count: %d", waveCount);
+		PrintToServer( "Wave count: %d", waveCount );
 	}
 	
-	CloseHandle(kv);
+	CloseHandle( kv );
 }
 
 // WTF: temp very stupid way of reading parrotcreator script
-public ReadParrotCreatorScript(mode)
+public ReadParrotCreatorScript( int mode )
 {
-	decl Handle:file;
-	BuildPath(Path_SM, ParrotCreatorScriptPath, sizeof(ParrotCreatorScriptPath), "data/noamp/default_parrotcreator.txt");
-	file = OpenFile(ParrotCreatorScriptPath, "r");
+	Handle file = INVALID_HANDLE;
+	BuildPath( Path_SM, ParrotCreatorScriptPath, sizeof( ParrotCreatorScriptPath ), "data/noamp/default_parrotcreator.txt" );
+	file = OpenFile( ParrotCreatorScriptPath, "r" );
 	
-	new bool:foundcreatorline = false;
-	new bool:foundwavesline = false;
-	new bool:foundwavestartline = false;
-	new bool:foundcreatorlistline = false;
-	new linescount = 0;
-	new currentwave = 0;
+	bool foundcreatorline = false;
+	//bool foundwavesline = false;
+	bool foundwavestartline = false;
+	bool foundcreatorlistline = false;
+	//int linescount = 0;
+	int currentwave = 0;
 
-	decl String:fileline[128];
-	FileSeek(file, 0, SEEK_SET);
+	char fileline[ 128 ];
+	FileSeek( file, 0, SEEK_SET );
 	
-	while (!IsEndOfFile(file) && ReadFileLine(file, fileline, 128))
+	while ( !IsEndOfFile( file ) && ReadFileLine( file, fileline, sizeof( fileline ) ) )
 	{
-		TrimString(fileline);
+		TrimString( fileline );
 
-		if (!foundcreatorline && !StrEqual(fileline, "ParrotCreator", false))
+		if ( !foundcreatorline && !StrEqual( fileline, "ParrotCreator", false ) )
 		{
-			ThrowError("ParrotCreator script reading failed! Didn't find \"ParrotCreator\"");
+			ThrowError( "ParrotCreator script reading failed! Didn't find \"ParrotCreator\"" );
 			break;
 		}
 		
-		if (StrContains(fileline, "//", false) == 0)
+		if ( StrContains( fileline, "//", false ) == 0 )
 		{
 			continue;
 		}
 		
-		if (StrEqual(fileline, "ParrotCreator", false))
+		if ( StrEqual( fileline, "ParrotCreator", false ) )
 		{
-			PrintToServer("Found ParrotCreator");
+			PrintToServer( "Found ParrotCreator" );
 			foundcreatorline = true;
 			continue;
 		}
 		
-		if (mode == 1 && foundcreatorline && StrContains(fileline, "beginwave", false) == 0)
+		if ( mode == 1 && foundcreatorline && StrContains( fileline, "beginwave", false ) == 0 )
 		{
-			PrintToServer("Found beginwave");
+			PrintToServer( "Found beginwave" );
 			new value = ExplodeTrimAndConvertStringToInt( fileline, "_" );
 			currentwave = value;
-			PrintToServer("currentwave = %d", currentwave);
+			PrintToServer( "currentwave = %d", currentwave );
 			foundwavestartline = true;
 			continue;
 		}
 		
-		if (mode == 1 && foundcreatorline && StrContains(fileline, "endwave", false) == 0)
+		if ( mode == 1 && foundcreatorline && StrContains( fileline, "endwave", false ) == 0 )
 		{
-			PrintToServer("Found endwave");
+			PrintToServer( "Found endwave" );
 			foundwavestartline = false;
 			continue;
 		}
 		
-		if (mode == 1 && foundcreatorline && foundwavestartline && StrContains(fileline, "creatorscheme", false) == 0)
+		if ( mode == 1 && foundcreatorline && foundwavestartline && StrContains( fileline, "creatorscheme", false ) == 0 )
 		{
-			PrintToServer("Found creatorscheme");
+			PrintToServer( "Found creatorscheme" );
 			foundcreatorlistline = true;
 			continue;
 		}
 		
-		if (mode == 1 && !foundcreatorline || !foundwavestartline)
+		if ( mode == 1 && ( !foundcreatorline || !foundwavestartline ) )
 			break;
 		
-		if (StrContains(fileline, "end", false) == 0)
+		if ( mode == 1 && StrContains( fileline, "end", false ) == 0 )
 		{
-			PrintToServer("StrContains end");
-			if (foundcreatorlistline)
+			PrintToServer( "StrContains end" );
+
+			if ( foundcreatorlistline )
 				foundcreatorlistline = false;
+
 			continue;
 		}
-		else if (mode == 1 && foundcreatorlistline && StrContains(fileline, "normal", false) == 0)
+		else if ( mode == 1 && foundcreatorlistline && StrContains( fileline, "normal", false ) == 0 )
 		{
-			PrintToServer("StrContains normal");
-			for (new i = 1; i < NOAMP_MAXPARROTCREATOR_WAVES; i++)
+			PrintToServer( "StrContains normal" );
+			for ( int i = 1; i < NOAMP_MAXPARROTCREATOR_WAVES; i++ )
 			{
-				if (parrotCreatorScheme[currentwave][i] == 0)
+				if ( parrotCreatorScheme[ currentwave ][ i ] == 0 )
 				{
-					PrintToServer("StrContains normal");
-					parrotCreatorScheme[currentwave][i] = PARROTCREATOR_NORMAL;
+					PrintToServer( "StrContains normal" );
+					parrotCreatorScheme[ currentwave ][ i ] = PARROTCREATOR_NORMAL;
 					break;
 				}
 			}
 		}
-		else if (mode == 1 && foundcreatorlistline && StrContains(fileline, "small", false) == 0)
+		else if ( mode == 1 && foundcreatorlistline && StrContains( fileline, "small", false ) == 0 )
 		{
-			PrintToServer("StrContains small");
-			for (new i = 1; i < NOAMP_MAXPARROTCREATOR_WAVES; i++)
+			PrintToServer( "StrContains small" );
+			for ( int i = 1; i < NOAMP_MAXPARROTCREATOR_WAVES; i++ )
 			{
-				if (parrotCreatorScheme[currentwave][i] == 0)
+				if ( parrotCreatorScheme[ currentwave ][ i ] == 0 )
 				{
-					parrotCreatorScheme[currentwave][i] = PARROTCREATOR_SMALL;
+					parrotCreatorScheme[ currentwave ][ i ] = PARROTCREATOR_SMALL;
 					break;
 				}
 			}
 		}
-		else if (mode == 1 && foundcreatorlistline && StrContains(fileline, "giant", false) == 0)
+		else if ( mode == 1 && foundcreatorlistline && StrContains( fileline, "giant", false ) == 0 )
 		{
-			PrintToServer("StrContains giant");
-			for (new i = 1; i < NOAMP_MAXPARROTCREATOR_WAVES; i++)
+			PrintToServer( "StrContains giant" );
+			for ( int i = 1; i < NOAMP_MAXPARROTCREATOR_WAVES; i++ )
 			{
-				if (parrotCreatorScheme[currentwave][i] == 0)
+				if ( parrotCreatorScheme[ currentwave ][ i ] == 0 )
 				{
-					parrotCreatorScheme[currentwave][i] = PARROTCREATOR_GIANTS;
+					parrotCreatorScheme[ currentwave ][ i ] = PARROTCREATOR_GIANTS;
 					break;
 				}
 			}
 		}
-		else if (mode == 1 && foundcreatorlistline && StrContains(fileline, "boss", false) == 0)
+		else if ( mode == 1 && foundcreatorlistline && StrContains( fileline, "boss", false ) == 0 )
 		{
-			PrintToServer("StrContains boss");
-			for (new i = 1; i < NOAMP_MAXPARROTCREATOR_WAVES; i++)
+			PrintToServer( "StrContains boss" );
+			for ( int i = 1; i < NOAMP_MAXPARROTCREATOR_WAVES; i++ )
 			{
-				if (parrotCreatorScheme[currentwave][i] == 0)
+				if ( parrotCreatorScheme[ currentwave ][ i ] == 0 )
 				{
-					parrotCreatorScheme[currentwave][i] = PARROTCREATOR_BOSS;
+					parrotCreatorScheme[ currentwave ][ i ] = PARROTCREATOR_BOSS;
 					break;
 				}
 			}
 		}
-		else if (mode == 2 && StrContains(fileline, "onchange", false) == 0)
+		else if ( mode == 2 && StrContains( fileline, "onchange", false ) == 0 )
 		{
-			PrintToServer("Found onchange");
+			PrintToServer( "Found onchange" );
 			int value = ExplodeTrimAndConvertStringToInt( fileline, "_" );
 			if ( value == creatorwave )
 			{
-				ScriptCommands(fileline);
+				ScriptCommands( fileline );
 			}
 		}
-		else if (mode == 3 && StrContains(fileline, "oncorruption", false) == 0)
+		else if ( mode == 3 && StrContains(fileline, "oncorruption", false ) == 0 )
 		{
-			PrintToServer("Found oncorruption");
-			ScriptCommands(fileline);
+			PrintToServer( "Found oncorruption" );
+			ScriptCommands( fileline );
 		}
 		continue;
 	}
-	CloseHandle(file);
+
+	CloseHandle( file );
 }
 
-public ScriptCommands(const String:fileline[])
+public ScriptCommands( const char[] fileline )
 {
 	if ( StrContains( fileline, "spawnparrots", false ) == 0 )
 	{
@@ -720,6 +745,7 @@ public ScriptCommands(const String:fileline[])
 	else if ( StrContains( fileline, "setpitch", false ) == 0 )
 	{
 		int value = ExplodeTrimAndConvertStringToInt( fileline, "=" );
+		PrintToServer( "Setting parrot pitch: %d\n", value );
 		parrotDesiredSoundPitch = value;
 	}
 	else if ( StrContains( fileline, "setsize", false ) == 0 )

@@ -19,113 +19,108 @@
 
 // im just throwing these funcs here, dont mind me
 
-stock GetMoney(client) { return clientMoney[client]; }
-stock AddMoney(client, amount) { clientMoney[client] += amount; }
-stock RemoveMoney(client, amount) { clientMoney[client] -= amount; }
+stock GetMoney( int client ) { return clientMoney[ client ]; }
+stock AddMoney( int client, int amount) { clientMoney[ client ] += amount; }
+stock RemoveMoney( int client, int amount ) { clientMoney[ client ] -= amount; }
 
-stock AddSpecial(client, amount) { new i = GetEntData(client, h_iSpecial, 4); i += amount; SetEntData(client, h_iSpecial, i, 4); }
-stock RemoveSpecial(client, amount) { new i = GetEntData(client, h_iSpecial, 4); i -= amount; SetEntData(client, h_iSpecial, i, 4); }
+stock AddSpecial( int client, int amount )
+{
+	int iSpecial = GetEntData( client, h_iSpecial );
+	int iMaxSpecial = GetEntData( client, h_iMaxSpecial );
+	
+	// Already full
+	if ( iSpecial == iMaxSpecial )
+		return;
 
-stock AddFrags(client, amount) { new i = GetClientFrags(client); i += amount; SetEntProp(client, Prop_Data, "m_iFrags", i); }
+	iSpecial += amount;
+	
+	if ( iSpecial >= iMaxSpecial )
+	{
+		// Make sure it's capped
+		iSpecial = iMaxSpecial;
+
+		// This is done for the HUD
+		Event event = CreateEvent( "player_special_full" );
+		event.SetInt( "userid", GetClientUserId( client ) );
+		event.Fire();
+	}
+
+	SetEntData( client, h_iSpecial, iSpecial, 4, true );
+}
+
+stock RemoveSpecial( int client, int amount) { int i = GetEntData( client, h_iSpecial ); i -= amount; SetEntData( client, h_iSpecial, i ); }
+
+stock AddFrags( int client, int amount ) { int i = GetClientFrags( client ); i += amount; SetEntProp( client, Prop_Data, "m_iFrags", i ); }
 
 stock GetPreparationSeconds() { return preparationSecs; }
 
-stock GetPlayerKills(client) { return clientKills[client]; }
-stock GetPlayerLives(client) { return clientLives[client]; }
-stock GetPlayerClass(client) { return GetEntData(client, h_iPlayerClass, 4); } // NOTE: +1 cuz weird enums
+stock GetPlayerKills( int client ) { return clientKills[ client ]; }
+stock GetPlayerLives( int client ) { return clientLives[ client ]; }
+stock GetPlayerClass( int client ) { return GetEntData( client, h_iPlayerClass ); }
 
-stock SetParrotSoundPitch(pitch) { parrotSoundPitch = pitch; }
+stock SetParrotSoundPitch( int pitch ) { parrotSoundPitch = pitch; }
 
 stock GetParrotCreatorMode() { return parrotCreatorMode; }
-stock SetParrotCreatorMode(mode) { parrotCreatorMode = mode; if (IsDebug()) { PrintToServer("ParrotCreator mode is now %d", parrotCreatorMode); } }
+stock SetParrotCreatorMode( int mode ) { parrotCreatorMode = mode; if ( IsDebug() ) { PrintToServer( "ParrotCreator mode is now %d", parrotCreatorMode ); } }
 
-stock GetAliveParrots(parrottype)
+stock GetAliveParrots( parrottype )
 {
-	decl String:entclass[128];
-	decl String:targetname[128];
-	new aliveParrots = 0;
+	char targetname[ 128 ];
+	int aliveParrots = 0;
 	
-	for (new i = 0; i < 3000; i++)
+	int parrot = -1;
+	while ( ( parrot = FindEntityByClassname( parrot, "npc_parrot" ) ) != -1 )
 	{
-		if (IsValidEdict(i) && IsValidEntity(i))
-		{
-			if (parrottype == PARROT_NORMAL)
-			{
-				GetEdictClassname(i, entclass, 128);
-				if (StrEqual(entclass, "npc_parrot", false))
-				{
-					aliveParrots++;
-				}
-			}
-			else if (parrottype == PARROT_GIANT)
-			{
-				GetEntPropString(i, Prop_Data, "m_iName", targetname, sizeof(targetname));
-				if (StrEqual(targetname, "noamp_giant"))
-				{
-					aliveParrots++;
-				}
-			}
-			else if (parrottype == PARROT_SMALL)
-			{
-				GetEntPropString(i, Prop_Data, "m_iName", targetname, sizeof(targetname));
-				if (StrEqual(targetname, "noamp_small"))
-				{
-					aliveParrots++;
-				}
-			}
-			else if (parrottype == PARROT_BOSS)
-			{
-				GetEntPropString(i, Prop_Data, "m_iName", targetname, sizeof(targetname));
-				if (StrEqual(targetname, "noamp_boss"))
-				{
-					aliveParrots++;
-				}
-			}
-		}
+		GetEntPropString( parrot, Prop_Data, "m_iName", targetname, sizeof( targetname ) );
+		
+		if ( parrottype == PARROT_NORMAL && StrEqual( targetname, "noamp_parrot", false ) )
+			aliveParrots++;
+		else if ( parrottype == PARROT_GIANT && StrEqual( targetname, "noamp_giant", false ) )
+			aliveParrots++;
+		else if ( parrottype == PARROT_SMALL && StrEqual( targetname, "noamp_small", false ) )
+			aliveParrots++;
+		else if ( parrottype == PARROT_BOSS && StrEqual( targetname, "noamp_boss", false ) )
+			aliveParrots++;
 	}
-	
+
 	return aliveParrots;
 }
 
-stock GetNextParrotCreatorMode(currentwave, currentcreatorwave)
+stock GetNextParrotCreatorMode( currentwave, currentcreatorwave )
 {
-	return parrotCreatorScheme[currentwave][currentcreatorwave];
+	return parrotCreatorScheme[ currentwave ][ currentcreatorwave ];
 }
 
-stock CheckAndKillTimer(&Handle:timer, bool:autoClose = false) 
+stock CheckAndKillTimer( Handle &timer, bool autoClose = false )
 {
-	if (timer != INVALID_HANDLE)
+	if ( timer != INVALID_HANDLE )
 	{
-		KillTimer(timer, autoClose);
+		KillTimer( timer, autoClose );
 		timer = INVALID_HANDLE;
 	}
 }
 
-stock bool:IsDebug() { return GetConVarBool(cvar_debug); }
+stock bool IsDebug() { return GetConVarBool( cvar_debug ); }
 
 stock GetRandomBool()
 {
-	new i = GetRandomInt(0, 1);
-	if (i == 0)
-		return false;
-	else
-	return true;
+	int i = GetRandomInt( 0, 1 );
+	return ( i != 0 );
 }
 
-stock GetRandomString(length, String:dest[])
+stock GetRandomString( length, char[] dest )
 {
 	// this is crappy, but only good for corruption effect ;)
-	decl String:charlist[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-	
-	decl String:str[length + 1];
-	for (new i = 0; i > length; i++)
-	{
-		str[i] = charlist[GetRandomInt(0, sizeof(charlist)) - 1];
-	}
-	strcopy(dest, length, str);
+	char charlist[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+	char[] str = new char[ length + 1 ];
+
+	for ( int i = 0; i > length; i++ )
+		str[ i ] = charlist[ GetRandomInt( 0, sizeof( charlist ) ) - 1 ];
+
+	strcopy( dest, length, str );
 }
 
-stock ExplodeTrimAndConvertStringToInt( const String:string[], const String:split[] )
+stock ExplodeTrimAndConvertStringToInt( const char[] string, const char[] split )
 {
 	char buffer[ 2 ][ 64 ];
 	ExplodeString( string, split, buffer, 2, 64 );
@@ -134,7 +129,7 @@ stock ExplodeTrimAndConvertStringToInt( const String:string[], const String:spli
 	return StringToInt( buffer[ 1 ] );
 }
 
-stock float ExplodeTrimAndConvertStringToFloat( const String:string[], const String:split[] )
+stock float ExplodeTrimAndConvertStringToFloat( const char[] string, const char[] split )
 {
 	char buffer[ 2 ][ 64 ];
 	ExplodeString( string, split, buffer, 2, 64 );
@@ -143,25 +138,25 @@ stock float ExplodeTrimAndConvertStringToFloat( const String:string[], const Str
 	return StringToFloat( buffer[ 1 ] );
 }
 
-stock SpawnParrotAmount(amount, type)
+stock SpawnParrotAmount( int amount, int type )
 {
-	for (new i = 1; i < amount; i++)
+	for ( int i = 1; i < amount; i++ )
 	{
-		if (type == PARROT_NORMAL)
+		if ( type == PARROT_NORMAL )
 		{
 			SpawnParrot();
 		}
-		else if (type == PARROT_GIANT)
+		else if ( type == PARROT_GIANT )
 		{
 			SpawnGiantParrot();
 		}
-		else if (type == PARROT_SMALL)
+		else if ( type == PARROT_SMALL )
 		{
 			SpawnSmallParrot();
 		}
-		else if (type == PARROT_BOSS)
+		else if ( type == PARROT_BOSS )
 		{
-			SpawnBossParrot(false);
+			SpawnBossParrot( false );
 		}
 	}
 }

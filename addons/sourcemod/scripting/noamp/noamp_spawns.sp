@@ -29,67 +29,65 @@
 
 public FindSpawns()
 {
-	decl String:targetname[128];
-	decl Float:entorg[3];
-	new count;
-	new giantcount;
-	new bosscount;
-	
-	for (new i = 0; i < 3000; i++)
+	char targetname[ 128 ];
+	float entorg[ 3 ];
+	int count = 0;
+	int giantcount = 0;
+	int bosscount = 0;
+	int curSpawn = -1;
+
+	while ( ( curSpawn = FindEntityByClassname( curSpawn, "info_target" ) ) != -1 )
 	{
-		if (IsValidEdict(i) && IsValidEntity(i))
+		GetEntPropString( curSpawn, Prop_Data, "m_iName", targetname, sizeof( targetname ) );
+		
+		if ( count < NOAMP_MAXSPAWNS && StrEqual( targetname, "noamp_parrotspawn" ) )
 		{
-			GetEntPropString(i, Prop_Data, "m_iName", targetname, sizeof(targetname));
-			
-			if (StrEqual(targetname, "noamp_parrotspawn"))
+			count++;
+			GetEntPropVector( curSpawn, Prop_Data, "m_vecOrigin", entorg );
+			Format( ParrotSpawns[ count ], 128, "%f %f %f", entorg[ 0 ], entorg[ 1 ], entorg[ 2 ] );
+
+			if ( IsDebug() )
 			{
-				count++;
-				GetEntPropVector(i, Prop_Data, "m_vecOrigin", entorg);
-				Format(ParrotSpawns[count], 128, "%f %f %f", entorg[0], entorg[1], entorg[2]);
-				
-				if (GetConVarBool(cvar_debug))
-				{
-					PrintToServer("caught a spawn target");
-					PrintToServer("m_vecOrigin = %s", ParrotSpawns[count]);
-				}
-			}
-			/* WTF: its actually a better idea to get rid of this and use normal spawns
-			if (StrEqual(targetname, "noamp_giantparrot_spawn"))
-			{
-				giantcount++;
-				GetEntPropVector(i, Prop_Data, "m_vecOrigin", entorg);
-				Format(GiantParrotSpawns[giantcount], 128, "%f %f %f", entorg[0], entorg[1], entorg[2]);
-				
-				if (GetConVarBool(cvar_debug))
-				{
-					PrintToServer("caught a giant parrot spawn target");
-					PrintToServer("m_vecOrigin = %s", GiantParrotSpawns[giantcount]);
-				}
-			}
-			*/
-			if (StrEqual(targetname, "noamp_boss_spawn"))
-			{
-				bosscount++;
-				GetEntPropVector(i, Prop_Data, "m_vecOrigin", entorg);
-				Format(BossParrotSpawns[bosscount], 128, "%f %f %f", entorg[0], entorg[1], entorg[2]);
-				
-				if (GetConVarBool(cvar_debug))
-				{
-					PrintToServer("caught a boss spawn target");
-					PrintToServer("m_vecOrigin = %s", BossParrotSpawns[bosscount]);
-				}
+				PrintToServer( "caught a spawn target" );
+				PrintToServer( "m_vecOrigin = %s", ParrotSpawns[ count ] );
 			}
 		}
+		else if ( bosscount < NOAMP_MAXSPAWNS && StrEqual( targetname, "noamp_boss_spawn" ) )
+		{
+			bosscount++;
+			GetEntPropVector( curSpawn, Prop_Data, "m_vecOrigin", entorg );
+			Format( BossParrotSpawns[ bosscount ], 128, "%f %f %f", entorg[ 0 ], entorg[ 1 ], entorg[ 2 ] );
+			
+			if ( IsDebug() )
+			{
+				PrintToServer( "caught a boss spawn target" );
+				PrintToServer( "m_vecOrigin = %s", BossParrotSpawns[ bosscount ] );
+			}
+		}
+		/* WTF: its actually a better idea to get rid of this and use normal spawns
+		else if ( giantcount < NOAMP_MAXSPAWNS && StrEqual( targetname, "noamp_giantparrot_spawn" ) )
+		{
+			giantcount++;
+			GetEntPropVector( curSpawn, Prop_Data, "m_vecOrigin", entorg );
+			Format( GiantParrotSpawns[ giantcount ], 128, "%f %f %f", entorg[ 0 ], entorg[ 1 ], entorg[ 2 ] );
+			
+			if ( IsDebug() )
+			{
+				PrintToServer( "caught a giant parrot spawn target" );
+				PrintToServer( "m_vecOrigin = %s", GiantParrotSpawns[ giantcount ] );
+			}
+		}
+		*/
 	}
 }
 
 public ResetSpawns()
 {
-	for (new i = 0; i < NOAMP_MAXSPAWNS-1; i++)
+	for ( int i = 0; i < NOAMP_MAXSPAWNS-1; i++ )
 	{
-		ParrotSpawns[i] = "null";
-		GiantParrotSpawns[i] = "null";
-		BossParrotSpawns[i] = "null";
+		ParrotSpawns[ i ] = "null";
+		GiantParrotSpawns[ i ] = "null";
+		BossParrotSpawns[ i ] = "null";
 	}
 	
 	FindSpawns();
@@ -97,254 +95,258 @@ public ResetSpawns()
 
 public GetSpawnCount()
 {
-	new spawns = 0;
-	for (new i = 0; i <= NOAMP_MAXSPAWNS-1; i++)
+	int spawns = 0;
+	for ( int i = 0; i <= NOAMP_MAXSPAWNS-1; i++ )
 	{
-		if (!StrEqual(ParrotSpawns[i], "null", false))
+		if ( !StrEqual( ParrotSpawns[ i ], "null", false ) )
 		{
 			spawns++;
 		}
 	}
-	new String:tempstring[4];
-	IntToString(spawns, tempstring, 4);
+	//char tempstring[ 4 ];
+	//IntToString( spawns, tempstring, 4 );
+
 	return spawns;
 }
 
 public GetRandomSpawnPoint()
 {
-	new nodecount = 0;
-	new currentnode = 1;
+	int nodecount = 0;
+	int currentnode = 1;
 	
-	while (currentnode <= GetSpawnCount())
+	while ( currentnode <= GetSpawnCount() )
 	{
 		nodecount++;
 		currentnode++;
 	}
 	
-	if (nodecount == 0)
+	if ( nodecount == 0 )
 	{
 		return 0;
 	}
 	
-	decl choosenode[nodecount+1];
+	int[] choosenode = new int[ nodecount + 1 ];
 	
 	nodecount = 0;
 	currentnode = 1;
 	
-	while (currentnode <= GetSpawnCount())
+	while ( currentnode <= GetSpawnCount() )
 	{
 		nodecount++;
-		choosenode[nodecount] = currentnode;
+		choosenode[ nodecount ] = currentnode;
 		currentnode++;
 	}
 	
-	new randomnode = choosenode[GetRandomInt(1, nodecount)];
+	int randomnode = choosenode[ GetRandomInt( 1, nodecount ) ];
 	
 	return randomnode;
 }
 
 public SpawnParrot()
 {
-	new randomnode = GetRandomSpawnPoint();
+	int randomnode = GetRandomSpawnPoint();
 	
-	if (randomnode == 0)
+	if ( randomnode == 0 )
 	{
-		LogError("No nodes, not spawning parrot.");
+		LogError( "No nodes, not spawning parrot." );
 		return;
 	}
 	
-	new parrot = CreateEntityByName("npc_parrot");
+	int parrot = CreateEntityByName( "npc_parrot" );
 	
-	decl String:nodepoints[3][128];
-	ExplodeString(ParrotSpawns[randomnode], " ", nodepoints, 3, 128);
+	char nodepoints[ 3 ][ 128 ];
+	ExplodeString( ParrotSpawns[ randomnode ], " ", nodepoints, 3, 128 );
 	
-	decl Float:nodeorg[3];
-	nodeorg[0] = StringToFloat(nodepoints[0]);
-	nodeorg[1] = StringToFloat(nodepoints[1]);
-	nodeorg[2] = StringToFloat(nodepoints[2]);
+	float nodeorg[ 3 ];
+	nodeorg[ 0 ] = StringToFloat( nodepoints[ 0 ] );
+	nodeorg[ 1 ] = StringToFloat( nodepoints[ 1 ] );
+	nodeorg[ 2 ] = StringToFloat( nodepoints[ 2 ] );
 	
-	decl String:orgstring[128];
-	Format(orgstring, 128, "%f %f %f", nodeorg[0], nodeorg[1], nodeorg[2]);
+	char orgstring[ 128 ];
+	Format( orgstring, sizeof( orgstring ), "%f %f %f", nodeorg[ 0 ], nodeorg[ 1 ], nodeorg[ 2 ] );
 	
-	DispatchKeyValue(parrot, "origin", orgstring);
-	DispatchSpawn(parrot);
+	DispatchKeyValue( parrot, "origin", orgstring );
+	DispatchSpawn( parrot );
 	
-	DispatchKeyValue(parrot, "targetname", "noamp_parrot");
+	DispatchKeyValue( parrot, "targetname", "noamp_parrot" );
 	
-	if (GetConVarBool(cvar_debug))
+	if ( IsDebug() )
 	{
-		PrintToServer("Parrot spawned at %s", orgstring);
+		PrintToServer( "Parrot spawned at %s", orgstring );
 	}
 }
 
 public SpawnGiantParrot()
 {	
-	new randomnode = GetRandomSpawnPoint();
+	int randomnode = GetRandomSpawnPoint();
 	
-	if (randomnode == 0)
+	if ( randomnode == 0 )
 	{
-		LogError("No nodes, not spawning parrot.");
+		LogError( "No nodes, not spawning parrot." );
 		return;
 	}
 	
-	new parrot = CreateEntityByName("npc_parrot");
+	int parrot = CreateEntityByName( "npc_parrot" );
 	
-	decl String:nodepoints[3][128];
-	ExplodeString(ParrotSpawns[randomnode], " ", nodepoints, 3, 128);
+	char nodepoints[ 3 ][ 128 ];
+	ExplodeString( ParrotSpawns[ randomnode ], " ", nodepoints, 3, 128 );
 	
-	decl Float:nodeorg[3];
-	nodeorg[0] = StringToFloat(nodepoints[0]);
-	nodeorg[1] = StringToFloat(nodepoints[1]);
-	nodeorg[2] = StringToFloat(nodepoints[2]);
+	float nodeorg[ 3 ];
+	nodeorg[ 0 ] = StringToFloat( nodepoints[ 0 ] );
+	nodeorg[ 1 ] = StringToFloat( nodepoints[ 1 ] );
+	nodeorg[ 2 ] = StringToFloat( nodepoints[ 2 ] );
 	
-	decl String:orgstring[128];
-	Format(orgstring, 128, "%f %f %f", nodeorg[0], nodeorg[1], nodeorg[2]);
+	char orgstring[ 128 ];
+	Format( orgstring, sizeof( orgstring ), "%f %f %f", nodeorg[ 0 ], nodeorg[ 1 ], nodeorg[ 2 ] );
 	
-	DispatchKeyValue(parrot, "origin", orgstring);
-	DispatchSpawn(parrot);
+	DispatchKeyValue( parrot, "origin", orgstring );
+	DispatchSpawn( parrot );
 	
 	// FIXME: lol
-	new Float:vecParrotMin[3] = { -15.0, -15.0, 0.0 }, Float:vecParrotMax[3] = { 15.0,  15.0, 50.0 };
+	float vecParrotMin[ 3 ] = { -15.0, -15.0, 0.0 };
+	float vecParrotMax[ 3 ] = { 15.0,  15.0, 50.0 };
 	
-	ScaleVector(vecParrotMin, giantParrotSize);
-	ScaleVector(vecParrotMax, giantParrotSize);
+	ScaleVector( vecParrotMin, giantParrotSize );
+	ScaleVector( vecParrotMax, giantParrotSize );
 	
-	SetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMin);
-	SetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMaxs", vecParrotMax);
+	SetEntPropVector( parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMin );
+	SetEntPropVector( parrot, Prop_Send, "m_vecSpecifiedSurroundingMaxs", vecParrotMax );
 	
-	new Float:scalevalue = giantParrotSize;
-	SetEntPropFloat(parrot, Prop_Send, "m_flModelScale", scalevalue);
+	float scalevalue = giantParrotSize;
+	SetEntPropFloat( parrot, Prop_Send, "m_flModelScale", scalevalue );
 	
-	SetEntProp(parrot, Prop_Data, "m_iHealth", 100);
-	DispatchKeyValue(parrot, "targetname", "noamp_giant");
+	SetEntProp( parrot, Prop_Data, "m_iHealth", 100 );
+	DispatchKeyValue( parrot, "targetname", "noamp_giant" );
 	
-	if (GetConVarBool(cvar_debug))
+	if ( IsDebug() )
 	{
-		PrintToServer("Giant parrot spawned at %s", orgstring);
+		PrintToServer( "Giant parrot spawned at %s", orgstring );
 	}
 }
 
 public SpawnSmallParrot()
 {	
-	new randomnode = GetRandomSpawnPoint();
+	int randomnode = GetRandomSpawnPoint();
 	
-	if (randomnode == 0)
+	if ( randomnode == 0 )
 	{
-		LogError("No nodes, not spawning parrot.");
+		LogError( "No nodes, not spawning parrot." );
 		return;
 	}
 	
-	new parrot = CreateEntityByName("npc_parrot");
+	int parrot = CreateEntityByName( "npc_parrot" );
 	
-	decl String:nodepoints[3][128];
-	ExplodeString(ParrotSpawns[randomnode], " ", nodepoints, 3, 128);
+	char nodepoints[ 3 ][ 128 ];
+	ExplodeString( ParrotSpawns[ randomnode ], " ", nodepoints, 3, 128 );
 	
-	decl Float:nodeorg[3];
-	nodeorg[0] = StringToFloat(nodepoints[0]);
-	nodeorg[1] = StringToFloat(nodepoints[1]);
-	nodeorg[2] = StringToFloat(nodepoints[2]);
+	float nodeorg[ 3 ];
+	nodeorg[ 0 ] = StringToFloat( nodepoints[ 0 ] );
+	nodeorg[ 1 ] = StringToFloat( nodepoints[ 1 ]);
+	nodeorg[ 2 ] = StringToFloat( nodepoints[ 2 ] );
 	
-	decl String:orgstring[128];
-	Format(orgstring, 128, "%f %f %f", nodeorg[0], nodeorg[1], nodeorg[2]);
+	char orgstring[ 128 ];
+	Format( orgstring, sizeof( orgstring ), "%f %f %f", nodeorg[0  ], nodeorg[1  ], nodeorg[ 2 ] );
 	
-	DispatchKeyValue(parrot, "origin", orgstring);
-	DispatchSpawn(parrot);
+	DispatchKeyValue( parrot, "origin", orgstring );
+	DispatchSpawn( parrot );
 	
 	// FIXME: lol
-	new Float:vecParrotMin[3] = { -15.0, -15.0, 0.0 }, Float:vecParrotMax[3] = { 15.0,  15.0, 50.0 };
+	float vecParrotMin[ 3 ] = { -15.0, -15.0, 0.0 };
+	float vecParrotMax[ 3 ] = { 15.0,  15.0, 50.0 };
 	
-	ScaleVector(vecParrotMin, smallParrotSize);
-	ScaleVector(vecParrotMax, smallParrotSize);
+	ScaleVector( vecParrotMin, smallParrotSize );
+	ScaleVector( vecParrotMax, smallParrotSize );
 	
-	SetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMin);
-	SetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMaxs", vecParrotMax);
+	SetEntPropVector( parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMin );
+	SetEntPropVector( parrot, Prop_Send, "m_vecSpecifiedSurroundingMaxs", vecParrotMax );
 	
-	new Float:scalevalue = smallParrotSize;
-	SetEntPropFloat(parrot, Prop_Send, "m_flModelScale", scalevalue);
+	float scalevalue = smallParrotSize;
+	SetEntPropFloat( parrot, Prop_Send, "m_flModelScale", scalevalue );
 	
-	DispatchKeyValue(parrot, "targetname", "noamp_small");
+	DispatchKeyValue( parrot, "targetname", "noamp_small" );
 	
-	if (GetConVarBool(cvar_debug))
+	if ( IsDebug() )
 	{
-		PrintToServer("Small parrot spawned at %s", orgstring);
+		PrintToServer( "Small parrot spawned at %s", orgstring );
 	}
 }
 
-public SpawnBossParrot(bool:corruptor)
+public SpawnBossParrot( bool corruptor )
 {	
-	new randomnode = GetRandomSpawnPoint();
+	int randomnode = GetRandomSpawnPoint();
 	
-	if (randomnode == 0)
+	if ( randomnode == 0 )
 	{
-		LogError("No nodes, not spawning parrot.");
+		LogError( "No nodes, not spawning parrot." );
 		return;
 	}
 	
-	new parrot = CreateEntityByName("npc_parrot");
+	int parrot = CreateEntityByName( "npc_parrot" );
 	
-	decl String:nodepoints[3][128];
-	ExplodeString(GiantParrotSpawns[randomnode], " ", nodepoints, 3, 128);
+	char nodepoints[ 3 ][ 128 ];
+	ExplodeString( GiantParrotSpawns[ randomnode ], " ", nodepoints, 3, 128 );
 	
-	decl Float:nodeorg[3];
-	nodeorg[0] = StringToFloat(nodepoints[0]);
-	nodeorg[1] = StringToFloat(nodepoints[1]);
-	nodeorg[2] = StringToFloat(nodepoints[2]);
+	float nodeorg[ 3 ];
+	nodeorg[ 0 ] = StringToFloat( nodepoints[ 0 ] );
+	nodeorg[ 1 ] = StringToFloat( nodepoints[ 1 ] );
+	nodeorg[ 2 ] = StringToFloat( nodepoints[ 2 ] );
 	
-	decl String:orgstring[128];
-	Format(orgstring, 128, "%f %f %f", nodeorg[0], nodeorg[1], nodeorg[2]);
+	char orgstring[ 128 ];
+	Format( orgstring, sizeof( orgstring ), "%f %f %f", nodeorg[ 0 ], nodeorg[ 1 ], nodeorg[ 2 ] );
 	
-	DispatchKeyValue(parrot, "origin", orgstring);
-	DispatchSpawn(parrot);
+	DispatchKeyValue( parrot, "origin", orgstring );
+	DispatchSpawn( parrot );
 	
 	// FIXME: lol
-	new Float:vecParrotMin[3] = { -15.0, -15.0, 0.0 }, Float:vecParrotMax[3] = { 15.0,  15.0, 50.0 };
+	float vecParrotMin[ 3 ] = { -15.0, -15.0, 0.0 };
+	float vecParrotMax[ 3 ] = { 15.0,  15.0, 50.0 };
 	
-	ScaleVector(vecParrotMin, giantParrotSize);
-	ScaleVector(vecParrotMax, giantParrotSize);
+	ScaleVector( vecParrotMin, giantParrotSize );
+	ScaleVector( vecParrotMax, giantParrotSize );
 	
-	SetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMin);
-	SetEntPropVector(parrot, Prop_Send, "m_vecSpecifiedSurroundingMaxs", vecParrotMax);
+	SetEntPropVector( parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMin );
+	SetEntPropVector( parrot, Prop_Send, "m_vecSpecifiedSurroundingMaxs", vecParrotMax );
 	
-	new Float:scalevalue = bossParrotSize;
-	SetEntPropFloat(parrot, Prop_Send, "m_flModelScale", scalevalue);
+	float scalevalue = bossParrotSize;
+	SetEntPropFloat( parrot, Prop_Send, "m_flModelScale", scalevalue );
 	
-	SetEntProp(parrot, Prop_Data, "m_iHealth", parrotBossHP);
-	DispatchKeyValue(parrot, "targetname", "noamp_boss");
+	SetEntProp( parrot, Prop_Data, "m_iHealth", parrotBossHP );
+	DispatchKeyValue( parrot, "targetname", "noamp_boss" );
 	
-	if (corruptor)
+	if ( corruptor )
 	{
 		// blak brid
-		SetEntityRenderColor(parrot, 0, 0, 0, 255);
+		SetEntityRenderColor( parrot, 0, 0, 0, 255 );
 	}
 	
-	if (GetConVarBool(cvar_debug))
+	if ( IsDebug() )
 	{
-		PrintToServer("Boss parrot spawned at %s", orgstring);
+		PrintToServer( "Boss parrot spawned at %s", orgstring );
 	}
 }
 
-public SpawnVulture(client)
+public SpawnVulture( int client )
 {
-	new vulture = CreateEntityByName("npc_vulture");
+	int vulture = CreateEntityByName( "npc_vulture" );
 	
-	decl Float:entorg[3];
-	GetEntPropVector(client, Prop_Data, "m_vecOrigin", entorg);
+	float entorg[ 3 ];
+	GetEntPropVector( client, Prop_Data, "m_vecOrigin", entorg );
 	
-	decl String:orgstring[128];
-	Format(orgstring, 128, "%f %f %f", entorg[0], entorg[1], entorg[2]);
+	char orgstring[ 128 ];
+	Format( orgstring, sizeof( orgstring ), "%f %f %f", entorg[ 0 ], entorg[ 1 ], entorg[ 2 ] );
 	
 	// left or right?
-	new rand = GetRandomInt(1, 2);
-	if (rand == 1)
-		entorg[1] = 20;
-	else if (rand == 2)
-		entorg[1] = -20;
+	int rand = GetRandomInt( 1, 2 );
+	if ( rand == 1 )
+		entorg[ 1 ] = 20.0;
+	else if ( rand == 2 )
+		entorg[ 1 ] = -20.0;
 	
-	DispatchKeyValue(vulture, "origin", orgstring);
-	DispatchSpawn(vulture);
+	DispatchKeyValue( vulture, "origin", orgstring );
+	DispatchSpawn( vulture );
 	
-	decl String:targetname[128];
-	Format(targetname, 128, "noamp_vulture_%d", client);
+	char targetname[ 128 ];
+	Format( targetname, sizeof( targetname ), "noamp_vulture_%d", client );
 	
-	DispatchKeyValue(vulture, "targetname", targetname);
+	DispatchKeyValue( vulture, "targetname", targetname );
 }

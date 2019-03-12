@@ -30,7 +30,7 @@ public Action:ChangeTeamListener(client, const String:command[], argc)
 {
 	if (StrEqual(command, "changeteam", false)) // note to self: jointeam is changeteam in pvk, dont mess up... you did that twice baka -.-
 	{
-		if (!IsEnabled || !HasGameStarted || IsLivesDisabled)
+		if ( !g_bIsEnabled || !g_bHasGameStarted || IsLivesDisabled )
 			return Plugin_Continue;
 		
 		if (client)
@@ -150,7 +150,7 @@ public Action:DropItemListener(client, const String:command[], argc)
 	
 	if (StrEqual(command, "dropitem", false))
 	{
-		if (!IsEnabled || !HasGameStarted)
+		if ( !g_bIsEnabled || !g_bHasGameStarted )
 			return Plugin_Continue;
 		
 		if (client)
@@ -184,14 +184,14 @@ public Action:DropItemListener(client, const String:command[], argc)
 	return Plugin_Continue;
 }
 
-public Action:HUD(Handle:timer)
+public Action:HUD( Handle:timer )
 {
-	if (!IsEnabled)
+	if ( !g_bIsEnabled )
 		return Plugin_Stop;
 	
-	new r;
-	new g;
-	new b;
+	int r;
+	int g;
+	int b;
 	
 	if (IsCorrupted)
 	{
@@ -215,9 +215,9 @@ public Action:HUD(Handle:timer)
 		SetHudTextParams(-1.0, -1.8, 0.3, r, g, b, 255, 0, 0.0, 0.0, 0.0);
 	}
 	
-	if (!HasGameStarted)
+	if ( !g_bHasGameStarted )
 	{
-		for (new i = 1; i < MaxClients; i++)
+		for ( int i = 1; i <= MaxClients; i++ )
 		{
 			if (IsClientInGame(i) && IsClientConnected(i))
 			{
@@ -236,7 +236,7 @@ public Action:HUD(Handle:timer)
 	{
 		if (!IsGameOver)
 		{
-			for (new i = 1; i < MaxClients; i++)
+			for ( int i = 1; i <= MaxClients; i++ )
 			{
 				if (IsClientInGame(i) && IsClientConnected(i))
 				{
@@ -267,19 +267,19 @@ public Action:HUD(Handle:timer)
 
 public Action:WaitingForPlayers(Handle:timer)
 {
-	new clients = 0;
+	int clients = 0;
 	
-	for (new i = 1; i < MaxClients; i++)
+	for ( int i = 1; i <= MaxClients; i++ )
 	{
-		if (IsClientConnected(i) && IsClientInGame(i) && GetClientTeam(i) > TEAM_SPECTATOR)
+		if ( IsClientConnected( i ) && IsClientInGame( i ) && GetClientTeam( i ) > TEAM_SPECTATOR )
 		{
 			clients++;
 		}
 	}
 	
-	if (clients >= 1)
+	if ( clients >= 1 )
 	{
-		h_TimerPreparingTime = CreateTimer(1.0, PreparingTime, _, TIMER_REPEAT);
+		h_TimerPreparingTime = CreateTimer( 1.0, PreparingTime, _, TIMER_REPEAT );
 		IsWaitingForPlayers = true;
 		return Plugin_Stop;
 	}
@@ -293,10 +293,10 @@ public StartGame()
 	CPrintToChatAll("{unusual}\"little late for halloween\"");
 	CPrintToChatAll("{selfmade}Current scheme: %s", schemeName);
 	
-	HasGameStarted = true;
+	g_bHasGameStarted = true;
 	IsGameOver = false;
 	
-	for (new i = 1; i < MaxClients; i++)
+	for ( int i = 1; i <= MaxClients; i++ )
 	{
 		if (IsClientInGame(i))
 		{
@@ -320,7 +320,7 @@ public StartGame()
 
 public Action:WaveThink(Handle:timer)
 {
-	if (!IsEnabled || !HasGameStarted || IsPreparing || IsGameOver)
+	if ( !g_bIsEnabled || !g_bHasGameStarted || IsPreparing || IsGameOver )
 		return Plugin_Stop;
 	
 	if (!waveIsBossWave[wave])
@@ -355,16 +355,16 @@ public Action:WaveThink(Handle:timer)
 		}
 	}
 	
-	new clients = 0;
-	new dead = 0;
+	int clients = 0;
+	int dead = 0;
 	
 	// we consider specs/unassigned as dead players...
-	for (new i = 1; i < MaxClients; i++)
+	for ( int i = 1; i <= MaxClients; i++ )
 	{
-		if (IsClientConnected(i) && IsClientInGame(i))
+		if ( IsClientConnected( i ) && IsClientInGame( i ) )
 		{
 			clients++;
-			if (GetClientTeam(i) <= TEAM_SPECTATOR)
+			if ( GetClientTeam( i ) <= TEAM_SPECTATOR )
 			{
 				dead++;
 			}
@@ -406,7 +406,7 @@ public WaveFinished()
 		return;
 	}
 	
-	for (new i = 1; i < MaxClients; i++)
+	for ( int i = 1; i <= MaxClients; i++ )
 	{
 		new lives = playerLives;
 		
@@ -504,7 +504,7 @@ public Action:GameOver(Handle:timer)
 	
 	if (gameOverSecs >= 5)
 	{
-		for (new i = 1; i < MaxClients; i++)
+		for ( int i = 1; i <= MaxClients; i++ )
 		{
 			if (IsClientInGame(i))
 			{
@@ -525,19 +525,17 @@ public Action:GameOver(Handle:timer)
 
 public EndGame()
 {
-	new game_end = CreateEntityByName("game_end");
+	int game_end = CreateEntityByName( "game_end" );
 	
-	if (game_end == -1) 
+	if ( game_end == -1 ) 
 	{
-		ThrowError("Unable to create entity \"game_end\"");
+		ThrowError( "Unable to create entity \"game_end\"" );
 	}
 	
-	AcceptEntityInput(game_end, "EndGame");
+	AcceptEntityInput( game_end, "EndGame" );
 	
 	// restore mp_timelimit
-	SetConVarInt(cvar_timelimit, timelimitSavedValue);
-	
-	return Plugin_Stop;
+	SetConVarInt( cvar_timelimit, timelimitSavedValue );
 }
 
 public Action:PreparingTime(Handle:timer)
@@ -583,7 +581,7 @@ public Action:PreparingTime(Handle:timer)
 	
 	if (preparingSecs >= GetPreparationSeconds())
 	{
-		if (!HasGameStarted)
+		if ( !g_bHasGameStarted )
 			StartGame()
 		else
 			WaveStart();
@@ -602,7 +600,7 @@ public WaveStart()
 	}
 	
 	// check if there still are players in spectator, force them to join a team so they can't just sit there
-	for (new i = 1; i < MaxClients; i++)
+	for ( int i = 1; i <= MaxClients; i++ )
 	{
 		if (IsClientInGame(i) && GetClientTeam(i) == TEAM_SPECTATOR && !clientWantsSpec[i]) // unless they want so...
 		{
@@ -655,7 +653,7 @@ public WaveStart()
 
 public Action:ParrotCreator(Handle:timer)
 {
-	if (!HasGameStarted || IsPreparing || IsGameOver)
+	if ( !g_bHasGameStarted || IsPreparing || IsGameOver )
 		return Plugin_Stop;
 	
 	ParrotCreatorController();
@@ -744,7 +742,7 @@ public ParrotCreatorController()
 public Action:Corruption(Handle:timer)
 {
 	// first, save current values
-	for (new i = 1; i < MaxClients; i++)
+	for ( int i = 1; i <= MaxClients; i++ )
 	{
 		if (!clientValuesSaved[i])
 		{
@@ -755,7 +753,7 @@ public Action:Corruption(Handle:timer)
 	
 	if (corruptsecs >= 10)
 	{
-		for (new i = 1; i < MaxClients; i++)
+		for ( int i = 1; i <= MaxClients; i++ )
 		{
 			RestoreSavedValues(i, true);
 			clientValuesSaved[i] = false;
@@ -766,7 +764,7 @@ public Action:Corruption(Handle:timer)
 	}
 	
 	// randomize values to create the "corruption" effect
-	for (new i = 1; i < MaxClients; i++)
+	for ( int i = 1; i <= MaxClients; i++ )
 	{
 		clientMoney[i] = GetRandomInt(1, 10000);
 		clientUpgradesMaxHP[i] = GetRandomInt(1, 5);
@@ -870,87 +868,87 @@ public Action:RoundStartCheer( Handle:Timer, Handle:datapack )
 public FriendDeadVoice( int client, int victim )
 {
 	if ( !IsClientInGame( client ) || client == victim || !IsPlayerAlive( client ) || GetClientTeam( client ) <= TEAM_SPECTATOR )
-		return Plugin_Handled;
+		return;
 	
 	int victimTeam = GetClientTeam( victim );
 	int team = GetClientTeam( client );
 	
 	// The game already does dead teammate sound for teammates
 	if ( victimTeam == team )
-		return Plugin_Handled;
+		return;
 	
-	int class = GetPlayerClass( client );
+	int iClass = GetPlayerClass( client );
 	
 	if ( team >= TEAM_PIRATES && team <= TEAM_KNIGHTS )
 	{		
 		// these classes do not have dead friend lines
-		if ( class != PVK2_CLASS_SKIRMISHER && class != PVK2_CLASS_HUSCARL && class != PVK2_CLASS_MANATARMS )
+		if ( iClass != view_as< int >( PVK2_CLASS_SKIRMISHER ) && iClass != view_as< int >( PVK2_CLASS_HUSCARL ) && iClass != view_as< int >( PVK2_CLASS_MANATARMS ) )
 		{
-			EmitAmbientGameSoundFromPlayer( client, DeadTeammateGameSounds[ class ], true );
+			EmitAmbientGameSoundFromPlayer( client, DeadTeammateGameSounds[ iClass ], true );
 		}
 	}
 }
 
 public ParrotKiller()
 {
-	new parrot = INVALID_ENT_REFERENCE;
-	new count = 0;
-	while ((parrot = FindEntityByClassname(parrot, "npc_parrot")) != INVALID_ENT_REFERENCE) 
+	int parrot = INVALID_ENT_REFERENCE;
+	int count = 0;
+	while ( ( parrot = FindEntityByClassname( parrot, "npc_parrot" ) ) != INVALID_ENT_REFERENCE ) 
 	{
-		AcceptEntityInput(parrot, "BecomeRagdoll"); // if this actually removes the ent... test
+		AcceptEntityInput( parrot, "BecomeRagdoll" ); // if this actually removes the ent... test
 		count++;
 	}
-	if (IsDebug())
+	if ( IsDebug() )
 	{
-		PrintToServer("Killed %d parrots.", count);
+		PrintToServer( "Killed %d parrots.", count );
 	}
 }
 
 public VultureKiller()
 {
-	new vulture = INVALID_ENT_REFERENCE;
-	new count = 0;
-	while ((vulture = FindEntityByClassname(vulture, "npc_vulture")) != INVALID_ENT_REFERENCE) 
+	int vulture = INVALID_ENT_REFERENCE;
+	int count = 0;
+	while ( ( vulture = FindEntityByClassname( vulture, "npc_vulture") ) != INVALID_ENT_REFERENCE )
 	{
 		AcceptEntityInput(vulture, "BecomeRagdoll");
 		count++;
 	}
-	if (IsDebug())
+	if ( IsDebug() )
 	{
-		PrintToServer("Killed %d vultures.", count);
+		PrintToServer( "Killed %d vultures.", count );
 	}
 }
 
 public EnableFog()
 {
-	new fog = INVALID_ENT_REFERENCE
-	FindEntityByClassname(fog, "env_fog_controller");
+	int fog = INVALID_ENT_REFERENCE
+	fog = FindEntityByClassname( fog, "env_fog_controller" );
 	
-	if (fog == INVALID_ENT_REFERENCE) 
+	if ( fog == INVALID_ENT_REFERENCE )
 	{
-		fog = CreateEntityByName("env_fog_controller");
+		fog = CreateEntityByName( "env_fog_controller" );
 	}
 	
-	if (fog != INVALID_ENT_REFERENCE) 
+	if ( fog != INVALID_ENT_REFERENCE ) 
 	{
-		DispatchKeyValue(fog, "fogenable", "1");
-		AcceptEntityInput(fog, "TurnOn");
+		DispatchKeyValue( fog, "fogenable", "1" );
+		AcceptEntityInput( fog, "TurnOn" );
 	}
 }
 
 public DisableFog()
 {
-	new fog = INVALID_ENT_REFERENCE
-	FindEntityByClassname(fog, "env_fog_controller");
+	int fog = INVALID_ENT_REFERENCE
+	fog = FindEntityByClassname( fog, "env_fog_controller" );
 	
-	if (fog == INVALID_ENT_REFERENCE) 
+	if ( fog == INVALID_ENT_REFERENCE )
 	{
-		fog = CreateEntityByName("env_fog_controller");
+		fog = CreateEntityByName( "env_fog_controller" );
 	}
 	
-	if (fog != INVALID_ENT_REFERENCE) 
+	if ( fog != INVALID_ENT_REFERENCE )
 	{
-		AcceptEntityInput(fog, "TurnOff");
+		AcceptEntityInput( fog, "TurnOff" );
 	}
 }
 
@@ -1006,32 +1004,32 @@ public BuyUpgrade(client, upgrade)
 		}
 		case UPGRADE_MAXSPEED:
 		{
-			if (clientUpgradesMaxSpeed[client] == 5)
+			if ( clientUpgradesMaxSpeed[ client ] == 5 )
 			{
-				CPrintToChat(client, "{red}You already have maxed this upgrade!");
+				CPrintToChat( client, "{red}You already have maxed this upgrade!" );
 			}
-			else if (GetMoney(client) >= clientMaxSpeedPrice[client])
+			else if ( GetMoney( client ) >= clientMaxSpeedPrice[ client ] )
 			{				
-				new Float:maxspeed = GetEntData(client, h_flMaxspeed, 4);
-				SetEntData(client, h_flMaxspeed, maxspeed + 20, 4, true);
+				float maxspeed = GetEntDataFloat( client, h_flMaxspeed );
+				SetEntData( client, h_flMaxspeed, maxspeed + 20, 4, true );
 				
-				new Float:defspeed = GetEntData(client, h_flDefaultSpeed, 4);
-				SetEntData(client, h_flDefaultSpeed, defspeed + 20, 4, true);
+				float defspeed = GetEntDataFloat( client, h_flDefaultSpeed );
+				SetEntData( client, h_flDefaultSpeed, defspeed + 20, 4, true );
 				
-				RemoveMoney(client, clientMaxSpeedPrice[client]);
-				EmitAmbientSoundFromPlayer(client, "noamp/kaching.mp3", false);
+				RemoveMoney( client, clientMaxSpeedPrice[ client ] );
+				EmitAmbientSoundFromPlayer( client, "noamp/kaching.mp3", false );
 				
-				clientUpgradesMaxSpeed[client]++;
-				clientMaxSpeedPrice[client] += UPGRADE_PRICERAISE;
+				clientUpgradesMaxSpeed[ client ]++;
+				clientMaxSpeedPrice[ client ] += UPGRADE_PRICERAISE;
 			}
 			else
 			{
-				CPrintToChat(client, "{red}You don't have enough money! I want %d$.", clientMaxSpeedPrice[client]);
+				CPrintToChat( client, "{red}You don't have enough money! I want %d$.", clientMaxSpeedPrice[ client ] );
 			}
 		}
 		default:
 		{
-			ThrowError("Attempted to purchase unknown upgrade.");
+			ThrowError( "Attempted to purchase unknown upgrade." );
 		}
 	}
 }
@@ -1385,9 +1383,9 @@ public ForceJoinSpec(client)
 	ClientCommand(client, "changeteam 1");
 }
 
-public ResetGame(bool:gameover, bool:startgame)
+public ResetGame( bool:gameover, bool:startgame )
 {	
-	HasGameStarted = false;
+	g_bHasGameStarted = false;
 	HasWaveStarted = false;
 	IsGameOver = false;
 	IsPreparing = false;
@@ -1412,7 +1410,7 @@ public ResetGame(bool:gameover, bool:startgame)
 	powerupFillSpecialPrice = 0;
 	
 	waveCount = 0;
-	deadplayers = 0;
+	//deadplayers = 0;
 	preparingSecs = 0;
 	gameOverSecs = 0;
 	musicSecs = 0;
@@ -1431,15 +1429,15 @@ public ResetGame(bool:gameover, bool:startgame)
 	ReadParrotCreatorScript(1);
 	StopMusicAll();
 	
-	for (new i = 1; i < MaxClients; i++)
+	for ( int i = 1; i <= MaxClients; i++ )
 	{
-		if (gameover)
-			ResetClient(i, true);
+		if ( gameover )
+			ResetClient( i, true );
 		else
-		ResetClient(i, false);
+			ResetClient( i, false );
 	}
 	
-	if (startgame)
+	if ( startgame )
 		StartGame();
 }
 
