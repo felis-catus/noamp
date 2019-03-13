@@ -22,7 +22,9 @@
 #include <sdkhooks>
 #include <morecolors>
 
-public MainMenuHandler( Menu menu, MenuAction action, int param1, int param2 )
+#pragma newdecls required
+
+public int MainMenuHandler( Menu menu, MenuAction action, int param1, int param2 )
 {
 	switch ( action )
 	{
@@ -192,7 +194,7 @@ public MainMenuHandler( Menu menu, MenuAction action, int param1, int param2 )
 	return 0;
 }
 
-public UpgradesMenuHandler( Menu menu, MenuAction action, int param1, int param2 )
+public int UpgradesMenuHandler( Menu menu, MenuAction action, int param1, int param2 )
 {
 	switch ( action )
 	{ 
@@ -254,7 +256,7 @@ public UpgradesMenuHandler( Menu menu, MenuAction action, int param1, int param2
 	return 0;
 }
 
-public PowerupsMenuHandler( Menu menu, MenuAction action, int param1, int param2 )
+public int PowerupsMenuHandler( Menu menu, MenuAction action, int param1, int param2 )
 {
 	switch ( action )
 	{ 
@@ -313,7 +315,7 @@ public PowerupsMenuHandler( Menu menu, MenuAction action, int param1, int param2
 }
 
 /*
-public WeaponsMenuHandler( Menu menu, MenuAction action, int param1, int param2 )
+public int WeaponsMenuHandler( Menu menu, MenuAction action, int param1, int param2 )
 {
 	switch ( action )
 	{ 
@@ -367,7 +369,7 @@ public WeaponsMenuHandler( Menu menu, MenuAction action, int param1, int param2 
 	return 0;
 }
 */
-public BaseUpgradesMenuHandler( Menu menu, MenuAction action, int param1, int param2 )
+public int BaseUpgradesMenuHandler( Menu menu, MenuAction action, int param1, int param2 )
 {
 	switch ( action )
 	{ 
@@ -430,7 +432,7 @@ public BaseUpgradesMenuHandler( Menu menu, MenuAction action, int param1, int pa
 	return 0;
 }
 
-public MiscMenuHandler( Menu menu, MenuAction action, int param1, int param2 )
+public int MiscMenuHandler( Menu menu, MenuAction action, int param1, int param2 )
 {
 	switch ( action )
 	{ 
@@ -485,7 +487,7 @@ public MiscMenuHandler( Menu menu, MenuAction action, int param1, int param2 )
 	return 0;
 }
 
-public DebugMenuHandler( Menu menu, MenuAction action, int param1, int param2 )
+public int DebugMenuHandler( Menu menu, MenuAction action, int param1, int param2 )
 {
 	switch ( action )
 	{ 
@@ -561,7 +563,7 @@ public Action CMD_NOAMP_Menu( int client, int args )
 	return Plugin_Handled;
 }
 
-public NOAMP_Menu( int client )
+public void NOAMP_Menu( int client )
 {
 	if ( !IsClientInGame( client ) )
 		return;

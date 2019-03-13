@@ -17,6 +17,8 @@
 
 // NOAMP Definitions and stuff like that
 
+#pragma newdecls required
+
 #define PL_VERSION "0.6a"
 #define SERVER_TAG "noamp"
 #define CHAT_PREFIX "[NOAMP]"

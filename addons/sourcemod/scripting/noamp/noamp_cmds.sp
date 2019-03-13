@@ -22,6 +22,8 @@
 #include <sdkhooks>
 #include <morecolors>
 
+#pragma newdecls required
+
 public Action CmdTestSpawns( int client, int args )
 {
 	if ( IsDebug() )

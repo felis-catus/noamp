@@ -27,7 +27,9 @@
 #include <sdkhooks>
 #include <morecolors>
 
-public FindSpawns()
+#pragma newdecls required
+
+public void FindSpawns()
 {
 	char targetname[ 128 ];
 	float entorg[ 3 ];
@@ -81,7 +83,7 @@ public FindSpawns()
 	}
 }
 
-public ResetSpawns()
+public void ResetSpawns()
 {
 	for ( int i = 0; i < NOAMP_MAXSPAWNS-1; i++ )
 	{
@@ -93,7 +95,7 @@ public ResetSpawns()
 	FindSpawns();
 }
 
-public GetSpawnCount()
+public int GetSpawnCount()
 {
 	int spawns = 0;
 	for ( int i = 0; i <= NOAMP_MAXSPAWNS-1; i++ )
@@ -109,7 +111,7 @@ public GetSpawnCount()
 	return spawns;
 }
 
-public GetRandomSpawnPoint()
+public int GetRandomSpawnPoint()
 {
 	int nodecount = 0;
 	int currentnode = 1;
@@ -142,7 +144,7 @@ public GetRandomSpawnPoint()
 	return randomnode;
 }
 
-public SpawnParrot()
+public void SpawnParrot()
 {
 	int randomnode = GetRandomSpawnPoint();
 	
@@ -176,7 +178,7 @@ public SpawnParrot()
 	}
 }
 
-public SpawnGiantParrot()
+public void SpawnGiantParrot()
 {	
 	int randomnode = GetRandomSpawnPoint();
 	
@@ -224,7 +226,7 @@ public SpawnGiantParrot()
 	}
 }
 
-public SpawnSmallParrot()
+public void SpawnSmallParrot()
 {	
 	int randomnode = GetRandomSpawnPoint();
 	
@@ -271,7 +273,7 @@ public SpawnSmallParrot()
 	}
 }
 
-public SpawnBossParrot( bool corruptor )
+public void SpawnBossParrot( bool corruptor )
 {	
 	int randomnode = GetRandomSpawnPoint();
 	
@@ -325,7 +327,7 @@ public SpawnBossParrot( bool corruptor )
 	}
 }
 
-public SpawnVulture( int client )
+public void SpawnVulture( int client )
 {
 	int vulture = CreateEntityByName( "npc_vulture" );
 	

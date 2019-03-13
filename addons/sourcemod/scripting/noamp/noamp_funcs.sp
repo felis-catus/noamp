@@ -19,11 +19,13 @@
 
 // im just throwing these funcs here, dont mind me
 
-stock GetMoney( int client ) { return clientMoney[ client ]; }
-stock AddMoney( int client, int amount) { clientMoney[ client ] += amount; }
-stock RemoveMoney( int client, int amount ) { clientMoney[ client ] -= amount; }
+#pragma newdecls required
 
-stock AddSpecial( int client, int amount )
+stock int GetMoney( int client ) { return clientMoney[ client ]; }
+stock void AddMoney( int client, int amount) { clientMoney[ client ] += amount; }
+stock void RemoveMoney( int client, int amount ) { clientMoney[ client ] -= amount; }
+
+stock void AddSpecial( int client, int amount )
 {
 	int iSpecial = GetEntData( client, h_iSpecial );
 	int iMaxSpecial = GetEntData( client, h_iMaxSpecial );
@@ -48,22 +50,22 @@ stock AddSpecial( int client, int amount )
 	SetEntData( client, h_iSpecial, iSpecial, 4, true );
 }
 
-stock RemoveSpecial( int client, int amount) { int i = GetEntData( client, h_iSpecial ); i -= amount; SetEntData( client, h_iSpecial, i ); }
+stock void RemoveSpecial( int client, int amount) { int i = GetEntData( client, h_iSpecial ); i -= amount; SetEntData( client, h_iSpecial, i ); }
 
-stock AddFrags( int client, int amount ) { int i = GetClientFrags( client ); i += amount; SetEntProp( client, Prop_Data, "m_iFrags", i ); }
+stock void AddFrags( int client, int amount ) { int i = GetClientFrags( client ); i += amount; SetEntProp( client, Prop_Data, "m_iFrags", i ); }
 
-stock GetPreparationSeconds() { return preparationSecs; }
+stock int GetPreparationSeconds() { return preparationSecs; }
 
-stock GetPlayerKills( int client ) { return clientKills[ client ]; }
-stock GetPlayerLives( int client ) { return clientLives[ client ]; }
-stock GetPlayerClass( int client ) { return GetEntData( client, h_iPlayerClass ); }
+stock int GetPlayerKills( int client ) { return clientKills[ client ]; }
+stock int GetPlayerLives( int client ) { return clientLives[ client ]; }
+stock int GetPlayerClass( int client ) { return GetEntData( client, h_iPlayerClass ); }
 
-stock SetParrotSoundPitch( int pitch ) { parrotSoundPitch = pitch; }
+stock void SetParrotSoundPitch( int pitch ) { parrotSoundPitch = pitch; }
 
-stock GetParrotCreatorMode() { return parrotCreatorMode; }
-stock SetParrotCreatorMode( int mode ) { parrotCreatorMode = mode; if ( IsDebug() ) { PrintToServer( "ParrotCreator mode is now %d", parrotCreatorMode ); } }
+stock int GetParrotCreatorMode() { return parrotCreatorMode; }
+stock void SetParrotCreatorMode( int mode ) { parrotCreatorMode = mode; if ( IsDebug() ) { PrintToServer( "ParrotCreator mode is now %d", parrotCreatorMode ); } }
 
-stock GetAliveParrots( int parrottype )
+stock int GetAliveParrots( int parrottype )
 {
 	char targetname[ 128 ];
 	int aliveParrots = 0;
@@ -88,12 +90,12 @@ stock GetAliveParrots( int parrottype )
 	return aliveParrots;
 }
 
-stock GetNextParrotCreatorMode( int currentwave, int currentcreatorwave )
+stock int GetNextParrotCreatorMode( int currentwave, int currentcreatorwave )
 {
 	return parrotCreatorScheme[ currentwave ][ currentcreatorwave ];
 }
 
-stock CheckAndKillTimer( Handle &timer, bool autoClose = false )
+stock void CheckAndKillTimer( Handle &timer, bool autoClose = false )
 {
 	if ( timer != INVALID_HANDLE )
 	{
@@ -104,13 +106,13 @@ stock CheckAndKillTimer( Handle &timer, bool autoClose = false )
 
 stock bool IsDebug() { return GetConVarBool( cvar_debug ); }
 
-stock GetRandomBool()
+stock bool GetRandomBool()
 {
 	int i = GetRandomInt( 0, 1 );
 	return ( i != 0 );
 }
 
-stock GetRandomString( length, char[] dest )
+stock void GetRandomString( int length, char[] dest )
 {
 	// this is crappy, but only good for corruption effect ;)
 	char charlist[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -122,7 +124,7 @@ stock GetRandomString( length, char[] dest )
 	strcopy( dest, length, str );
 }
 
-stock ExplodeTrimAndConvertStringToInt( const char[] string, const char[] split )
+stock int ExplodeTrimAndConvertStringToInt( const char[] string, const char[] split )
 {
 	char buffer[ 2 ][ 64 ];
 	ExplodeString( string, split, buffer, 2, 64 );
@@ -140,7 +142,7 @@ stock float ExplodeTrimAndConvertStringToFloat( const char[] string, const char[
 	return StringToFloat( buffer[ 1 ] );
 }
 
-stock SpawnParrotAmount( int amount, int type )
+stock void SpawnParrotAmount( int amount, int type )
 {
 	for ( int i = 1; i < amount; i++ )
 	{

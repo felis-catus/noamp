@@ -22,13 +22,15 @@
 #include <sdkhooks>
 #include <morecolors>
 
+#pragma newdecls required
+
 /*
-public Event_WaitEnd(Handle:event, const String:name[], bool:dontBroadcast)
+public void Event_WaitEnd( Handle event, const char[] name, bool dontBroadcast )
 {
 	if ( !g_bIsEnabled )
 		return;
 	
-	PrintToChatAll("%s The game is starting!", CHAT_PREFIX);
+	PrintToChatAll( "%s The game is starting!", CHAT_PREFIX );
 	IsWaitingForPlayers = false;
 	StartGame();
 }
@@ -143,7 +145,7 @@ public void OnParrotDeath( Event event, const char[] name, bool dontBroadcast )
 	}
 }
 
-public OnStartTouchChestZone( int ent, int other )
+public void OnStartTouchChestZone( int ent, int other )
 {
 	if ( !IsValidEntity( ent ) || !IsValidEntity( other ) )
 		return;
@@ -166,7 +168,7 @@ public OnStartTouchChestZone( int ent, int other )
 	}
 }
 
-public AddScore( int client )
+public void AddScore( int client )
 {
 	// HACK: try adding score through event; thanks Spirrwell! :3
 	Handle event = CreateEvent( "player_death", true );

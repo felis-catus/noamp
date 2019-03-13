@@ -33,8 +33,9 @@
 #include "noamp\noamp_spawns.sp"
 
 #pragma semicolon 1
+#pragma newdecls required
 
-public Plugin:myinfo = 
+public Plugin myinfo = 
 {
 	name = "NIGHT OF A MILLION PARROTS",
 	author = "Felis",
@@ -43,7 +44,7 @@ public Plugin:myinfo =
 	url = "http://loli.dance/"
 }
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	RegisterCvars();
 	RegisterCmds();
@@ -61,13 +62,13 @@ public OnPluginStart()
 	AddNormalSoundHook( NormalSoundHook );
 }
 
-public APLRes:AskPluginLoad2( Handle myself, bool late, char[] error, err_max ) 
+public APLRes AskPluginLoad2( Handle myself, bool late, char[] error, int err_max ) 
 {
 	MarkNativeAsOptional( "GetUserMessageType" );
 	return APLRes_Success;
 }
 
-RegisterCvars()
+void RegisterCvars()
 {
 	cvar_enabled = CreateConVar( "noamp_enabled", "1", "Enable NIGHT OF A MILLION PARROTS gamemode." );
 	cvar_debug = CreateConVar( "noamp_debug", "0", "Enable debug mode for testing." );
@@ -96,7 +97,7 @@ RegisterCvars()
 	AutoExecConfig( true, "noamp" );
 }
 
-RegisterCmds()
+void RegisterCmds()
 {
 	RegConsoleCmd( "noamp_menu", CMD_NOAMP_Menu );
 	RegConsoleCmd( "noamp_givemoney", GiveMoneyToTarget );
@@ -110,14 +111,14 @@ RegisterCmds()
 	RegConsoleCmd( "debug_noamp_jumptowave", CmdJumpToWave );
 }
 
-SDKStuff()
+void SDKStuff()
 {
 	/*
 	* hello, theres nothing here yet
 	*/
 }
 
-HookEvents()
+void HookEvents()
 {
 	HookEvent( "npc_death", OnParrotDeath );
 	HookEvent( "player_spawn", OnPlayerSpawn );
@@ -125,7 +126,7 @@ HookEvents()
 	HookEvent( "player_hurt", OnPlayerHurt );
 }
 
-FindPropInfo()
+void FindPropInfo()
 {
 	h_iSpecial = FindSendPropInfo( "CPVK2Player", "m_iSpecial" );
 	h_iMaxSpecial = FindSendPropInfo( "CPVK2Player", "m_iMaxSpecial" );
@@ -138,7 +139,7 @@ FindPropInfo()
 	h_iPlayerClass = FindSendPropInfo( "CPVK2Player", "m_iPlayerClass" );
 }
 
-CommandListeners()
+void CommandListeners()
 {
 	AddCommandListener( ChatListener, "say" );
 	AddCommandListener( ChatListener, "say2" );
@@ -148,7 +149,7 @@ CommandListeners()
 	AddCommandListener( DropItemListener, "dropitem" );
 }
 
-AddFilesToDownloadTable()
+void AddFilesToDownloadTable()
 {
 	AddFileToDownloadsTable( "sound/noamp/gameover.mp3" );
 	AddFileToDownloadsTable( "sound/noamp/music/corruptor.mp3" );
@@ -178,7 +179,7 @@ AddFilesToDownloadTable()
 	}
 }
 
-public Precache()
+public void Precache()
 {
 	PrecacheSound( "music/deadparrotachieved.mp3" );
 	PrecacheSound( "noamp/gameover.mp3" );
@@ -211,12 +212,12 @@ public Precache()
 
 
 
-public cvHookEnabled( Handle cvar, const char[] oldVal, const char[] newVal )
+public void cvHookEnabled( Handle cvar, const char[] oldVal, const char[] newVal )
 {
 	g_bIsEnabled = GetConVarBool( cvar );
 }
 
-public cvHookDifficulty( Handle cvar, const char[] oldVal, const char[] newVal )
+public void cvHookDifficulty( Handle cvar, const char[] oldVal, const char[] newVal )
 {
 	char difficulty[ 128 ] = "null";
 	GetConVarString( cvar_difficulty, difficulty, sizeof( difficulty ) );
@@ -237,7 +238,7 @@ public cvHookDifficulty( Handle cvar, const char[] oldVal, const char[] newVal )
 	UpdateGameDesc();
 }
 
-public cvHookScheme( Handle cvar, const char[] oldVal, const char[] newVal )
+public void cvHookScheme( Handle cvar, const char[] oldVal, const char[] newVal )
 {
 	char scheme[ 128 ] = "null";
 	GetConVarString( cvar_scheme, scheme, sizeof( scheme ) );
@@ -254,7 +255,7 @@ public cvHookScheme( Handle cvar, const char[] oldVal, const char[] newVal )
 	UpdateGameDesc();
 }
 
-public Action:NormalSoundHook( iClients[ 64 ], &iNumClients, char strSample[ PLATFORM_MAX_PATH ], &iEntity, &iChannel, &Float:flVolume, &iLevel, &iPitch, &iFlags )
+public Action NormalSoundHook( int iClients[ 64 ], int &iNumClients, char strSample[ PLATFORM_MAX_PATH ], int &iEntity, int &iChannel, float &flVolume, int &iLevel, int &iPitch, int &iFlags )
 {
 	bool bValid = false;
 	bool bValidTimer = false;
@@ -288,7 +289,7 @@ public Action:NormalSoundHook( iClients[ 64 ], &iNumClients, char strSample[ PLA
 	return Plugin_Continue;
 }
 
-public OnClientConnected( int client )
+public void OnClientConnected( int client )
 {
 	char name[ 128 ];
 	GetClientName( client, name, sizeof( name ) );
@@ -297,18 +298,18 @@ public OnClientConnected( int client )
 		CPrintToChat( client, "Welcome to NOAMP %s! A wave is currently in progress and you can join in after it ends.", name );
 }
 
-public OnClientDisconnect( int client )
+public void OnClientDisconnect( int client )
 {
 	ResetClient( client, false );
 	EmitSoundToAll( "noamp/playerdisconnect.wav", SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS );
 }
 
-public OnConfigsExecuted()
+public void OnConfigsExecuted()
 {
 	UpdateGameDesc();
 }
 
-public OnMapStart()
+public void OnMapStart()
 {
 	g_bIsEnabled = GetConVarBool( cvar_enabled );
 	
@@ -409,13 +410,13 @@ public OnMapStart()
 	SetConVarInt( cvar_timelimit, 0 );
 }
 
-public OnMapEnd()
+public void OnMapEnd()
 {
 	g_bIsMapLoaded = false;
 	ResetGame( false, false );
 }
 
-public UpdateGameDesc()
+public void UpdateGameDesc()
 {
 	char gamedesc[ 256 ];
 	if ( StrEqual( schemeName, "null", false ) )
@@ -430,7 +431,7 @@ public UpdateGameDesc()
 	Steam_SetGameDescription( gamedesc );
 }
 
-public ReadNOAMPScript()
+public void ReadNOAMPScript()
 {
 	Handle kv = CreateKeyValues( "NOAMP_Scheme" );
 	FileToKeyValues( kv, ScriptPath );

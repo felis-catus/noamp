@@ -26,6 +26,8 @@
 //#include "noamp_defs.sp"
 //#include "noamp_funcs.sp"
 
+#pragma newdecls required
+
 public Action ChangeTeamListener( int client, const char[] command, int argc )
 {
 	if ( StrEqual( command, "changeteam", false ) ) // note to self: jointeam is changeteam in pvk, dont mess up... you did that twice baka -.-
@@ -289,7 +291,7 @@ public Action WaitingForPlayers( Handle timer )
 	return Plugin_Continue;
 }
 
-public StartGame()
+public void StartGame()
 {
 	ReadNOAMPScript();
 	CPrintToChatAll( "{unusual}NIGHT OF A MILLION PARROTS %s by {hotpink}Felis", PL_VERSION );
@@ -391,7 +393,7 @@ public Action WaveThink( Handle timer )
 	return Plugin_Continue;
 }
 
-public WaveFinished()
+public void WaveFinished()
 {
 	PrintCenterTextAll( "Wave %d completed!", wave );
 	wave++;
@@ -513,7 +515,7 @@ public Action GameOver( Handle timer )
 	return Plugin_Continue;
 }
 
-public EndGame()
+public void EndGame()
 {
 	int game_end = CreateEntityByName( "game_end" );
 	
@@ -584,7 +586,7 @@ public Action PreparingTime( Handle timer )
 	return Plugin_Continue;
 }
 
-public WaveStart()
+public void WaveStart()
 {
 	if ( waveIsCorruptorWave[ wave ] )
 	{
@@ -820,7 +822,7 @@ public Action Corruption( Handle timer )
 	return Plugin_Continue;
 }
 
-public CorruptionBlockAction( int client )
+public void CorruptionBlockAction( int client )
 {
 	PrintCenterText( client, "I WON'T LET YOU." );
 	int dice = GetRandomInt( 1, 6 );
@@ -868,7 +870,7 @@ public Action RoundStartCheer( Handle timer, Handle datapack )
 	return Plugin_Handled;
 }
 
-public FriendDeadVoice( int client, int victim )
+public void FriendDeadVoice( int client, int victim )
 {
 	if ( !IsClientInGame( client ) || client == victim || !IsPlayerAlive( client ) || GetClientTeam( client ) <= TEAM_SPECTATOR )
 		return;
@@ -892,7 +894,7 @@ public FriendDeadVoice( int client, int victim )
 	}
 }
 
-public ParrotKiller()
+public void ParrotKiller()
 {
 	int parrot = INVALID_ENT_REFERENCE;
 	int count = 0;
@@ -908,7 +910,7 @@ public ParrotKiller()
 	}
 }
 
-public VultureKiller()
+public void VultureKiller()
 {
 	int vulture = INVALID_ENT_REFERENCE;
 	int count = 0;
@@ -924,7 +926,7 @@ public VultureKiller()
 	}
 }
 
-public EnableFog()
+public void EnableFog()
 {
 	int fog = INVALID_ENT_REFERENCE
 	fog = FindEntityByClassname( fog, "env_fog_controller" );
@@ -941,7 +943,7 @@ public EnableFog()
 	}
 }
 
-public DisableFog()
+public void DisableFog()
 {
 	int fog = INVALID_ENT_REFERENCE
 	fog = FindEntityByClassname( fog, "env_fog_controller" );
@@ -957,7 +959,7 @@ public DisableFog()
 	}
 }
 
-public BuyUpgrade( int client, int upgrade )
+public void BuyUpgrade( int client, int upgrade )
 {
 	switch ( upgrade )
 	{
@@ -1039,7 +1041,7 @@ public BuyUpgrade( int client, int upgrade )
 	}
 }
 
-public BuyPowerup( int client, int powerup )
+public void BuyPowerup( int client, int powerup )
 {
 	switch ( powerup )
 	{
@@ -1092,7 +1094,7 @@ public BuyPowerup( int client, int powerup )
 	}
 }
 
-public ActivatePowerup( int client, int powerup )
+public void ActivatePowerup( int client, int powerup )
 {
 	switch ( powerup )
 	{
@@ -1115,7 +1117,7 @@ public ActivatePowerup( int client, int powerup )
 	}
 }
 
-public PowerupVultures( int client )
+public void PowerupVultures( int client )
 {	
 	for ( int i = 0; i < 5; i++ )
 	{
@@ -1132,7 +1134,7 @@ public PowerupVultures( int client )
 	h_TimerKillVultures = CreateTimer( 30.0, KillVultures, client, TIMER_FLAG_NO_MAPCHANGE );
 }
 
-public Action:KillVultures(Handle:timer, any:client)
+public Action KillVultures( Handle timer, int client )
 {	
 	// oh no! our bird owner left the game
 	if ( !IsClientInGame( client ) )
@@ -1146,7 +1148,7 @@ public Action:KillVultures(Handle:timer, any:client)
 	clientHasVulturesOut[ client ] = false;
 }
 
-public KillClientVultures( int client, bool isingame )
+public void KillClientVultures( int client, bool isingame )
 {
 	int vulture = INVALID_ENT_REFERENCE;
 	int count = 0;
@@ -1180,7 +1182,7 @@ public KillClientVultures( int client, bool isingame )
 	}
 }
 
-public BuyBaseUpgrade( int client, int baseupgrade )
+public void BuyBaseUpgrade( int client, int baseupgrade )
 {
 	for ( int i = 1; i < NOAMP_MAXBASEUPGRADES; i++ )
 	{
@@ -1216,7 +1218,7 @@ public BuyBaseUpgrade( int client, int baseupgrade )
 * simple as that.
 */
 
-public ActivateBaseUpgrade( int client, int baseupgrade )
+public void ActivateBaseUpgrade( int client, int baseupgrade )
 {
 	int ent = INVALID_ENT_REFERENCE;
 	char targetname[ 128 ];
@@ -1243,7 +1245,7 @@ public ActivateBaseUpgrade( int client, int baseupgrade )
 	}
 }
 
-public CheckBaseUpgrades()
+public void CheckBaseUpgrades()
 {
 	int ent = INVALID_ENT_REFERENCE;
 	char targetname[ 128 ];
@@ -1263,7 +1265,7 @@ public CheckBaseUpgrades()
 	}
 }
 
-public EmitAmbientGameSoundFromPlayer( int ent, const char[] gameSound, bool voice )
+public void EmitAmbientGameSoundFromPlayer( int ent, const char[] gameSound, bool voice )
 {
 	if ( voice )
 	{
@@ -1283,7 +1285,7 @@ public EmitAmbientGameSoundFromPlayer( int ent, const char[] gameSound, bool voi
 	}
 }
 
-public EmitAmbientSoundFromPlayer( int client, const char[] name, bool voice )
+public void EmitAmbientSoundFromPlayer( int client, const char[] name, bool voice )
 {
 	if ( voice )
 	{
@@ -1303,7 +1305,7 @@ public EmitAmbientSoundFromPlayer( int client, const char[] name, bool voice )
 	}
 }
 
-public PlayRandomSpookySound()
+public void PlayRandomSpookySound()
 {
 	char sample[ 64 ];
 	Format( sample, sizeof( sample ), "%s", SpookySounds[ GetRandomInt( 0, 8 ) ] );
@@ -1342,7 +1344,7 @@ public Action GiveMoneyToTarget( int client, int argc )
 	return Plugin_Handled;
 }
 
-public GiveMoney( int sender, int receiver, int amount )
+public void GiveMoney( int sender, int receiver, int amount )
 {
 	if ( clientMoney[ sender ] >= amount )
 	{
@@ -1360,14 +1362,14 @@ public GiveMoney( int sender, int receiver, int amount )
 	}
 }
 
-public FillSpecial( int client )
+public void FillSpecial( int client )
 {
 	AddSpecial( client, 500 ); // HACK
 	EmitSoundToClient( client, "player/special.wav", SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS );
 }
 
 
-public StartCorruptorSpeech()
+public void StartCorruptorSpeech()
 {
 	// because reversed robotic voice saying secret messages is so cool
 	char sample[ 64 ];
@@ -1375,7 +1377,7 @@ public StartCorruptorSpeech()
 	EmitSoundToAll( sample, SOUND_FROM_WORLD, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS );
 }
 
-public StopMusicAll()
+public void StopMusicAll()
 {
 	for ( int i = 1; i <= MaxClients; i++ )
 	{
@@ -1386,13 +1388,13 @@ public StopMusicAll()
 	}
 }
 
-public ForceJoinSpec( int client )
+public void ForceJoinSpec( int client )
 {
 	clientForcedSpec[ client ] = true;
 	ClientCommand( client, "changeteam 1" );
 }
 
-public ResetGame( bool gameover, bool startgame )
+public void ResetGame( bool gameover, bool startgame )
 {	
 	g_bHasGameStarted = false;
 	HasWaveStarted = false;
@@ -1450,7 +1452,7 @@ public ResetGame( bool gameover, bool startgame )
 		StartGame();
 }
 
-public ResetClient( int client, bool gameover )
+public void ResetClient( int client, bool gameover )
 {
 	if ( gameover )
 	{
@@ -1480,7 +1482,7 @@ public ResetClient( int client, bool gameover )
 	}
 }
 
-public SaveValues( int client, bool corruption )
+public void SaveValues( int client, bool corruption )
 {
 	if ( corruption )
 	{
@@ -1510,7 +1512,7 @@ public SaveValues( int client, bool corruption )
 	}
 }
 
-public RestoreSavedValues( int client, bool corruption )
+public void RestoreSavedValues( int client, bool corruption )
 {
 	if ( corruption )
 	{
@@ -1538,7 +1540,7 @@ public RestoreSavedValues( int client, bool corruption )
 	}
 }
 
-public ResetWaves()
+public void ResetWaves()
 {
 	for ( int i = 1; i < NOAMP_MAXWAVES; i++ )
 	{
@@ -1550,7 +1552,7 @@ public ResetWaves()
 	}
 }
 
-/*public KillTimers()
+/*public void KillTimers()
 {
 	CheckAndKillTimer( h_TimerHUD );
 	CheckAndKillTimer( h_TimerWaveThink );
@@ -1565,7 +1567,7 @@ public ResetWaves()
 	CheckAndKillTimer( h_TimerCorruptorThink );
 }*/
 
-public ResetBaseUpgrades()
+public void ResetBaseUpgrades()
 {
 	for ( int i = 1; i < NOAMP_MAXBASEUPGRADES; i++ )
 	{
@@ -1595,7 +1597,7 @@ public ResetBaseUpgrades()
 	}
 }
 
-public ResetParrotCreator()
+public void ResetParrotCreator()
 {
 	parrotCreatorMode = PARROTCREATOR_NORMAL;
 
