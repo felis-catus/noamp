@@ -162,11 +162,6 @@ public OnStartTouchChestZone( int ent, int other )
 			}
 		}
 		
-		int capturer = GetEntData( other, h_iChestLastOwner, 1 );
-
-		AddMoney( capturer, 200 );
-		PrintToChat( capturer, "You get $200 extra for capturing the chest!" );
-		
 		AcceptEntityInput( other, "kill" );
 	}
 }

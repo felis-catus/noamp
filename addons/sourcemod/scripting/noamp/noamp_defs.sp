@@ -284,7 +284,6 @@ int h_iMaxArmor;
 int h_flMaxspeed;
 int h_flDefaultSpeed;
 int h_iPlayerClass;
-int h_iChestLastOwner = 1504; // HACK: Must be hard-coded
 
 Handle h_TimerHUD = INVALID_HANDLE;
 Handle h_TimerWaveThink = INVALID_HANDLE;
