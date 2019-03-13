@@ -310,6 +310,7 @@ public OnConfigsExecuted()
 
 public OnMapStart()
 {
+	AddFilesToDownloadTable();
 	g_bIsEnabled = GetConVarBool( cvar_enabled );
 	
 	// just in case, slaughter the timers if something is left ticking from last game
