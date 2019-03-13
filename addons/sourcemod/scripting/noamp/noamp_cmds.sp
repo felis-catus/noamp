@@ -22,115 +22,115 @@
 #include <sdkhooks>
 #include <morecolors>
 
-public Action:CmdTestSpawns(client, args)
+public Action CmdTestSpawns( int client, int args )
 {
-	if (IsDebug())
+	if ( IsDebug() )
 	{
-		for (new i = 0; i < 10; i++)
+		for ( int i = 0; i < 10; i++ )
 		{
 			SpawnParrot();
 		}
 	}
 	else
 	{
-		CPrintToChat(client, "{red}Debug mode required for this command.");
+		CPrintToChat( client, "{red}Debug mode required for this command." );
 	}
 	
 	return Plugin_Handled;
 }
 
-public Action:CmdTestGiantSpawns(client, args)
+public Action CmdTestGiantSpawns( int client, int args )
 {
-	if (IsDebug())
+	if ( IsDebug() )
 	{
-		for (new i = 0; i < 2; i++)
+		for ( int i = 0; i < 2; i++ )
 		{
 			SpawnGiantParrot();
 		}
 	}
 	else
 	{
-		CPrintToChat(client, "{red}Debug mode required for this command.");
+		CPrintToChat( client, "{red}Debug mode required for this command." );
 	}
 	
 	return Plugin_Handled;
 }
 
-public Action:CmdGiveMoney(client, args)
+public Action CmdGiveMoney( int client, int args )
 {
-	if (IsDebug())
+	if ( IsDebug() )
 	{
-		clientMoney[client] += 10000;
+		clientMoney[ client ] += 10000;
 	}
 	else
 	{
-		CPrintToChat(client, "{red}Debug mode required for this command.");
+		CPrintToChat( client, "{red}Debug mode required for this command." );
 	}
 	
 	return Plugin_Handled;
 }
 
-public Action:CmdGiveAllUpgrades(client, args)
+public Action CmdGiveAllUpgrades( int client, int args )
 {
-	if (IsDebug())
+	if ( IsDebug() )
 	{
-		clientUpgradesMaxHP[client] = true;
-		clientUpgradesMaxArmor[client] = true;
-		clientUpgradesMaxSpeed[client] = true;
+		clientUpgradesMaxHP[ client ] = true;
+		clientUpgradesMaxArmor[ client ] = true;
+		clientUpgradesMaxSpeed[ client ] = true;
 	}
 	else
 	{
-		CPrintToChat(client, "{red}Debug mode required for this command.");
+		CPrintToChat( client, "{red}Debug mode required for this command." );
 	}
 	
 	return Plugin_Handled;
 }
 
-public Action:CmdStartGame(client, args)
+public Action CmdStartGame( int client, int args )
 {
-	CPrintToChatAll("{unusual}%s{lightgreen} The server admin is starting the game!", CHAT_PREFIX);
+	CPrintToChatAll( "{unusual}%s{lightgreen} The server admin is starting the game!", CHAT_PREFIX );
 	StartGame();
 	
 	return Plugin_Handled;
 }
 
-public Action:CmdResetGame(client, args)
+public Action CmdResetGame( int client, int args )
 {
-	CPrintToChatAll("{unusual}%s{lightgreen} The server admin is resetting the game!", CHAT_PREFIX);
-	ResetGame(false, true);
+	CPrintToChatAll( "{unusual}%s{lightgreen} The server admin is resetting the game!", CHAT_PREFIX );
+	ResetGame( false, true );
 	
 	return Plugin_Handled;
 }
 
-public Action:CmdFillSpecial(client, args)
+public Action CmdFillSpecial( int client, int args )
 {
-	FillSpecial(client);
+	FillSpecial( client );
 	
 	return Plugin_Handled;
 }
 
-public Action:CmdReloadKeyValues(client, args)
+public Action CmdReloadKeyValues( int client, int args )
 {
 	ReadNOAMPScript();
 	
 	return Plugin_Handled;
 }
 
-public Action:CmdJumpToWave(client, args)
+public Action CmdJumpToWave( int client, int args )
 {
-	new String:arg1[32];
-	GetCmdArg(1, arg1, sizeof(arg1));
+	char arg1[ 32 ];
+	GetCmdArg( 1, arg1, sizeof( arg1 ) );
 	
-	new iarg = StringToInt(arg1);
+	int iarg = StringToInt( arg1 );
 	
-	if (IsDebug())
+	if ( IsDebug() )
 	{
 		wave = iarg - 1;
 		WaveFinished();
 	}
 	else
 	{
-		CPrintToChat(client, "{red}Debug mode required for this command.");
+		CPrintToChat( client, "{red}Debug mode required for this command." );
 	}
 	
 	return Plugin_Handled;

@@ -738,7 +738,7 @@ public ReadNOAMPScript()
 	}
 
 	CloseHandle( file );
-}*/
+}
 
 public ScriptCommands( const char[] fileline )
 {
@@ -778,4 +778,4 @@ public ScriptCommands( const char[] fileline )
 		bossParrotSize = value;
 		smallParrotSize = value;
 	}
-}
+}*/

@@ -63,7 +63,7 @@ stock SetParrotSoundPitch( int pitch ) { parrotSoundPitch = pitch; }
 stock GetParrotCreatorMode() { return parrotCreatorMode; }
 stock SetParrotCreatorMode( int mode ) { parrotCreatorMode = mode; if ( IsDebug() ) { PrintToServer( "ParrotCreator mode is now %d", parrotCreatorMode ); } }
 
-stock GetAliveParrots( parrottype )
+stock GetAliveParrots( int parrottype )
 {
 	char targetname[ 128 ];
 	int aliveParrots = 0;
@@ -88,7 +88,7 @@ stock GetAliveParrots( parrottype )
 	return aliveParrots;
 }
 
-stock GetNextParrotCreatorMode( currentwave, currentcreatorwave )
+stock GetNextParrotCreatorMode( int currentwave, int currentcreatorwave )
 {
 	return parrotCreatorScheme[ currentwave ][ currentcreatorwave ];
 }
