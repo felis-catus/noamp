@@ -310,7 +310,6 @@ public OnConfigsExecuted()
 
 public OnMapStart()
 {
-	AddFilesToDownloadTable();
 	g_bIsEnabled = GetConVarBool( cvar_enabled );
 	
 	// just in case, slaughter the timers if something is left ticking from last game
@@ -321,6 +320,8 @@ public OnMapStart()
 		PrintToServer( "NOAMP is disabled, not loading stuff." );
 		return;
 	}
+	
+	AddFilesToDownloadTable();
 	
 	char currentMap[ 128 ];
 	GetCurrentMap( currentMap, sizeof( currentMap ) );
