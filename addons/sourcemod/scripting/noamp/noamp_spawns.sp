@@ -111,6 +111,19 @@ public int GetSpawnCount()
 	return spawns;
 }
 
+public int GetBossSpawnCount()
+{
+	int spawns = 0;
+	
+	for ( int i = 0; i <= NOAMP_MAXSPAWNS-1; i++ )
+	{
+		if ( !StrEqual( BossParrotSpawns[ i ], "null" ) )
+			spawns++;
+	}
+	
+	return spawns;
+}
+
 public int GetRandomSpawnPoint()
 {
 	int nodecount = 0;
@@ -133,6 +146,40 @@ public int GetRandomSpawnPoint()
 	currentnode = 1;
 	
 	while ( currentnode <= GetSpawnCount() )
+	{
+		nodecount++;
+		choosenode[ nodecount ] = currentnode;
+		currentnode++;
+	}
+	
+	int randomnode = choosenode[ GetRandomInt( 1, nodecount ) ];
+	
+	return randomnode;
+}
+
+public int GetRandomBossSpawnPoint()
+{
+	int nodecount = 0;
+	int currentnode = 1;
+	int bossSpawnCount = GetBossSpawnCount();
+	
+	while ( currentnode <= bossSpawnCount )
+	{
+		nodecount++;
+		currentnode++;
+	}
+	
+	if ( nodecount == 0 )
+	{
+		return 0;
+	}
+	
+	int[] choosenode = new int[ nodecount + 1 ];
+	
+	nodecount = 0;
+	currentnode = 1;
+	
+	while ( currentnode <= bossSpawnCount )
 	{
 		nodecount++;
 		choosenode[ nodecount ] = currentnode;
@@ -199,23 +246,27 @@ public void SpawnGiantParrot()
 	nodeorg[ 2 ] = StringToFloat( nodepoints[ 2 ] );
 	
 	char orgstring[ 128 ];
+	char scalestring[ 128 ];
+	
 	Format( orgstring, sizeof( orgstring ), "%f %f %f", nodeorg[ 0 ], nodeorg[ 1 ], nodeorg[ 2 ] );
+	FloatToString( giantParrotSize, scalestring, sizeof( scalestring ) );
 	
 	DispatchKeyValue( parrot, "origin", orgstring );
+	DispatchKeyValue( parrot, "scale", scalestring );
 	DispatchSpawn( parrot );
 	
 	// FIXME: lol
-	float vecParrotMin[ 3 ] = { -15.0, -15.0, 0.0 };
-	float vecParrotMax[ 3 ] = { 15.0,  15.0, 50.0 };
+	//float vecParrotMin[ 3 ] = { -15.0, -15.0, 0.0 };
+	//float vecParrotMax[ 3 ] = { 15.0,  15.0, 50.0 };
 	
-	ScaleVector( vecParrotMin, giantParrotSize );
-	ScaleVector( vecParrotMax, giantParrotSize );
+	//ScaleVector( vecParrotMin, giantParrotSize );
+	//ScaleVector( vecParrotMax, giantParrotSize );
 	
-	SetEntPropVector( parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMin );
-	SetEntPropVector( parrot, Prop_Send, "m_vecSpecifiedSurroundingMaxs", vecParrotMax );
+	//SetEntPropVector( parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMin );
+	//SetEntPropVector( parrot, Prop_Send, "m_vecSpecifiedSurroundingMaxs", vecParrotMax );
 	
-	float scalevalue = giantParrotSize;
-	SetEntPropFloat( parrot, Prop_Send, "m_flModelScale", scalevalue );
+	//float scalevalue = giantParrotSize;
+	//SetEntPropFloat( parrot, Prop_Send, "m_flModelScale", scalevalue );
 	
 	SetEntProp( parrot, Prop_Data, "m_iHealth", 100 );
 	DispatchKeyValue( parrot, "targetname", "noamp_giant" );
@@ -247,23 +298,27 @@ public void SpawnSmallParrot()
 	nodeorg[ 2 ] = StringToFloat( nodepoints[ 2 ] );
 	
 	char orgstring[ 128 ];
+	char scalestring[ 128 ];
+	
 	Format( orgstring, sizeof( orgstring ), "%f %f %f", nodeorg[0  ], nodeorg[1  ], nodeorg[ 2 ] );
+	FloatToString( smallParrotSize, scalestring, sizeof( scalestring ) );
 	
 	DispatchKeyValue( parrot, "origin", orgstring );
+	DispatchKeyValue( parrot, "scale", scalestring );
 	DispatchSpawn( parrot );
 	
 	// FIXME: lol
-	float vecParrotMin[ 3 ] = { -15.0, -15.0, 0.0 };
-	float vecParrotMax[ 3 ] = { 15.0,  15.0, 50.0 };
+	//float vecParrotMin[ 3 ] = { -15.0, -15.0, 0.0 };
+	//float vecParrotMax[ 3 ] = { 15.0,  15.0, 50.0 };
 	
-	ScaleVector( vecParrotMin, smallParrotSize );
-	ScaleVector( vecParrotMax, smallParrotSize );
+	//ScaleVector( vecParrotMin, smallParrotSize );
+	//ScaleVector( vecParrotMax, smallParrotSize );
 	
-	SetEntPropVector( parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMin );
-	SetEntPropVector( parrot, Prop_Send, "m_vecSpecifiedSurroundingMaxs", vecParrotMax );
+	//SetEntPropVector( parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMin );
+	//SetEntPropVector( parrot, Prop_Send, "m_vecSpecifiedSurroundingMaxs", vecParrotMax );
 	
-	float scalevalue = smallParrotSize;
-	SetEntPropFloat( parrot, Prop_Send, "m_flModelScale", scalevalue );
+	//float scalevalue = smallParrotSize;
+	//SetEntPropFloat( parrot, Prop_Send, "m_flModelScale", scalevalue );
 	
 	DispatchKeyValue( parrot, "targetname", "noamp_small" );
 	
@@ -275,7 +330,7 @@ public void SpawnSmallParrot()
 
 public void SpawnBossParrot( bool corruptor )
 {	
-	int randomnode = GetRandomSpawnPoint();
+	int randomnode = GetRandomBossSpawnPoint();
 	
 	if ( randomnode == 0 )
 	{
@@ -286,7 +341,7 @@ public void SpawnBossParrot( bool corruptor )
 	int parrot = CreateEntityByName( "npc_parrot" );
 	
 	char nodepoints[ 3 ][ 128 ];
-	ExplodeString( GiantParrotSpawns[ randomnode ], " ", nodepoints, 3, 128 );
+	ExplodeString( BossParrotSpawns[ randomnode ], " ", nodepoints, 3, 128 );
 	
 	float nodeorg[ 3 ];
 	nodeorg[ 0 ] = StringToFloat( nodepoints[ 0 ] );
@@ -294,23 +349,27 @@ public void SpawnBossParrot( bool corruptor )
 	nodeorg[ 2 ] = StringToFloat( nodepoints[ 2 ] );
 	
 	char orgstring[ 128 ];
+	char scalestring[ 128 ];
+	
 	Format( orgstring, sizeof( orgstring ), "%f %f %f", nodeorg[ 0 ], nodeorg[ 1 ], nodeorg[ 2 ] );
+	FloatToString( bossParrotSize, scalestring, sizeof( scalestring ) );
 	
 	DispatchKeyValue( parrot, "origin", orgstring );
+	DispatchKeyValue( parrot, "scale", scalestring );
 	DispatchSpawn( parrot );
 	
 	// FIXME: lol
-	float vecParrotMin[ 3 ] = { -15.0, -15.0, 0.0 };
-	float vecParrotMax[ 3 ] = { 15.0,  15.0, 50.0 };
+	//float vecParrotMin[ 3 ] = { -15.0, -15.0, 0.0 };
+	//float vecParrotMax[ 3 ] = { 15.0,  15.0, 50.0 };
 	
-	ScaleVector( vecParrotMin, giantParrotSize );
-	ScaleVector( vecParrotMax, giantParrotSize );
+	//ScaleVector( vecParrotMin, giantParrotSize );
+	//ScaleVector( vecParrotMax, giantParrotSize );
 	
-	SetEntPropVector( parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMin );
-	SetEntPropVector( parrot, Prop_Send, "m_vecSpecifiedSurroundingMaxs", vecParrotMax );
+	//SetEntPropVector( parrot, Prop_Send, "m_vecSpecifiedSurroundingMins", vecParrotMin );
+	//SetEntPropVector( parrot, Prop_Send, "m_vecSpecifiedSurroundingMaxs", vecParrotMax );
 	
-	float scalevalue = bossParrotSize;
-	SetEntPropFloat( parrot, Prop_Send, "m_flModelScale", scalevalue );
+	//float scalevalue = bossParrotSize;
+	//SetEntPropFloat( parrot, Prop_Send, "m_flModelScale", scalevalue );
 	
 	SetEntProp( parrot, Prop_Data, "m_iHealth", parrotBossHP );
 	DispatchKeyValue( parrot, "targetname", "noamp_boss" );
