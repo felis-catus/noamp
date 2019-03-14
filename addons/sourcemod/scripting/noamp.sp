@@ -155,9 +155,9 @@ void AddFilesToDownloadTable()
 	AddFileToDownloadsTable( "sound/noamp/music/corruptor.mp3" );
 	AddFileToDownloadsTable( "sound/noamp/music/corruptor2.mp3" );
 	AddFileToDownloadsTable( "sound/noamp/corruptor/corruption.mp3" );
-	AddFileToDownloadsTable( "noamp/corruptor/glitch.mp3" );
-	AddFileToDownloadsTable( "noamp/corruptor/secret.mp3" );
-	AddFileToDownloadsTable( "noamp/corruptor/something.mp3" );
+	AddFileToDownloadsTable( "sound/noamp/corruptor/glitch.mp3" );
+	AddFileToDownloadsTable( "sound/noamp/corruptor/secret.mp3" );
+	AddFileToDownloadsTable( "sound/noamp/corruptor/something.mp3" );
 	AddFileToDownloadsTable( "sound/noamp/kaching.mp3" );
 	AddFileToDownloadsTable( "sound/noamp/playerdeath.mp3" );
 	AddFileToDownloadsTable( "sound/noamp/playerdisconnect.mp3" );
@@ -167,14 +167,14 @@ void AddFilesToDownloadTable()
 	for ( int i = 0; i < 9; i++ )
 	{
 		char sample[ 64 ];
-		Format( sample, sizeof( sample ), "%s", SpookySounds[ i ] );
+		Format( sample, sizeof( sample ), "sound/%s", SpookySounds[ i ] );
 		AddFileToDownloadsTable( sample );
 	}
 	
 	for ( int i = 0; i < 4; i++ )
 	{
 		char sample[ 64 ];
-		Format( sample, sizeof( sample ), "%s", CorruptorSpeech[ i ] );
+		Format( sample, sizeof( sample ), "sound/%s", CorruptorSpeech[ i ] );
 		AddFileToDownloadsTable( sample );
 	}
 }
