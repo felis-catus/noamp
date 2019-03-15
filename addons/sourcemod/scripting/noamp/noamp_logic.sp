@@ -396,6 +396,10 @@ public Action WaveThink( Handle timer )
 public void WaveFinished()
 {
 	PrintCenterTextAll( "Wave %d completed!", wave );
+
+	if ( waveIsBossWave[ wave ] )
+		OnBossWaveEnd();
+
 	wave++;
 	parrotsKilled = 0;
 	spawnedParrots = 0;
@@ -586,12 +590,47 @@ public Action PreparingTime( Handle timer )
 	return Plugin_Continue;
 }
 
+public void OnBossWaveBegin()
+{
+	int curEnt = -1;
+	char targetname[ MAX_TARGET_LENGTH ];
+
+	while ( ( curEnt = FindEntityByClassname( curEnt, "logic_relay" ) ) != -1 )
+	{
+		GetEntPropString( curEnt, Prop_Data, "m_iName", targetname, sizeof( targetname ) );
+		
+		if ( StrContains( targetname, "onbosswavebegin", false ) == 0 )
+		{
+			AcceptEntityInput( curEnt, "Trigger" );
+		}
+	}
+}
+
+public void OnBossWaveEnd()
+{
+	int curEnt = -1;
+	char targetname[ MAX_TARGET_LENGTH ];
+
+	while ( ( curEnt = FindEntityByClassname( curEnt, "logic_relay" ) ) != -1 )
+	{
+		GetEntPropString( curEnt, Prop_Data, "m_iName", targetname, sizeof( targetname ) );
+		
+		if ( StrContains( targetname, "onbosswaveend", false ) == 0 )
+		{
+			AcceptEntityInput( curEnt, "Trigger" );
+		}
+	}
+}
+
 public void WaveStart()
 {
 	if ( waveIsCorruptorWave[ wave ] )
 	{
 		h_TimerCorruptorThink = CreateTimer( 1.0, CorruptorThink, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
 	}
+	
+	if ( waveIsBossWave[ wave ] )
+		OnBossWaveBegin();
 	
 	// check if there still are players in spectator, force them to join a team so they can't just sit there
 	for ( int i = 1; i <= MaxClients; i++ )
@@ -769,6 +808,38 @@ public Action ParrotCreator( Handle timer )
 	}
 }*/
 
+public void OnCorruptionBegin()
+{
+	int curEnt = -1;
+	char targetname[ MAX_TARGET_LENGTH ];
+
+	while ( ( curEnt = FindEntityByClassname( curEnt, "logic_relay" ) ) != -1 )
+	{
+		GetEntPropString( curEnt, Prop_Data, "m_iName", targetname, sizeof( targetname ) );
+		
+		if ( StrContains( targetname, "oncorruptionbegin", false ) == 0 )
+		{
+			AcceptEntityInput( curEnt, "Trigger" );
+		}
+	}
+}
+
+public void OnCorruptionEnd()
+{
+	int curEnt = -1;
+	char targetname[ MAX_TARGET_LENGTH ];
+
+	while ( ( curEnt = FindEntityByClassname( curEnt, "logic_relay" ) ) != -1 )
+	{
+		GetEntPropString( curEnt, Prop_Data, "m_iName", targetname, sizeof( targetname ) );
+		
+		if ( StrContains( targetname, "oncorruptionend", false ) == 0 )
+		{
+			AcceptEntityInput( curEnt, "Trigger" );
+		}
+	}
+}
+
 public Action Corruption( Handle timer )
 {
 	// first, save current values
@@ -789,6 +860,7 @@ public Action Corruption( Handle timer )
 			clientValuesSaved[ i ] = false;
 		}
 
+		OnCorruptionEnd();
 		IsCorrupted = false;
 		corruptsecs = 0;
 		return Plugin_Stop;
@@ -815,6 +887,9 @@ public Action Corruption( Handle timer )
 	
 	if ( corruptsecs <= 1 )
 		EmitSoundToAll( "noamp/corruptor/corruption.mp3", SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS );
+	
+	if ( !IsCorrupted )
+		OnCorruptionBegin();
 	
 	IsCorrupted = true;
 	corruptsecs++;
