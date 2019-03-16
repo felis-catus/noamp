@@ -18,11 +18,18 @@
 // "normalparrotpitch" : "Sound pitch of normal parrot, integer value"
 // "giantparrotpitch" : "Sound pitch of giant parrot, integer value"
 // "bossparrotpitch" : "Sound pitch of boss parrot, integer value"
+// "smallparrotattackdamage" : "Attack damage of small parrot, float value (default = 2.0)"
+// "normalparrotattackdamage" : "Attack damage of normal parrot, float value (default = 7.0)"
+// "giantparrotattackdamage" : "Attack damage of giant parrot, float value (default = 10.0)"
+// "bossparrotattackdamage" : "Attack damage of boss parrot, float value (default = 20.0)"
 
 // Wave values:
-// "parrotcount" : How many parrots spawn in one wave.
-// "giantparrotcount" : Same as above, except with bigger peckers.
-// "maxparrots" : How many parrots can be in the map at once. Don't forget about the performance!
+// "smallparrotcount" : How many small parrots spawn in one wave.
+// "normalparrotcount" : How many normal parrots spawn in one wave.
+// "giantparrotcount" : How many giant parrots spawn in one wave.
+// "maxsmallparrots" : How many small parrots can be in the map at once. Don't forget about the performance!
+// "maxnormalparrots" : How many normal parrots can be in the map at once. Don't forget about the performance!
+// "maxgiantparrots" : How many giant parrots can be in the map at once. Don't forget about the performance!
 // "boss" : Boss wave boolean, if 1, boss parrot will appear in this wave.
 // "corruptor" : Corruptor boolean, if 1, boss parrot will "corrupt" your gameplay
 
@@ -31,10 +38,10 @@
 	"general"
 	{
 		"name"				"Default"
-		"bossparrothp"		"1000"
-		"bossparrotsize" 	"12.0"
+		"bossparrothp"		"5000"
+		"bossparrotsize" 	"8.0"
 		"chestaward" 		"200"
-		"smallparrotsize"	"1.0"
+		"smallparrotsize"	"0.5"
 		"giantparrotsize"	"4.0"
 		"playerlives"		"5"
 		"preparationsecs"	"30"
@@ -54,44 +61,54 @@
 	// Waves
 	"1"
 	{
-		"parrotcount"		"30"
-		"giantparrotcount"	"0"
-		"maxparrots"		"15"
+		"smallparrotcount"	"20"
+		"normalparrotcount"	"10"
+		"maxsmallparrots"	"15"
+		"maxnormalparrots"	"3"
 		"boss"				"0"
 	}
 	"2"
 	{
-		"parrotcount"		"60"
-		"giantparrotcount"	"0"
-		"maxparrots"		"15"
+		"smallparrotcount"	"30"
+		"normalparrotcount"	"25"
+		"giantparrotcount"	"5"
+		"maxsmallparrots"	"15"
+		"maxnormalparrots"	"15"
+		"maxgiantparrots"	"2"
 		"boss"				"0"
 	}
 	"3"
 	{
-		"parrotcount"		"90"
-		"giantparrotcount"	"1"
-		"maxparrots"		"15"
+		"smallparrotcount"	"15"
+		"normalparrotcount"	"65"
+		"giantparrotcount"	"10"
+		"maxsmallparrots"	"5"
+		"maxnormalparrots"	"20"
+		"maxgiantparrots"	"4"
 		"boss"				"0"
 	}
 	"4"
 	{
-		"parrotcount"		"120"
-		"giantparrotcount"	"2"
-		"maxparrots"		"15"
+		"smallparrotcount"	"10"
+		"normalparrotcount"	"60"
+		"giantparrotcount"	"50"
+		"maxsmallparrots"	"5"
+		"maxnormalparrots"	"15"
+		"maxgiantparrots"	"10"
 		"boss"				"0"
 	}
 	"5"
 	{
-		"parrotcount"		"150"
-		"giantparrotcount"	"3"
-		"maxparrots"		"15"
+		"normalparrotcount"	"50"
+		"giantparrotcount"	"100"
+		"maxnormalparrots"	"10"
+		"maxgiantparrots"	"25"
 		"boss"				"0"
 	}
 	"6"
 	{
-		"parrotcount"		"0"
-		"giantparrotcount"	"0"
-		"maxparrots"		"15"
+		"smallparrotcount"	"10000"
+		"maxsmallparrots"	"10"
 		"boss"				"1"
 		"corruptor"		"1"
 	}

@@ -1,0 +1,117 @@
+"MapHack"
+{
+	"entities"
+	{
+		"$edit_all"
+		{
+			"classname" "info_player_pirate"
+			"keyvalues"
+			{
+				"targetname" "pirate_spawn"
+			}
+		}
+		"$edit_all"
+		{
+			"classname" "info_player_viking"
+			"keyvalues"
+			{
+				"targetname" "viking_spawn"
+			}
+		}
+		"$edit_all"
+		{
+			"classname" "info_player_knight"
+			"keyvalues"
+			{
+				"targetname" "knight_spawn"
+			}
+		}
+		
+		"info_player_deathmatch"
+		{
+			"origin" "-526.723450 483.198395 -102.968689"
+			"angles" "3.036001 -48.648067 0.000000"
+		}
+		
+		"info_player_deathmatch"
+		{
+			"origin" "806.158997 460.462585 -117.537209"
+			"angles" "3.959990 -126.000053 -0.078396"
+		}
+		
+		"info_player_deathmatch"
+		{
+			"origin" "696.736755 -77.757057 -220.924210"
+			"angles" "2.375975 -119.039589 -0.038645"
+		}
+		
+		"info_player_deathmatch"
+		{
+			"origin" "250.697968 -597.712463 -109.968689"
+			"angles" "3.299974 91.601677 0.000000"
+		}
+		
+		"info_player_deathmatch"
+		{
+			"origin" "-411.125427 -154.517761 -198.713654"
+			"angles" "1.385975 -56.766312 0.000000"
+		}
+		
+		"info_target"
+		{
+			"targetname" "noamp_parrotspawn"
+			"origin" "-785.988525 -48.716934 -42.744583"
+		}
+		"info_target"
+		{
+			"targetname" "noamp_parrotspawn"
+			"origin" "220.600403 -777.850891 -66.193039"
+		}
+		"info_target"
+		{
+			"targetname" "noamp_parrotspawn"
+			"origin" "1158.770508 -159.423264 3.384629"
+		}
+		
+		"info_target"
+		{
+			"targetname" "noamp_boss_spawn"
+			"origin" "245.222961 -44.177433 73.637627"
+		}
+		"logic_relay"
+		{
+			"targetname" "onbosswavebegin"
+			
+			"keyvalues"
+			{
+				"connections"
+				{
+					"OnTrigger" "pirate_spawn,Kill,,0,-1"
+					"OnTrigger" "viking_spawn,Kill,,0,-1"
+					"OnTrigger" "knight_spawn,Kill,,0,-1"
+					"OnTrigger" "lava,SetSpeed,19,0,-1"
+					"OnTrigger" "rumble,StartShake,,0,-1"
+					"OnTrigger" "gates,Open,,0,-1"
+					"OnTrigger" "centre_flame,Start,,0,-1"
+					"OnTrigger" "centre_sound_loop,PlaySound,,0,-1"
+					"OnTrigger" "centre_sound_start,PlaySound,,0,-1"
+					"OnTrigger" "lava_glow,Enable,,0,-1"
+					"OnTrigger" "doomsdayparticles,Start,,7,-1"
+					"OnTrigger" "doomsdayrelay1,Trigger,,4,-1"
+					"OnTrigger" "doomsdaycolor,Enable,,5,-1"
+					"OnTrigger" "sound_rumble,PlaySound,,0,-1"
+					"OnTrigger" "doomsday_meteor1_timer,Enable,,0,-1"
+					"OnTrigger" "palisade1,Open,,17,-1"
+					"OnTrigger" "palisade3,Open,,18,-1"
+					"OnTrigger" "doomsdayrelay2,Trigger,,2,-1"
+					"OnTrigger" "doomsday_volcano,Start,,0,-1"
+					"OnTrigger" "palisadeBrush3,Disable,,18,-1"
+					"OnTrigger" "palisadePush3,Disable,,18,-1"
+					"OnTrigger" "palisadePush4,Disable,,20,-1"
+					"OnTrigger" "palisadeBrush4,Disable,,20,-1"
+					"OnTrigger" "palisade4,Open,,20,-1"
+				}
+			}
+		}
+	}
+}

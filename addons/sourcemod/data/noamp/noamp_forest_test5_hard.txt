@@ -1,0 +1,79 @@
+"NOAMP_Scheme"
+{
+	"general"
+	{
+		"name"				"Forest Hard"
+		"bossparrothp"		"10000"
+		"bossparrotsize" 	"8.0"
+		"chestaward" 		"100"
+		"giantparrotsize"	"4.0"
+		"playerlives"		"10"
+		"preparationsecs"	"15"
+		"maxhpprice"		"500"
+		"maxarmorprice"		"300"
+		"maxspeedprice"		"450"
+		"kegprice"			"200"
+		"fillspecialprice"	"50"
+		"vulturesprice"		"150"
+		"baseupgrade1price"	"0"
+		"smallparrotpitch"	"150"
+		"normalparrotpitch"	"100"
+		"giantparrotpitch"	"85"
+		"bossparrotpitch"	"75"
+	}
+	
+	// Waves
+	"1"
+	{
+		"smallparrotcount"	"30"
+		"normalparrotcount"	"20"
+		"maxsmallparrots"	"15"
+		"maxnormalparrots"	"5"
+		"boss"				"0"
+	}
+	"2"
+	{
+		"smallparrotcount"	"40"
+		"normalparrotcount"	"40"
+		"giantparrotcount"	"20"
+		"maxsmallparrots"	"15"
+		"maxnormalparrots"	"15"
+		"maxgiantparrots"	"5"
+		"boss"				"0"
+	}
+	"3"
+	{
+		"smallparrotcount"	"45"
+		"normalparrotcount"	"85"
+		"giantparrotcount"	"20"
+		"maxsmallparrots"	"5"
+		"maxnormalparrots"	"20"
+		"maxgiantparrots"	"8"
+		"boss"				"0"
+	}
+	"4"
+	{
+		"smallparrotcount"	"50"
+		"normalparrotcount"	"100"
+		"giantparrotcount"	"50"
+		"maxsmallparrots"	"5"
+		"maxnormalparrots"	"15"
+		"maxgiantparrots"	"10"
+		"boss"				"0"
+	}
+	"5"
+	{
+		"normalparrotcount"	"150"
+		"giantparrotcount"	"100"
+		"maxnormalparrots"	"10"
+		"maxgiantparrots"	"25"
+		"boss"				"0"
+	}
+	"6"
+	{
+		"smallparrotcount"	"10000"
+		"maxsmallparrots"	"15"
+		"boss"				"1"
+		"corruptor"		"1"
+	}
+}
