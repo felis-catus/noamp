@@ -260,7 +260,7 @@ public Action HUD( Handle timer )
 						ShowHudText( i, -1, "BOSS WAVE! HP: %d - $%d - Lives: %d", parrotCurrentBossHP, clientMoney[ i ], clientLives[ i ] );
 					}
 					else
-						ShowHudText( i, -1, "Wave %d: %d/%d - $%d - Lives: %d", wave, parrotsKilled, waveParrotCount[ wave ], clientMoney[ i ], clientLives[ i ] );
+						ShowHudText( i, -1, "Wave %d: %d/%d - $%d - Lives: %d", wave, parrotsKilled, waveTotalParrotCount[ wave ], clientMoney[ i ], clientLives[ i ] );
 				}
 			}
 		}
@@ -289,6 +289,11 @@ public Action WaitingForPlayers( Handle timer )
 	}
 
 	return Plugin_Continue;
+}
+
+public Action HintMessage( Handle timer )
+{
+	CPrintToChatAll( "{unusual}%s{darkgoldenrod}To access the buy menu, type !menu OR bind \"noamp_menu\" to a key.", CHAT_PREFIX );
 }
 
 public void StartGame()
@@ -330,7 +335,7 @@ public Action WaveThink( Handle timer )
 	
 	if ( !waveIsBossWave[ wave ] )
 	{
-		if ( parrotsKilled >= waveParrotCount[ wave ] )
+		if ( KilledParrots.Total >= waveTotalParrotCount[ wave ] )
 		{
 			WaveFinished();
 			return Plugin_Stop;
@@ -437,6 +442,13 @@ public void WaveFinished()
 	
 	ParrotKiller();
 	VultureKiller();
+
+	// Make sure we do this after ParrotKiller()
+	KilledParrots.Small = 0;
+	KilledParrots.Normal = 0;
+	KilledParrots.Giant = 0;
+	KilledParrots.Boss = 0;
+	KilledParrots.Total = 0;
 	
 	EmitSoundToAll( "music/deadparrotachieved.mp3", SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL );
 	StopMusicAll();
@@ -688,38 +700,27 @@ public Action ParrotCreator( Handle timer )
 {
 	if ( !g_bHasGameStarted || IsPreparing || IsGameOver )
 		return Plugin_Stop;
-
-	int aliveParrots = GetAliveParrots( PARROT_ANY );
-	int aliveGiantParrots = GetAliveParrots( PARROT_GIANT );
 	
 	if ( waveIsBossWave[ wave ] && !bossParrotSpawned )
 	{
 		bossParrotSpawned = true;
 		SpawnBossParrot( waveIsCorruptorWave[ wave ] );
 	}
-	
-	if ( aliveParrots < waveMaxParrots[ wave ] )
+
+	if ( AliveParrots.Small < waveMaxSmallParrots[ wave ] && spawnedParrots != waveTotalParrotCount[ wave ] && KilledParrots.Small < waveSmallParrotCount[ wave ] )
 	{
-		if ( spawnedParrots != waveParrotCount[ wave ] )
-		{
-			spawnedParrots++;
-			bool bSmallParrot = false;
-
-			int iRand = GetRandomInt( 0, wave );
-			if ( iRand == wave )
-				bSmallParrot = true;
-
-			// TODO: TEMP
-			if ( bSmallParrot )
-				SpawnSmallParrot();
-			else
-				SpawnParrot();
-		}
+		spawnedParrots++;
+		SpawnSmallParrot();
 	}
-	
-	if ( waveGiantParrotCount[ wave ] != 0 && aliveGiantParrots < waveGiantParrotCount[ wave ] && !waveIsBossWave[ wave ] && !giantParrotSpawned && spawnedParrots != waveParrotCount[ wave ] )
+
+	if ( AliveParrots.Normal < waveMaxNormalParrots[ wave ] && spawnedParrots != waveTotalParrotCount[ wave ] && KilledParrots.Normal < waveNormalParrotCount[ wave ] )
 	{
-		giantParrotSpawned = true;
+		spawnedParrots++;
+		SpawnParrot();
+	}
+
+	if ( AliveParrots.Giant < waveMaxGiantParrots[ wave ] && spawnedParrots != waveTotalParrotCount[ wave ] && KilledParrots.Giant < waveGiantParrotCount[ wave ] )
+	{
 		spawnedParrots++;
 		SpawnGiantParrot();
 	}
@@ -731,7 +732,7 @@ public Action ParrotCreator( Handle timer )
 	{
 		if (GetAliveParrots(PARROT_NORMAL) <= waveMaxParrots[wave])
 		{
-			if (spawnedParrots != waveParrotCount[wave])
+			if (spawnedParrots != waveTotalParrotCount[wave])
 			{
 				spawnedParrots++;
 				SpawnParrot();
@@ -749,7 +750,7 @@ public Action ParrotCreator( Handle timer )
 	}
 	else if (GetParrotCreatorMode() == PARROTCREATOR_GIANTS)
 	{
-		if (!parrotCreatorSpawned && waveGiantParrotCount[wave] != 0 && GetAliveParrots(PARROT_GIANT) < waveGiantParrotCount[wave] && spawnedParrots != waveParrotCount[wave])
+		if (!parrotCreatorSpawned && waveGiantParrotCount[wave] != 0 && GetAliveParrots(PARROT_GIANT) < waveGiantParrotCount[wave] && spawnedParrots != waveTotalParrotCount[wave])
 		{
 			spawnedParrots++;
 			SpawnGiantParrot();
@@ -1480,6 +1481,18 @@ public void ResetGame( bool gameover, bool startgame )
 	spawnedParrots = 0;
 	giantParrotSpawned = false;
 	bossParrotSpawned = false;
+
+	AliveParrots.Small = 0;
+	AliveParrots.Normal = 0;
+	AliveParrots.Giant = 0;
+	AliveParrots.Boss = 0;
+	AliveParrots.Total = 0;
+
+	KilledParrots.Small = 0;
+	KilledParrots.Normal = 0;
+	KilledParrots.Giant = 0;
+	KilledParrots.Boss = 0;
+	KilledParrots.Total = 0;
 	
 	if ( !gameover )
 		wave = 1;
@@ -1619,9 +1632,14 @@ public void ResetWaves()
 {
 	for ( int i = 1; i < NOAMP_MAXWAVES; i++ )
 	{
-		waveParrotCount[ i ] = 0;
+		waveSmallParrotCount[ i ] = 0;
+		waveNormalParrotCount[ i ] = 0;
 		waveGiantParrotCount[ i ] = 0;
-		waveMaxParrots[ i ] = 0;
+		waveTotalParrotCount[ i ] = 0;
+		waveMaxSmallParrots[ i ] = 0;
+		waveMaxNormalParrots[ i ] = 0;
+		waveMaxGiantParrots[ i ] = 0;
+		//waveMaxParrots[ i ] = 0;
 		waveIsBossWave[ i ] = false;
 		waveIsCorruptorWave[ i ] = false;
 	}

@@ -77,6 +77,7 @@ void RegisterCvars()
 	cvar_ignoreprefix = CreateConVar( "noamp_ignoreprefix", "0", "Ignores the noamp_ map prefix check in map start. Allows NOAMP in every other map." );
 	cvar_timelimit = FindConVar( "mp_timelimit" );
 	cvar_dmoldrules = FindConVar( "mp_dm_oldrules" );
+	cvar_dmforce = FindConVar( "mp_dm_force" );
 	
 	HookConVarChange( cvar_enabled, cvHookEnabled );
 	HookConVarChange( cvar_difficulty, cvHookDifficulty );
@@ -120,7 +121,8 @@ void SDKStuff()
 
 void HookEvents()
 {
-	HookEvent( "npc_death", OnParrotDeath );
+	HookEvent( "entity_killed", OnEntityKilled );
+	//HookEvent( "npc_death", OnParrotDeath );
 	HookEvent( "player_spawn", OnPlayerSpawn );
 	HookEvent( "player_death", OnPlayerDeath );
 	HookEvent( "player_hurt", OnPlayerHurt );
@@ -326,8 +328,16 @@ public void OnMapStart()
 	
 	char currentMap[ 128 ];
 	GetCurrentMap( currentMap, sizeof( currentMap ) );
+
+	bool bIgnorePrefix = GetConVarBool( cvar_ignoreprefix );
+
+	if ( g_bPreserveIgnorePrefix )
+	{
+		bIgnorePrefix = true;
+		g_bPreserveIgnorePrefix = false;
+	}
 	
-	if ( !GetConVarBool( cvar_ignoreprefix ) )
+	if ( !bIgnorePrefix )
 	{
 		if ( StrContains( currentMap, "noamp_", false ) == -1 )
 		{
@@ -336,17 +346,76 @@ public void OnMapStart()
 			return;
 		}
 	}
-	
-	bool bDMOldRules = GetConVarBool( cvar_dmoldrules );
-	
-	// HACK: Since original NOAMP, TDM got actual rules
-	// We need to set to old rules and reset map
-	if ( !bDMOldRules )
+
+	int iGamemode = GAMEMODE_TDM;
+	bool bGamemodeDisabled = false;
+	int info_pvk = FindEntityByClassname( -1, "info_pvk" );
+
+	if ( IsValidEntity( info_pvk ) )
 	{
-		g_bIsEnabled = false;
-		SetConVarInt( cvar_dmoldrules, 1, true, true );
-		ForceChangeLevel( currentMap, "NOAMP requires old DM rules!" );
-		return;
+		iGamemode = GetEntProp( info_pvk, Prop_Data, "m_iGameMode" );
+		bGamemodeDisabled = view_as< bool >( GetEntProp( info_pvk, Prop_Data, "m_bDisableGameMode" ) );
+	}
+	else
+		PrintToServer( "Failed to find info_pvk\n" );
+	
+	if ( !bGamemodeDisabled )
+	{
+		bool bDMOldRules = GetConVarBool( cvar_dmoldrules );
+		
+		// HACK: Since original NOAMP, TDM got actual rules
+		// We need to set to old rules and reset map
+		if ( !bDMOldRules )
+		{
+			SetConVarInt( cvar_dmoldrules, 1, true, true );
+
+			if ( iGamemode != GAMEMODE_TDM )
+			{
+				bool bDMForced = GetConVarBool( cvar_dmforce );
+
+				if ( !bDMForced )
+				{
+					// This should get rid of the gamemode for us and not require us to reload level
+					SetConVarInt( cvar_dmforce, 1, true, true );
+				}
+				else
+				{
+					// We're already forced DM but not old rules, reload level
+					ForceChangeLevel( currentMap, "NOAMP requires old DM rules!" );
+
+					g_bPreserveIgnorePrefix = true;
+
+					g_bIsEnabled = false;
+					return;
+				}
+			}
+			else
+			{
+				ForceChangeLevel( currentMap, "NOAMP requires old DM rules!" );
+
+				g_bPreserveIgnorePrefix = true;
+
+				g_bIsEnabled = false;
+				return;
+			}
+		}
+		else if ( iGamemode != GAMEMODE_TDM )
+		{
+			bool bDMForced = GetConVarBool( cvar_dmforce );
+			if ( !bDMForced )
+			{
+				// This should get rid of the gamemode for us and not require us to reload level
+				SetConVarInt( cvar_dmforce, 1, true, true );
+
+				// BUT mp_dm_force removes our damn spawns AGH
+				ForceChangeLevel( currentMap, "NOAMP requires old DM rules!" );
+
+				g_bPreserveIgnorePrefix = true;
+
+				g_bIsEnabled = false;
+				return;
+			}
+		}
 	}
 	
 	char scheme[ 128 ] = "null";
@@ -394,6 +463,7 @@ public void OnMapStart()
 	
 	h_TimerHUD = CreateTimer( 0.1, HUD, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
 	h_TimerWaitingForPlayers = CreateTimer( 0.1, WaitingForPlayers, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+	CreateTimer( 60.0, HintMessage, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
 	
 	g_bHasGameStarted = false;
 	g_bIsMapLoaded = true;
@@ -515,6 +585,10 @@ public void ReadNOAMPScript()
 		g_iParrotSoundPitchNormal = StringToInt( strnormalparrotpitch );
 		g_iParrotSoundPitchGiant = StringToInt( strgiantparrotpitch );
 		g_iParrotSoundPitchBoss = StringToInt( strbossparrotpitch );
+		g_flSmallParrotAttackDamage = KvGetFloat( kv, "smallparrotattackdamage", 2.0 );
+		g_flNormalParrotAttackDamage = KvGetFloat( kv, "normalparrotattackdamage", 7.0 );
+		g_flGiantParrotAttackDamage = KvGetFloat( kv, "giantparrotattackdamage", 10.0 );
+		g_flBossParrotAttackDamage = KvGetFloat( kv, "bossparrotattackdamage", 20.0 );
 		
 		KvGotoNextKey( kv );
 	}
@@ -531,25 +605,40 @@ public void ReadNOAMPScript()
 		
 		if ( StrEqual( buffer, stri ) )
 		{
-			char strparrotcount[ 32 ];
-			char strgiantparrotcount[ 32 ];
-			char strmaxparrots[ 32 ];
-			char strisfoggy[ 2 ];
-			char strisboss[ 2 ];
-			char striscorrupt[ 2 ];
+			//char strsmallparrotcount[ 32 ];
+			//char strnormalparrotcount[ 32 ];
+			//char strgiantparrotcount[ 32 ];
+			//char strmaxparrots[ 32 ];
+			//char strisfoggy[ 2 ];
+			//char strisboss[ 2 ];
+			//char striscorrupt[ 2 ];
 			
-			KvGetString( kv, "parrotcount", strparrotcount, 32 );
-			KvGetString( kv, "giantparrotcount", strgiantparrotcount, 32 );
-			KvGetString( kv, "maxparrots", strmaxparrots, 32 );
-			KvGetString( kv, "foggy", strisfoggy, 2 );
-			KvGetString( kv, "boss", strisboss, 2 );
-			KvGetString( kv, "corruptor", striscorrupt, 2 );
+			//KvGetString( kv, "smallparrotcount", strsmallparrotcount, sizeof( strsmallparrotcount ), 0 );
+			//KvGetString( kv, "normalparrotcount", strnormalparrotcount, sizeof( strnormalparrotcount ), 30 );
+			//KvGetString( kv, "giantparrotcount", strgiantparrotcount, sizeof( strgiantparrotcount ), 0 );
+			//KvGetString( kv, "maxparrots", strmaxparrots, 32 );
+			//KvGetString( kv, "foggy", strisfoggy, 2 );
+			//KvGetString( kv, "boss", strisboss, 2 );
+			//KvGetString( kv, "corruptor", striscorrupt, 2 );
 			
-			waveParrotCount[ ibuffer ] = StringToInt( strparrotcount, 10 );
-			waveGiantParrotCount[ibuffer] = StringToInt( strgiantparrotcount, 10 );
-			waveMaxParrots[ibuffer] = StringToInt( strmaxparrots, 10 );
+			//waveSmallParrotCount[ ibuffer ] = StringToInt( strsmallparrotcount );
+			//waveNormalParrotCount[ ibuffer ] = StringToInt( strnormalparrotcount );
+			//waveGiantParrotCount[ ibuffer ] = StringToInt( strgiantparrotcount, 10 );
+
+			waveSmallParrotCount[ ibuffer ] = KvGetNum( kv, "smallparrotcount", 0 );
+			waveNormalParrotCount[ ibuffer ] = KvGetNum( kv, "normalparrotcount", 0 );
+			waveGiantParrotCount[ ibuffer ] = KvGetNum( kv, "giantparrotcount", 0 );
+			//waveMaxParrots[ ibuffer ] = KvGetNum( kv, "maxparrots", 32 );
+			waveMaxSmallParrots[ ibuffer ] = KvGetNum( kv, "maxsmallparrots", waveSmallParrotCount[ ibuffer ] );
+			waveMaxNormalParrots[ ibuffer ] = KvGetNum( kv, "maxnormalparrots", waveNormalParrotCount[ ibuffer ] );
+			waveMaxGiantParrots[ ibuffer ] = KvGetNum( kv, "maxgiantparrots", waveGiantParrotCount[ ibuffer ] );
+			waveIsFoggy[ ibuffer ] = view_as< bool >( KvGetNum( kv, "foggy" ) );
+			waveIsBossWave[ ibuffer ] = view_as< bool >( KvGetNum( kv, "boss" ) );
+			waveIsCorruptorWave[ ibuffer ] = view_as< bool >( KvGetNum( kv, "corruptor" ) );
+
+			waveTotalParrotCount[ ibuffer ] = waveSmallParrotCount[ ibuffer ] + waveNormalParrotCount[ ibuffer ] + waveGiantParrotCount[ ibuffer ];
 			
-			int fogint = StringToInt( strisfoggy, 10 );
+			/*int fogint = StringToInt( strisfoggy, 10 );
 
 			if ( fogint == 0 )
 				waveIsFoggy[ ibuffer ] = false;
@@ -583,7 +672,7 @@ public void ReadNOAMPScript()
 			{
 				waveIsCorruptorWave[ ibuffer ] = false;
 				LogError( "KeyValue \"corruptor\" can only be 0 or 1." );
-			}
+			}*/
 			
 			waveCount++;
 		}

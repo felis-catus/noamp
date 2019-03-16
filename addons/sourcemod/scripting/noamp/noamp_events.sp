@@ -110,7 +110,75 @@ public void OnPlayerDeath( Event event, const char[] name, bool dontBroadcast )
 	FriendDeadVoice( GetRandomInt( 1, GetClientCount( true ) ), victim );
 }
 
-public void OnParrotDeath( Event event, const char[] name, bool dontBroadcast )
+public void OnEntityKilled( Event event, const char[] name, bool dontBroadcast )
+{
+	if ( !g_bHasGameStarted || IsPreparing )
+		return;
+	
+	int iVictim = event.GetInt( "entindex_killed" );
+	int iAttacker = event.GetInt( "entindex_attacker" );
+	int iAttackerId = GetClientOfUserId( iAttacker );
+
+	if ( IsValidEntity( iVictim ) )
+	{
+		char clsname[ 64 ];
+		char targetname[ MAX_TARGET_LENGTH ];
+
+		GetEntityClassname( iVictim, clsname, sizeof( clsname ) );
+
+		if ( StrEqual( clsname, "npc_parrot", false ) )
+		{
+			GetEntPropString( iVictim, Prop_Data, "m_iName", targetname, sizeof( targetname ) );
+
+			if ( StrContains( targetname, "noamp_", false ) == 0 )
+			{
+				parrotsKilled++;
+				int parrotsLeft = waveTotalParrotCount[ wave ] - parrotsKilled;
+		
+				if ( iAttacker != 0 && IsClientInGame( iAttacker ) )
+				{
+					clientKills[ iAttacker ]++;
+					AddMoney( iAttacker, 10 );
+					AddSpecial( iAttacker, 10 );
+					AddScore( iAttackerId );
+					AddFrags( iAttacker, 1 );
+				}
+				
+				if ( IsDebug() )
+				{
+					PrintToServer( "Parrots killed: %d", parrotsKilled );
+					PrintToServer( "Parrots left: %d", parrotsLeft );
+				}
+
+				if ( StrEqual( targetname, "noamp_small", false ) )
+				{
+					AliveParrots.Small--;
+					KilledParrots.Small++;
+				}
+				else if ( StrEqual( targetname, "noamp_parrot", false ) )
+				{
+					AliveParrots.Normal--;
+					KilledParrots.Normal++;
+				}
+				else if ( StrEqual( targetname, "noamp_giant", false ) )
+				{
+					AliveParrots.Giant--;
+					KilledParrots.Giant++;
+				}
+				else if ( StrEqual( targetname, "noamp_boss", false ) )
+				{
+					AliveParrots.Boss--;
+					KilledParrots.Boss++;
+				}
+				
+				AliveParrots.Total--;
+				KilledParrots.Total++;
+			}
+		}
+	}
+}
+
+/*public void OnParrotDeath( Event event, const char[] name, bool dontBroadcast )
 {
 	if ( !g_bHasGameStarted || IsPreparing )
 		return;
@@ -126,7 +194,7 @@ public void OnParrotDeath( Event event, const char[] name, bool dontBroadcast )
 	if ( StrEqual( type, "npc_parrot", false ) )
 	{
 		parrotsKilled++;
-		parrotsLeft = waveParrotCount[wave] - parrotsKilled;
+		parrotsLeft = waveTotalParrotCount[ wave ] - parrotsKilled;
 		
 		if ( attacker != 0 && IsClientInGame( attacker ) )
 		{
@@ -143,7 +211,7 @@ public void OnParrotDeath( Event event, const char[] name, bool dontBroadcast )
 			PrintToServer( "Parrots left: %d", parrotsLeft );
 		}
 	}
-}
+}*/
 
 public void OnStartTouchChestZone( int ent, int other )
 {

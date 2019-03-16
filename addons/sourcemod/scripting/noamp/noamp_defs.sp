@@ -19,7 +19,7 @@
 
 #pragma newdecls required
 
-#define PL_VERSION "0.6a"
+#define PL_VERSION "0.7a"
 #define SERVER_TAG "noamp"
 #define CHAT_PREFIX "[NOAMP]"
 
@@ -52,6 +52,13 @@
 #define PARROTCREATOR_GIANTS 2
 #define PARROTCREATOR_SMALL 3
 #define PARROTCREATOR_BOSS 4
+
+#define GAMEMODE_TDM 0
+#define GAMEMODE_BOOTY 1
+#define GAMEMODE_TRINKETWARS 2
+#define GAMEMODE_TERRITORY 3
+#define GAMEMODE_LASTTEAMSTANDING 5
+#define GAMEMODE_OBJECTIVEPUSH 6
 
 #define CHOICE1 "#choice1"
 #define CHOICE2 "#choice2"
@@ -95,6 +102,7 @@ Handle cvar_scheme = INVALID_HANDLE;
 Handle cvar_ignoreprefix = INVALID_HANDLE;
 Handle cvar_timelimit = INVALID_HANDLE;
 Handle cvar_dmoldrules = INVALID_HANDLE;
+Handle cvar_dmforce = INVALID_HANDLE;
 /*
 new Handle:cvar_lives;
 new Handle:cvar_maxhpprice;
@@ -107,8 +115,82 @@ new Handle:cvar_giantparrotsize;
 new Handle:cvar_bossparrotsize;
 */
 
+int g_iAliveSmallParrots = 0;
+int g_iAliveNormalParrots = 0;
+int g_iAliveGiantParrots = 0;
+int g_iAliveBossParrots = 0;
+int g_iAliveTotalParrots = 0;
+
+methodmap AliveParrotInfo_t
+{
+	property int Small {
+		public get() { return g_iAliveSmallParrots; }
+		public set( int value ) { g_iAliveSmallParrots = value; }
+	}
+
+	property int Normal {
+		public get() { return g_iAliveNormalParrots; }
+		public set( int value ) { g_iAliveNormalParrots = value; }
+	}
+
+	property int Giant {
+		public get() { return g_iAliveGiantParrots; }
+		public set( int value ) { g_iAliveGiantParrots = value; }
+	}
+
+	property int Boss {
+		public get() { return g_iAliveBossParrots; }
+		public set( int value ) { g_iAliveBossParrots = value; }
+	}
+
+	property int Total {
+		public get() { return g_iAliveTotalParrots; }
+		public set( int value ) { g_iAliveTotalParrots = value; }
+	}
+};
+
+AliveParrotInfo_t AliveParrots;
+
+int g_iKilledSmallParrots = 0;
+int g_iKilledNormalParrots = 0;
+int g_iKilledGiantParrots = 0;
+int g_iKilledBossParrots = 0;
+int g_iKilledTotalParrots = 0;
+
+methodmap KilledParrotInfo_t
+{
+	property int Small {
+		public get() { return g_iKilledSmallParrots; }
+		public set( int value ) { g_iKilledSmallParrots = value; }
+	}
+
+	property int Normal {
+		public get() { return g_iKilledNormalParrots; }
+		public set( int value ) { g_iKilledNormalParrots = value; }
+	}
+
+	property int Giant {
+		public get() { return g_iKilledGiantParrots; }
+		public set( int value ) { g_iKilledGiantParrots = value; }
+	}
+
+	property int Boss {
+		public get() { return g_iKilledBossParrots; }
+		public set( int value ) { g_iKilledBossParrots = value; }
+	}
+
+	property int Total {
+		public get() { return g_iKilledTotalParrots; }
+		public set( int value ) { g_iKilledTotalParrots = value; }
+	}
+};
+
+KilledParrotInfo_t KilledParrots;
+
 char ScriptPath[ PLATFORM_MAX_PATH ];
 char ParrotCreatorScriptPath[ PLATFORM_MAX_PATH ];
+
+bool g_bPreserveIgnorePrefix = false;
 
 bool g_bIsMapLoaded = false;
 bool IsCustomScheme = false;
@@ -169,9 +251,14 @@ bool parrotCreatorSpawned;
 
 int parrotDesiredSoundPitch;
 
-int waveParrotCount[ NOAMP_MAXWAVES ];
+int waveSmallParrotCount[ NOAMP_MAXWAVES ];
+int waveNormalParrotCount[ NOAMP_MAXWAVES ];
 int waveGiantParrotCount[ NOAMP_MAXWAVES ];
-int waveMaxParrots[ NOAMP_MAXWAVES ];
+int waveTotalParrotCount[ NOAMP_MAXWAVES ];
+int waveMaxSmallParrots[ NOAMP_MAXWAVES ];
+int waveMaxNormalParrots[ NOAMP_MAXWAVES ];
+int waveMaxGiantParrots[ NOAMP_MAXWAVES ];
+//int waveMaxParrots[ NOAMP_MAXWAVES ];
 bool waveIsBossWave[ NOAMP_MAXWAVES ];
 bool waveIsCorruptorWave[ NOAMP_MAXWAVES ];
 bool waveIsFoggy[ NOAMP_MAXWAVES ];
@@ -277,6 +364,12 @@ int g_iParrotSoundPitchGiant = 85;
 int g_iParrotSoundPitchBoss = 75;
 int timerSoundPitch;
 
+float g_flSmallParrotAttackDamage = 2.0;
+float g_flNormalParrotAttackDamage = 7.0;
+float g_flGiantParrotAttackDamage = 10.0;
+float g_flBossParrotAttackDamage = 20.0;
+
+// CPVK2Player
 int h_iSpecial;
 int h_iMaxSpecial;
 int h_iHealth;

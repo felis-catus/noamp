@@ -85,7 +85,7 @@ public void FindSpawns()
 
 public void ResetSpawns()
 {
-	for ( int i = 0; i < NOAMP_MAXSPAWNS-1; i++ )
+	for ( int i = 0; i < NOAMP_MAXSPAWNS; i++ )
 	{
 		ParrotSpawns[ i ] = "null";
 		GiantParrotSpawns[ i ] = "null";
@@ -117,7 +117,7 @@ public int GetBossSpawnCount()
 	
 	for ( int i = 0; i <= NOAMP_MAXSPAWNS-1; i++ )
 	{
-		if ( !StrEqual( BossParrotSpawns[ i ], "null" ) )
+		if ( !StrEqual( BossParrotSpawns[ i ], "null", false ) )
 			spawns++;
 	}
 	
@@ -212,9 +212,13 @@ public void SpawnParrot()
 	nodeorg[ 2 ] = StringToFloat( nodepoints[ 2 ] );
 	
 	char orgstring[ 128 ];
+	char attackdamagestring[ 128 ];
+
 	Format( orgstring, sizeof( orgstring ), "%f %f %f", nodeorg[ 0 ], nodeorg[ 1 ], nodeorg[ 2 ] );
+	FloatToString( g_flNormalParrotAttackDamage, attackdamagestring, sizeof( attackdamagestring ) );
 	
 	DispatchKeyValue( parrot, "origin", orgstring );
+	DispatchKeyValue( parrot, "attackdamage", attackdamagestring );
 	DispatchSpawn( parrot );
 	
 	DispatchKeyValue( parrot, "targetname", "noamp_parrot" );
@@ -223,6 +227,9 @@ public void SpawnParrot()
 	{
 		PrintToServer( "Parrot spawned at %s", orgstring );
 	}
+
+	AliveParrots.Normal++;
+	AliveParrots.Total++;
 }
 
 public void SpawnGiantParrot()
@@ -247,12 +254,16 @@ public void SpawnGiantParrot()
 	
 	char orgstring[ 128 ];
 	char scalestring[ 128 ];
+	char attackdamagestring[ 128 ];
 	
 	Format( orgstring, sizeof( orgstring ), "%f %f %f", nodeorg[ 0 ], nodeorg[ 1 ], nodeorg[ 2 ] );
 	FloatToString( giantParrotSize, scalestring, sizeof( scalestring ) );
+	FloatToString( g_flGiantParrotAttackDamage, attackdamagestring, sizeof( attackdamagestring ) );
 	
 	DispatchKeyValue( parrot, "origin", orgstring );
 	DispatchKeyValue( parrot, "scale", scalestring );
+	DispatchKeyValue( parrot, "attackdamage", attackdamagestring );
+
 	DispatchSpawn( parrot );
 	
 	// FIXME: lol
@@ -275,6 +286,9 @@ public void SpawnGiantParrot()
 	{
 		PrintToServer( "Giant parrot spawned at %s", orgstring );
 	}
+
+	AliveParrots.Giant++;
+	AliveParrots.Total++;
 }
 
 public void SpawnSmallParrot()
@@ -299,12 +313,15 @@ public void SpawnSmallParrot()
 	
 	char orgstring[ 128 ];
 	char scalestring[ 128 ];
+	char attackdamagestring[ 128 ];
 	
 	Format( orgstring, sizeof( orgstring ), "%f %f %f", nodeorg[0  ], nodeorg[1  ], nodeorg[ 2 ] );
 	FloatToString( smallParrotSize, scalestring, sizeof( scalestring ) );
+	FloatToString( g_flSmallParrotAttackDamage, attackdamagestring, sizeof( attackdamagestring ) );
 	
 	DispatchKeyValue( parrot, "origin", orgstring );
 	DispatchKeyValue( parrot, "scale", scalestring );
+	DispatchKeyValue( parrot, "attackdamage", attackdamagestring );
 	DispatchSpawn( parrot );
 	
 	// FIXME: lol
@@ -326,6 +343,9 @@ public void SpawnSmallParrot()
 	{
 		PrintToServer( "Small parrot spawned at %s", orgstring );
 	}
+
+	AliveParrots.Small++;
+	AliveParrots.Total++;
 }
 
 public void SpawnBossParrot( bool corruptor )
@@ -350,12 +370,15 @@ public void SpawnBossParrot( bool corruptor )
 	
 	char orgstring[ 128 ];
 	char scalestring[ 128 ];
+	char attackdamagestring[ 128 ];
 	
 	Format( orgstring, sizeof( orgstring ), "%f %f %f", nodeorg[ 0 ], nodeorg[ 1 ], nodeorg[ 2 ] );
 	FloatToString( bossParrotSize, scalestring, sizeof( scalestring ) );
+	FloatToString( g_flBossParrotAttackDamage, attackdamagestring, sizeof( attackdamagestring ) );
 	
 	DispatchKeyValue( parrot, "origin", orgstring );
 	DispatchKeyValue( parrot, "scale", scalestring );
+	DispatchKeyValue( parrot, "attackdamage", attackdamagestring );
 	DispatchSpawn( parrot );
 	
 	// FIXME: lol
@@ -384,6 +407,9 @@ public void SpawnBossParrot( bool corruptor )
 	{
 		PrintToServer( "Boss parrot spawned at %s", orgstring );
 	}
+
+	AliveParrots.Boss++;
+	AliveParrots.Total++;
 }
 
 public void SpawnVulture( int client )
