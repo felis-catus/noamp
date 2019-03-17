@@ -65,6 +65,8 @@ stock void SetParrotSoundPitch( int pitch ) { parrotSoundPitch = pitch; }
 stock int GetParrotCreatorMode() { return parrotCreatorMode; }
 stock void SetParrotCreatorMode( int mode ) { parrotCreatorMode = mode; if ( IsDebug() ) { PrintToServer( "ParrotCreator mode is now %d", parrotCreatorMode ); } }
 
+stock bool IsClient( int ent ) { if ( ent >= 1 && ent <= MAXPLAYERS ) return true; return false; }
+
 stock int GetAliveParrots( int parrottype )
 {
 	char targetname[ 128 ];

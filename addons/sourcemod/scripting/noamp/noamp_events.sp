@@ -117,7 +117,10 @@ public void OnEntityKilled( Event event, const char[] name, bool dontBroadcast )
 	
 	int iVictim = event.GetInt( "entindex_killed" );
 	int iAttacker = event.GetInt( "entindex_attacker" );
-	int iAttackerId = GetClientOfUserId( iAttacker );
+	int iAttackerId = 0;
+
+	if ( IsClient( iAttacker ) )
+		iAttackerId = GetClientUserId( iAttacker );
 
 	if ( IsValidEntity( iVictim ) )
 	{
@@ -135,7 +138,7 @@ public void OnEntityKilled( Event event, const char[] name, bool dontBroadcast )
 				parrotsKilled++;
 				int parrotsLeft = waveTotalParrotCount[ wave ] - parrotsKilled;
 		
-				if ( iAttacker != 0 && IsClientInGame( iAttacker ) )
+				if ( IsClient( iAttacker ) && IsClientInGame( iAttacker ) )
 				{
 					clientKills[ iAttacker ]++;
 					AddMoney( iAttacker, 10 );
