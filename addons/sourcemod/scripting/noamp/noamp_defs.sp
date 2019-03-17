@@ -19,7 +19,7 @@
 
 #pragma newdecls required
 
-#define PL_VERSION "0.7a"
+#define PL_VERSION "0.8a"
 #define SERVER_TAG "noamp"
 #define CHAT_PREFIX "[NOAMP]"
 
