@@ -1,0 +1,115 @@
+// NIGHT OF A MILLION PARROTS game scheme
+
+// Values:
+// "bossparrotsize" : Size of the boss parrot, float value.
+// "chestaward" : How much money every player gets from chest capture?
+// "smallparrotsize" : Size of small parrots, float value.
+// "giantparrotsize" : Size of giant parrots, float value.
+// "playerlives" : How many lives players have. 0 for infinite.
+// "preparationsecs" : Preparation phase time.
+// "maxhpprice" : How much max HP upgrade costs?
+// "maxarmorprice" : How much max armor upgrade costs?
+// "maxspeedprice" : How much max speed upgrade costs?
+// "kegprice" : How much one powder keg costs?
+// "fillspecialprice" : How much one fill special powerup costs?
+// "vulturesprice" : How much vultures powerup costs?
+// "baseupgrade1price" : How much first base upgrade costs?
+// "smallparrotpitch" : "Sound pitch of small parrot, integer value"
+// "normalparrotpitch" : "Sound pitch of normal parrot, integer value"
+// "giantparrotpitch" : "Sound pitch of giant parrot, integer value"
+// "bossparrotpitch" : "Sound pitch of boss parrot, integer value"
+// "smallparrotattackdamage" : "Attack damage of small parrot, float value (default = 2.0)"
+// "normalparrotattackdamage" : "Attack damage of normal parrot, float value (default = 7.0)"
+// "giantparrotattackdamage" : "Attack damage of giant parrot, float value (default = 10.0)"
+// "bossparrotattackdamage" : "Attack damage of boss parrot, float value (default = 20.0)"
+
+// Wave values:
+// "smallparrotcount" : How many small parrots spawn in one wave.
+// "normalparrotcount" : How many normal parrots spawn in one wave.
+// "giantparrotcount" : How many giant parrots spawn in one wave.
+// "maxsmallparrots" : How many small parrots can be in the map at once. Don't forget about the performance!
+// "maxnormalparrots" : How many normal parrots can be in the map at once. Don't forget about the performance!
+// "maxgiantparrots" : How many giant parrots can be in the map at once. Don't forget about the performance!
+// "boss" : Boss wave boolean, if 1, boss parrot will appear in this wave.
+// "corruptor" : Corruptor boolean, if 1, boss parrot will "corrupt" your gameplay
+
+"NOAMP_Scheme"
+{
+	"general"
+	{
+		"name"				"Default"
+		"bossparrothp"		"5000"
+		"bossparrotsize" 	"8.0"
+		"chestaward" 		"200"
+		"smallparrotsize"	"0.5"
+		"giantparrotsize"	"4.0"
+		"playerlives"		"5"
+		"preparationsecs"	"30"
+		"maxhpprice"		"500"
+		"maxarmorprice"		"300"
+		"maxspeedprice"		"450"
+		"kegprice"			"100"
+		"fillspecialprice"	"50"
+		"vulturesprice"		"150"
+		"baseupgrade1price"	"0"
+		"smallparrotpitch"	"150"
+		"normalparrotpitch"	"100"
+		"giantparrotpitch"	"85"
+		"bossparrotpitch"	"75"
+	}
+	
+	// Waves
+	"1"
+	{
+		"smallparrotcount"	"20"
+		"normalparrotcount"	"10"
+		"maxsmallparrots"	"15"
+		"maxnormalparrots"	"3"
+		"boss"				"0"
+	}
+	"2"
+	{
+		"smallparrotcount"	"30"
+		"normalparrotcount"	"25"
+		"giantparrotcount"	"5"
+		"maxsmallparrots"	"15"
+		"maxnormalparrots"	"15"
+		"maxgiantparrots"	"2"
+		"boss"				"0"
+	}
+	"3"
+	{
+		"smallparrotcount"	"15"
+		"normalparrotcount"	"65"
+		"giantparrotcount"	"10"
+		"maxsmallparrots"	"5"
+		"maxnormalparrots"	"20"
+		"maxgiantparrots"	"4"
+		"boss"				"0"
+	}
+	"4"
+	{
+		"smallparrotcount"	"10"
+		"normalparrotcount"	"60"
+		"giantparrotcount"	"50"
+		"maxsmallparrots"	"5"
+		"maxnormalparrots"	"15"
+		"maxgiantparrots"	"10"
+		"boss"				"0"
+	}
+	"5"
+	{
+		"normalparrotcount"	"50"
+		"giantparrotcount"	"100"
+		"maxnormalparrots"	"10"
+		"maxgiantparrots"	"25"
+		"boss"				"0"
+	}
+	"6"
+	{
+		"smallparrotcount"	"10000"
+		"maxsmallparrots"	"10"
+		"boss"				"1"
+		"corruptor"		"1"
+	}
+}
