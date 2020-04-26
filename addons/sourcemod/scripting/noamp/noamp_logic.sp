@@ -22,10 +22,6 @@
 #include <sdkhooks>
 #include <morecolors>
 
-// remember to comment
-//#include "noamp_defs.sp"
-//#include "noamp_funcs.sp"
-
 #pragma newdecls required
 
 public Action ChangeTeamListener( int client, const char[] command, int argc )
@@ -133,12 +129,6 @@ public Action ChatListener( int client, const char[] command, int argc )
 		return Plugin_Handled;
 	}
 	
-	// whiskeyngton dont look at this
-	if ( strcmp( text[ startidx ], "fuck you felis", false ) == 0 )
-	{
-		PrintToChat( client, "Don't be rude. :(" );
-	}
-	
 	return Plugin_Continue;
 }
 
@@ -164,7 +154,7 @@ public Action DropItemListener( int client, const char[] command, int argc )
 				{
 					CPrintToChat( client, "{red}Killing your vultures..." );
 					clientAboutToKillVultures[ client ] = false;
-					h_TimerKillVultures = CreateTimer( 0.1, KillVultures, client, TIMER_FLAG_NO_MAPCHANGE );
+					CreateTimer( 0.1, KillVultures, client, TIMER_FLAG_NO_MAPCHANGE );
 					return Plugin_Handled;
 				}
 				
@@ -283,7 +273,7 @@ public Action WaitingForPlayers( Handle timer )
 	
 	if ( clients >= 1 )
 	{
-		h_TimerPreparingTime = CreateTimer( 1.0, PreparingTime, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+		CreateTimer( 1.0, PreparingTime, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
 		IsWaitingForPlayers = true;
 		return Plugin_Stop;
 	}
@@ -293,7 +283,7 @@ public Action WaitingForPlayers( Handle timer )
 
 public Action HintMessage( Handle timer )
 {
-	CPrintToChatAll( "{unusual}%s{darkgoldenrod}To access the buy menu, type !menu OR bind \"noamp_menu\" to a key.", CHAT_PREFIX );
+	CPrintToChatAll( "{unusual}%s{darkgoldenrod} To access the buy menu, type !menu OR bind \"noamp_menu\" to a key.", CHAT_PREFIX );
 }
 
 public void StartGame()
@@ -322,7 +312,7 @@ public void StartGame()
 	if ( waveIsBossWave[ 1 ] )
 	{
 		EmitSoundToAll( NOAMP_BOSSMUSIC, SOUND_FROM_PLAYER, SNDCHAN_STREAM, SNDLEVEL_NORMAL );
-		h_TimerBossMusicLooper = CreateTimer( 1.0, BossMusicLooper, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+		CreateTimer( 1.0, BossMusicLooper, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
 	}
 	
 	WaveStart();
@@ -382,7 +372,7 @@ public Action WaveThink( Handle timer )
 	
 	if ( dead >= clients && clients >= 1 )
 	{
-		h_TimerGameOver = CreateTimer( 1.0, GameOver, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+		CreateTimer( 1.0, GameOver, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
 		EmitSoundToAll( "noamp/gameover.mp3", SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL );
 		return Plugin_Stop;
 	}
@@ -408,14 +398,13 @@ public void WaveFinished()
 	wave++;
 	parrotsKilled = 0;
 	spawnedParrots = 0;
-	giantParrotSpawned = false;
 	
 	IsPreparing = true;
 	HasWaveStarted = false;
 	
 	if ( wave > waveCount )
 	{
-		h_TimerGameWin = CreateTimer( 1.0, GameWin, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+		CreateTimer( 1.0, GameWin, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
 		return;
 	}
 	
@@ -453,7 +442,7 @@ public void WaveFinished()
 	EmitSoundToAll( "music/deadparrotachieved.mp3", SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL );
 	StopMusicAll();
 	
-	h_TimerPreparingTime = CreateTimer( 1.0, PreparingTime, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+	CreateTimer( 1.0, PreparingTime, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
 }
 
 public Action CorruptorThink( Handle timer )
@@ -476,7 +465,7 @@ public Action CorruptorThink( Handle timer )
 		int rng = GetRandomInt( 1, 25 );
 		if ( rng == 6 )
 		{
-			h_TimerCorruption = CreateTimer( 1.0, Corruption, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+			CreateTimer( 1.0, Corruption, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
 			//ReadParrotCreatorScript(3);
 		}
 		
@@ -638,7 +627,7 @@ public void WaveStart()
 {
 	if ( waveIsCorruptorWave[ wave ] )
 	{
-		h_TimerCorruptorThink = CreateTimer( 1.0, CorruptorThink, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+		CreateTimer( 1.0, CorruptorThink, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
 	}
 	
 	if ( waveIsBossWave[ wave ] )
@@ -675,8 +664,8 @@ public void WaveStart()
 	
 	IsPreparing = false;
 	HasWaveStarted = true;
-	h_TimerWaveThink = CreateTimer( 0.1, WaveThink, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
-	h_TimerParrotCreator = CreateTimer( 1.0, ParrotCreator, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+	CreateTimer( 0.1, WaveThink, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+	CreateTimer( 1.0, ParrotCreator, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
 	preparingSecs = 0;
 	timerSoundPitch = 100;
 
@@ -692,7 +681,7 @@ public void WaveStart()
 	if ( waveIsBossWave[ wave ] )
 	{
 		EmitSoundToAll( NOAMP_BOSSMUSIC, SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL );
-		h_TimerBossMusicLooper = CreateTimer( 1.0, BossMusicLooper, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+		CreateTimer( 1.0, BossMusicLooper, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
 	}
 }
 
@@ -725,89 +714,8 @@ public Action ParrotCreator( Handle timer )
 		SpawnGiantParrot();
 	}
 	
-	//ParrotCreatorController();
-	
-	
-	/*if (GetParrotCreatorMode() == PARROTCREATOR_NORMAL)
-	{
-		if (GetAliveParrots(PARROT_NORMAL) <= waveMaxParrots[wave])
-		{
-			if (spawnedParrots != waveTotalParrotCount[wave])
-			{
-				spawnedParrots++;
-				SpawnParrot();
-			}
-		}
-		if (spawnedParrots == waveMaxParrots[wave])
-		{
-			// tell the parrot controller
-			parrotCreatorSpawned = true;
-		}
-		if (parrotDesiredSoundPitch != 0)
-			SetParrotSoundPitch(parrotDesiredSoundPitch);
-		else
-			SetParrotSoundPitch(100);
-	}
-	else if (GetParrotCreatorMode() == PARROTCREATOR_GIANTS)
-	{
-		if (!parrotCreatorSpawned && waveGiantParrotCount[wave] != 0 && GetAliveParrots(PARROT_GIANT) < waveGiantParrotCount[wave] && spawnedParrots != waveTotalParrotCount[wave])
-		{
-			spawnedParrots++;
-			SpawnGiantParrot();
-		}
-		if (spawnedParrots == waveMaxParrots[wave])
-		{
-			parrotCreatorSpawned = true;
-		}
-		if (parrotDesiredSoundPitch != 0)
-			SetParrotSoundPitch(parrotDesiredSoundPitch);
-		else
-			SetParrotSoundPitch(85);
-	}
-	else if (GetParrotCreatorMode() == PARROTCREATOR_BOSS)
-	{
-		if (waveIsCorruptorWave[wave] && !bossParrotSpawned)
-		{
-			parrotCreatorSpawned = true;
-			bossParrotSpawned = true;
-			SpawnBossParrot(true);
-		}
-		else if (waveIsBossWave[wave] && !bossParrotSpawned)
-		{
-			parrotCreatorSpawned = true;
-			bossParrotSpawned = true;
-			SpawnBossParrot(false);
-		}
-		if (parrotDesiredSoundPitch != 0)
-			SetParrotSoundPitch(parrotDesiredSoundPitch);
-		else
-			SetParrotSoundPitch(75);
-	}
-	else
-	{
-		// something went wrong
-		SetParrotCreatorMode(PARROTCREATOR_NORMAL);
-	}*/
-	
 	return Plugin_Continue;
 }
-
-/*public ParrotCreatorController()
-{
-	if ( waveIsBossWave[ wave ] )
-		return;
-	
-	if ( parrotCreatorSpawned )
-	{
-		creatorwave++;
-		
-		if ( creatorwave >= NOAMP_MAXPARROTCREATOR_WAVES )
-			creatorwave = 1;
-		
-		SetParrotCreatorMode( GetNextParrotCreatorMode( wave, creatorwave ) );
-		//ReadParrotCreatorScript(2);
-	}
-}*/
 
 public void OnCorruptionBegin()
 {
@@ -1207,7 +1115,7 @@ public void PowerupVultures( int client )
 	Format( strclientname, sizeof( strclientname ), "noamp_vulture_%d", client );
 	clientVultureTargetname[ client ] = strclientname;
 	
-	h_TimerKillVultures = CreateTimer( 30.0, KillVultures, client, TIMER_FLAG_NO_MAPCHANGE );
+	CreateTimer( 30.0, KillVultures, client, TIMER_FLAG_NO_MAPCHANGE );
 }
 
 public Action KillVultures( Handle timer, int client )
@@ -1479,7 +1387,6 @@ public void ResetGame( bool gameover, bool startgame )
 	IsCorrupted = false;
 	parrotsKilled = 0;
 	spawnedParrots = 0;
-	giantParrotSpawned = false;
 	bossParrotSpawned = false;
 
 	AliveParrots.Small = 0;
@@ -1501,7 +1408,6 @@ public void ResetGame( bool gameover, bool startgame )
 	maxHPPrice = 0;
 	maxArmorPrice = 0;
 	maxSpeedPrice = 0;
-	kegPrice = 0;
 	chestAward = 0;
 	preparationSecs = 0;
 	giantParrotSize = 0.0;
@@ -1515,7 +1421,6 @@ public void ResetGame( bool gameover, bool startgame )
 	musicSecs = 0;
 	
 	corruptsecs = 0;
-	soundplayed = false;
 	
 	ParrotKiller();
 	VultureKiller();
@@ -1701,6 +1606,4 @@ public void ResetParrotCreator()
 			parrotCreatorScheme[ i ][ ii ] = 0;
 		}
 	}
-
-	parrotCreatorSpawned = false;
 }

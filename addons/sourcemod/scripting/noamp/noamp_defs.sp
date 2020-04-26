@@ -19,7 +19,7 @@
 
 #pragma newdecls required
 
-#define PL_VERSION "0.8a"
+#define PL_VERSION "0.9a"
 #define SERVER_TAG "noamp"
 #define CHAT_PREFIX "[NOAMP]"
 
@@ -188,11 +188,9 @@ methodmap KilledParrotInfo_t
 KilledParrotInfo_t KilledParrots;
 
 char ScriptPath[ PLATFORM_MAX_PATH ];
-char ParrotCreatorScriptPath[ PLATFORM_MAX_PATH ];
 
 bool g_bPreserveIgnorePrefix = false;
 
-bool g_bIsMapLoaded = false;
 bool IsCustomScheme = false;
 char ParrotSpawns[ NOAMP_MAXSPAWNS+1 ][ 128 ];
 char GiantParrotSpawns[ NOAMP_MAXSPAWNS+1 ][ 128 ];
@@ -238,18 +236,6 @@ char schemeName[ 256 ] = "null";
 
 int parrotCreatorMode;
 int parrotCreatorScheme[ NOAMP_MAXWAVES ][ NOAMP_MAXPARROTCREATOR_WAVES ];
-/*new parrotCreatorDefaultScheme[1][NOAMP_MAXPARROTCREATOR_WAVES] = 
-{ 
-	PARROTCREATOR_NORMAL,
-	PARROTCREATOR_NORMAL,
-	PARROTCREATOR_SMALL,
-	PARROTCREATOR_GIANTS,
-	PARROTCREATOR_NORMAL
-};
-*/
-bool parrotCreatorSpawned;
-
-int parrotDesiredSoundPitch;
 
 int waveSmallParrotCount[ NOAMP_MAXWAVES ];
 int waveNormalParrotCount[ NOAMP_MAXWAVES ];
@@ -322,7 +308,6 @@ int maxArmorPrice;
 int maxSpeedPrice;
 int powerupFillSpecialPrice;
 int powerupVulturesPrice;
-int kegPrice;
 int chestAward;
 int preparationSecs;
 float smallParrotSize;
@@ -334,7 +319,6 @@ int parrotsKilled;
 int spawnedParrots;
 //int spawnedParrots2;
 int wave;
-int creatorwave;
 int waveCount;
 //int specialOffset;
 int preparingSecs;
@@ -343,7 +327,6 @@ int musicSecs;
 //int deadplayers;
 
 int corruptsecs;
-bool soundplayed;
 
 bool g_bIsEnabled;
 bool g_bHasGameStarted;
@@ -353,7 +336,6 @@ bool IsPreparing;
 bool IsCorrupted;
 bool IsWaitingForPlayers;
 bool IsLivesDisabled;
-bool giantParrotSpawned;
 bool bossParrotSpawned;
 
 int parrotCurrentBossHP;
@@ -380,6 +362,7 @@ int h_flMaxspeed;
 int h_flDefaultSpeed;
 int h_iPlayerClass;
 
+/*
 Handle h_TimerHUD = INVALID_HANDLE;
 Handle h_TimerWaveThink = INVALID_HANDLE;
 Handle h_TimerGameWin = INVALID_HANDLE;
@@ -391,6 +374,7 @@ Handle h_TimerBossMusicLooper = INVALID_HANDLE;
 Handle h_TimerKillVultures = INVALID_HANDLE;
 Handle h_TimerWaitingForPlayers = INVALID_HANDLE;
 Handle h_TimerCorruptorThink = INVALID_HANDLE;
+*/
 
 int timelimitSavedValue;
 char temphudstr[ 128 ];

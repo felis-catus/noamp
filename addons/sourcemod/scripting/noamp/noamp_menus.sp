@@ -85,22 +85,6 @@ public int MainMenuHandler( Menu menu, MenuAction action, int param1, int param2
 				
 				powerupsmenu.Display( param1, 20 );
 			}
-			/*else if ( StrEqual( info, CHOICE3 ) )
-			{
-				Menu weaponsmenu = new Menu( WeaponsMenuHandler );
-				weaponsmenu.SetTitle( "%T", "Weapons", LANG_SERVER );
-				
-				char choice1[ 64 ];
-				
-				Format( choice1, sizeof( choice1 ), "Powder Keg: $%d", kegPrice );
-				
-				weaponsmenu.AddItem( CHOICE1, choice1 );
-
-				weaponsmenu.ExitButton = true;
-				weaponsmenu.ExitBackButton = true;
-				weaponsmenu.Display( param1, 20 );
-			}
-			*/
 			else if ( StrEqual( info, CHOICE3 ) )
 			{
 				Menu baseupgmenu = new Menu( BaseUpgradesMenuHandler );

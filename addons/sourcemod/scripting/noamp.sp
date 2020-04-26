@@ -21,8 +21,8 @@
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
-#include <steamtools>
 #include <morecolors>
+//#include <steamtools>
 
 #include "noamp\noamp_defs.sp"
 #include "noamp\noamp_funcs.sp"
@@ -41,7 +41,7 @@ public Plugin myinfo =
 	author = "Felis",
 	description = "Coop survival gamemode against waves of PARROTS!",
 	version = PL_VERSION,
-	url = "http://loli.dance/"
+	url = "http://spamgrounds.net/"
 }
 
 public void OnPluginStart()
@@ -237,7 +237,7 @@ public void cvHookDifficulty( Handle cvar, const char[] oldVal, const char[] new
 	PrintToServer( "Loaded NOAMP scheme %s.", ScriptPath );
 	
 	ResetGame( false, true );
-	UpdateGameDesc();
+	//UpdateGameDesc();
 }
 
 public void cvHookScheme( Handle cvar, const char[] oldVal, const char[] newVal )
@@ -254,7 +254,7 @@ public void cvHookScheme( Handle cvar, const char[] oldVal, const char[] newVal 
 	PrintToServer( "Loaded NOAMP scheme %s.", ScriptPath );
 	
 	ResetGame( false, true );
-	UpdateGameDesc();
+	//UpdateGameDesc();
 }
 
 public Action NormalSoundHook( int iClients[ 64 ], int &iNumClients, char strSample[ PLATFORM_MAX_PATH ], int &iEntity, int &iChannel, float &flVolume, int &iLevel, int &iPitch, int &iFlags )
@@ -308,7 +308,7 @@ public void OnClientDisconnect( int client )
 
 public void OnConfigsExecuted()
 {
-	UpdateGameDesc();
+	//UpdateGameDesc();
 }
 
 public void OnMapStart()
@@ -461,12 +461,11 @@ public void OnMapStart()
 		SDKHook( curEnt, SDKHook_StartTouch, OnStartTouchChestZone );
 	}
 	
-	h_TimerHUD = CreateTimer( 0.1, HUD, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
-	h_TimerWaitingForPlayers = CreateTimer( 0.1, WaitingForPlayers, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
-	CreateTimer( 60.0, HintMessage, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+	CreateTimer( 0.1, HUD, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+	CreateTimer( 0.1, WaitingForPlayers, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+	CreateTimer( 120.0, HintMessage, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
 	
 	g_bHasGameStarted = false;
-	g_bIsMapLoaded = true;
 	
 	if ( playerLives == 0 )
 		IsLivesDisabled = true;
@@ -482,10 +481,10 @@ public void OnMapStart()
 
 public void OnMapEnd()
 {
-	g_bIsMapLoaded = false;
 	ResetGame( false, false );
 }
 
+/*
 public void UpdateGameDesc()
 {
 	char gamedesc[ 256 ];
@@ -500,6 +499,7 @@ public void UpdateGameDesc()
 
 	Steam_SetGameDescription( gamedesc );
 }
+*/
 
 public void ReadNOAMPScript()
 {
@@ -537,7 +537,6 @@ public void ReadNOAMPScript()
 		char strmaxhpprice[ 32 ];
 		char strmaxarmorprice[ 32 ];
 		char strmaxspeedprice[ 32 ];
-		char strkegprice[ 32 ];
 		char strfillspecialprice[ 32 ];
 		char strvulturesprice[ 32 ];
 		char strbaseupgrade1price[ 32 ];
@@ -557,7 +556,6 @@ public void ReadNOAMPScript()
 		KvGetString( kv, "maxhpprice", strmaxhpprice, 32 );
 		KvGetString( kv, "maxarmorprice", strmaxarmorprice, 32 );
 		KvGetString( kv, "maxspeedprice", strmaxspeedprice, 32 );
-		KvGetString( kv, "kegprice", strkegprice, 32 );
 		KvGetString( kv, "fillspecialprice", strfillspecialprice, 32 );
 		KvGetString( kv, "vulturesprice", strvulturesprice, 32 );
 		KvGetString( kv, "baseupgrade1price", strbaseupgrade1price, 32 );
@@ -577,7 +575,6 @@ public void ReadNOAMPScript()
 		maxHPPrice = StringToInt( strmaxhpprice, 10 );
 		maxArmorPrice = StringToInt( strmaxarmorprice, 10 );
 		maxSpeedPrice = StringToInt( strmaxspeedprice, 10 );
-		kegPrice = StringToInt( strkegprice, 10 );
 		powerupFillSpecialPrice = StringToInt( strfillspecialprice, 10 );
 		powerupVulturesPrice = StringToInt( strvulturesprice, 10 );
 		baseUpgradePrices[ 1 ] = StringToInt( strbaseupgrade1price, 10 );
@@ -686,187 +683,3 @@ public void ReadNOAMPScript()
 	
 	CloseHandle( kv );
 }
-
-// WTF: temp very stupid way of reading parrotcreator script
-/*public ReadParrotCreatorScript( int mode )
-{
-	Handle file = INVALID_HANDLE;
-	BuildPath( Path_SM, ParrotCreatorScriptPath, sizeof( ParrotCreatorScriptPath ), "data/noamp/default_parrotcreator.txt" );
-	file = OpenFile( ParrotCreatorScriptPath, "r" );
-	
-	bool foundcreatorline = false;
-	//bool foundwavesline = false;
-	bool foundwavestartline = false;
-	bool foundcreatorlistline = false;
-	//int linescount = 0;
-	int currentwave = 0;
-
-	char fileline[ 128 ];
-	FileSeek( file, 0, SEEK_SET );
-	
-	while ( !IsEndOfFile( file ) && ReadFileLine( file, fileline, sizeof( fileline ) ) )
-	{
-		TrimString( fileline );
-
-		if ( !foundcreatorline && !StrEqual( fileline, "ParrotCreator", false ) )
-		{
-			ThrowError( "ParrotCreator script reading failed! Didn't find \"ParrotCreator\"" );
-			break;
-		}
-		
-		if ( StrContains( fileline, "//", false ) == 0 )
-		{
-			continue;
-		}
-		
-		if ( StrEqual( fileline, "ParrotCreator", false ) )
-		{
-			PrintToServer( "Found ParrotCreator" );
-			foundcreatorline = true;
-			continue;
-		}
-		
-		if ( mode == 1 && foundcreatorline && StrContains( fileline, "beginwave", false ) == 0 )
-		{
-			PrintToServer( "Found beginwave" );
-			new value = ExplodeTrimAndConvertStringToInt( fileline, "_" );
-			currentwave = value;
-			PrintToServer( "currentwave = %d", currentwave );
-			foundwavestartline = true;
-			continue;
-		}
-		
-		if ( mode == 1 && foundcreatorline && StrContains( fileline, "endwave", false ) == 0 )
-		{
-			PrintToServer( "Found endwave" );
-			foundwavestartline = false;
-			continue;
-		}
-		
-		if ( mode == 1 && foundcreatorline && foundwavestartline && StrContains( fileline, "creatorscheme", false ) == 0 )
-		{
-			PrintToServer( "Found creatorscheme" );
-			foundcreatorlistline = true;
-			continue;
-		}
-		
-		if ( mode == 1 && ( !foundcreatorline || !foundwavestartline ) )
-			break;
-		
-		if ( mode == 1 && StrContains( fileline, "end", false ) == 0 )
-		{
-			PrintToServer( "StrContains end" );
-
-			if ( foundcreatorlistline )
-				foundcreatorlistline = false;
-
-			continue;
-		}
-		else if ( mode == 1 && foundcreatorlistline && StrContains( fileline, "normal", false ) == 0 )
-		{
-			PrintToServer( "StrContains normal" );
-			for ( int i = 1; i < NOAMP_MAXPARROTCREATOR_WAVES; i++ )
-			{
-				if ( parrotCreatorScheme[ currentwave ][ i ] == 0 )
-				{
-					PrintToServer( "StrContains normal" );
-					parrotCreatorScheme[ currentwave ][ i ] = PARROTCREATOR_NORMAL;
-					break;
-				}
-			}
-		}
-		else if ( mode == 1 && foundcreatorlistline && StrContains( fileline, "small", false ) == 0 )
-		{
-			PrintToServer( "StrContains small" );
-			for ( int i = 1; i < NOAMP_MAXPARROTCREATOR_WAVES; i++ )
-			{
-				if ( parrotCreatorScheme[ currentwave ][ i ] == 0 )
-				{
-					parrotCreatorScheme[ currentwave ][ i ] = PARROTCREATOR_SMALL;
-					break;
-				}
-			}
-		}
-		else if ( mode == 1 && foundcreatorlistline && StrContains( fileline, "giant", false ) == 0 )
-		{
-			PrintToServer( "StrContains giant" );
-			for ( int i = 1; i < NOAMP_MAXPARROTCREATOR_WAVES; i++ )
-			{
-				if ( parrotCreatorScheme[ currentwave ][ i ] == 0 )
-				{
-					parrotCreatorScheme[ currentwave ][ i ] = PARROTCREATOR_GIANTS;
-					break;
-				}
-			}
-		}
-		else if ( mode == 1 && foundcreatorlistline && StrContains( fileline, "boss", false ) == 0 )
-		{
-			PrintToServer( "StrContains boss" );
-			for ( int i = 1; i < NOAMP_MAXPARROTCREATOR_WAVES; i++ )
-			{
-				if ( parrotCreatorScheme[ currentwave ][ i ] == 0 )
-				{
-					parrotCreatorScheme[ currentwave ][ i ] = PARROTCREATOR_BOSS;
-					break;
-				}
-			}
-		}
-		else if ( mode == 2 && StrContains( fileline, "onchange", false ) == 0 )
-		{
-			PrintToServer( "Found onchange" );
-			int value = ExplodeTrimAndConvertStringToInt( fileline, "_" );
-			if ( value == creatorwave )
-			{
-				ScriptCommands( fileline );
-			}
-		}
-		else if ( mode == 3 && StrContains(fileline, "oncorruption", false ) == 0 )
-		{
-			PrintToServer( "Found oncorruption" );
-			ScriptCommands( fileline );
-		}
-		continue;
-	}
-
-	CloseHandle( file );
-}
-
-public ScriptCommands( const char[] fileline )
-{
-	if ( StrContains( fileline, "spawnparrots", false ) == 0 )
-	{
-		if ( StrContains( fileline, "normal", false ) == 0 )
-		{
-			int value = ExplodeTrimAndConvertStringToInt( fileline, "=" );
-			SpawnParrotAmount( value, PARROT_NORMAL );
-		}
-		else if ( StrContains( fileline, "giant", false ) == 0 )
-		{
-			int value = ExplodeTrimAndConvertStringToInt( fileline, "=" );
-			SpawnParrotAmount( value, PARROT_GIANT );
-		}
-		else if ( StrContains( fileline, "small", false ) == 0 )
-		{
-			int value = ExplodeTrimAndConvertStringToInt( fileline, "=" );
-			SpawnParrotAmount( value, PARROT_SMALL );
-		}
-		else if ( StrContains( fileline, "boss", false ) == 0 )
-		{
-			int value = ExplodeTrimAndConvertStringToInt( fileline, "=" );
-			SpawnParrotAmount( value, PARROT_BOSS );
-		}
-	}
-	else if ( StrContains( fileline, "setpitch", false ) == 0 )
-	{
-		int value = ExplodeTrimAndConvertStringToInt( fileline, "=" );
-		PrintToServer( "Setting parrot pitch: %d\n", value );
-		parrotDesiredSoundPitch = value;
-	}
-	else if ( StrContains( fileline, "setsize", false ) == 0 )
-	{
-		float value = ExplodeTrimAndConvertStringToFloat( fileline, "=" );
-		giantParrotSize = value;
-		bossParrotSize = value;
-		smallParrotSize = value;
-	}
-}*/
