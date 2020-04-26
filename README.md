@@ -8,6 +8,4 @@ Night of a Million Parrots, custom SourceMod gamemode for Pirates, Vikings and K
 - Based on a hit video: https://www.youtube.com/watch?v=xXBtIm82CIg
 
 To compile, you need:
-- SMLIB: https://forums.alliedmods.net/showthread.php?t=148387
 - More Colors: https://forums.alliedmods.net/showthread.php?t=185016
-- SteamTools: https://forums.alliedmods.net/showthread.php?t=129763
