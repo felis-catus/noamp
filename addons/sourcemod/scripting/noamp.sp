@@ -22,7 +22,6 @@
 #include <sdktools>
 #include <sdkhooks>
 #include <morecolors>
-//#include <steamtools>
 
 #include "noamp\noamp_defs.sp"
 #include "noamp\noamp_funcs.sp"
@@ -237,7 +236,6 @@ public void cvHookDifficulty( Handle cvar, const char[] oldVal, const char[] new
 	PrintToServer( "Loaded NOAMP scheme %s.", ScriptPath );
 	
 	ResetGame( false, true );
-	//UpdateGameDesc();
 }
 
 public void cvHookScheme( Handle cvar, const char[] oldVal, const char[] newVal )
@@ -254,7 +252,6 @@ public void cvHookScheme( Handle cvar, const char[] oldVal, const char[] newVal 
 	PrintToServer( "Loaded NOAMP scheme %s.", ScriptPath );
 	
 	ResetGame( false, true );
-	//UpdateGameDesc();
 }
 
 public Action NormalSoundHook( int iClients[ 64 ], int &iNumClients, char strSample[ PLATFORM_MAX_PATH ], int &iEntity, int &iChannel, float &flVolume, int &iLevel, int &iPitch, int &iFlags )
@@ -304,11 +301,6 @@ public void OnClientDisconnect( int client )
 {
 	ResetClient( client, false );
 	EmitSoundToAll( "noamp/playerdisconnect.wav", SOUND_FROM_PLAYER, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS );
-}
-
-public void OnConfigsExecuted()
-{
-	//UpdateGameDesc();
 }
 
 public void OnMapStart()
@@ -483,23 +475,6 @@ public void OnMapEnd()
 {
 	ResetGame( false, false );
 }
-
-/*
-public void UpdateGameDesc()
-{
-	char gamedesc[ 256 ];
-	if ( StrEqual( schemeName, "null", false ) )
-	{
-		Format( gamedesc, sizeof( gamedesc ), "NOAMP %s", PL_VERSION );
-	}
-	else
-	{
-		Format( gamedesc, sizeof( gamedesc ), "NOAMP %s: %s", PL_VERSION, schemeName );
-	}
-
-	Steam_SetGameDescription( gamedesc );
-}
-*/
 
 public void ReadNOAMPScript()
 {
