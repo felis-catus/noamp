@@ -6,6 +6,3 @@ Night of a Million Parrots
 Night of a Million Parrots, custom SourceMod gamemode for Pirates, Vikings and Knights II
 - Team up with other players to kill waves of... parrots?! 
 - Based on a hit video: https://www.youtube.com/watch?v=xXBtIm82CIg
-
-To compile, you need:
-- More Colors: https://forums.alliedmods.net/showthread.php?t=185016
